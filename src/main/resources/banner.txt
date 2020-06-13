@@ -1,0 +1,8 @@
+${AnsiColor.BLUE}  __  __ _____ _______    ${AnsiColor.WHITE} _____       _______        _____ ______ _______      ________ _____
+${AnsiColor.BLUE} |  \/  |_   _|__   __|   ${AnsiColor.WHITE}|  __ \   /\|__   __|/\    / ____|  ____|  __ \ \    / /  ____|  __ \
+${AnsiColor.BLUE} | \  / | | |    | |______${AnsiColor.WHITE}| |  | | /  \  | |  /  \  | (___ | |__  | |__) \ \  / /| |__  | |__) |
+${AnsiColor.BLUE} | |\/| | | |    | |______${AnsiColor.WHITE}| |  | |/ /\ \ | | / /\ \  \___ \|  __| |  _  / \ \/ / |  __| |  _  /
+${AnsiColor.BLUE} | |  | |_| |_   | |      ${AnsiColor.WHITE}| |__| / ____ \| |/ ____ \ ____) | |____| | \ \  \  /  | |____| | \ \
+${AnsiColor.BLUE} |_|  |_|_____|  |_|      ${AnsiColor.WHITE}|_____/_/    \_\_/_/    \_\_____/|______|_|  \_\  \/   |______|_|  \_\
+SpringBoot: ${spring-boot.version}
+Author: MonolithIoT
