@@ -15,6 +15,5 @@ class SerialSensorControllerTest {
         packet.setCommand(0x72);
 
         controller.send(packet);
-        Thread.sleep(1000000);
     }
 }

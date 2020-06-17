@@ -95,4 +95,22 @@ public class ApplicationConstants {
          */
         public static final String HEARTBEAT = "notify.heartbeat";
     }
+
+    /**
+     * 数据库相关常量
+     */
+    public static class Database {
+        /**
+         * JDBC主键生成器名称
+         */
+        public static final String GENERATOR_JDBC = "JDBC";
+        /**
+         * 降序排序
+         */
+        public static final String ORDER_DESC = "desc";
+        /**
+         * 升序排序
+         */
+        public static final String ORDER_ASC = "asc";
+    }
 }

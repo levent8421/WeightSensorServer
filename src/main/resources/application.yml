@@ -3,3 +3,5 @@ spring:
     name: digital-sensor-dirver-server
   profiles:
     active: @profiles.active@
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource

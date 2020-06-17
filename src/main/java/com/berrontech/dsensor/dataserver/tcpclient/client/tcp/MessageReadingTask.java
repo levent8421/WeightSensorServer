@@ -70,6 +70,10 @@ public class MessageReadingTask implements Runnable, NewPackageListener {
             this.listener.onReadError(e);
             return;
         }
+        if (message == null) {
+            this.listener.onReadError(new MessageException("Read A null message!"));
+            return;
+        }
         log.debug("Resolve Message [{}/{}/{}]", message.getType(), message.getAction(), message.getSeqNo());
         listener.onNewMessage(message);
     }

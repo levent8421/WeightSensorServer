@@ -67,7 +67,7 @@ public class HeartbeatTask implements MessageListener {
 
     @Override
     public void onReply(MessageInfo messageInfo, Message reply) {
-        final Payload payload = MessageUtils.asResponsePayload(reply.getPayload(), null);
+        final Payload payload = MessageUtils.asResponsePayload(reply.getData(), null);
         log.info("Heartbeat Reply [{}],reply=[{},{}]", reply.getSeqNo(), payload.getCode(), payload.getMsg());
     }
 

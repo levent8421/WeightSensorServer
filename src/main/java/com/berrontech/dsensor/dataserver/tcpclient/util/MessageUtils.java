@@ -1,7 +1,9 @@
 package com.berrontech.dsensor.dataserver.tcpclient.util;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.berrontech.dsensor.dataserver.common.util.DateTimeUtils;
+import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +34,7 @@ public class MessageUtils {
     public static Message asMessage(String type, String seqNo, String action, Object payload) {
         val message = new Message();
         message.setAction(action);
-        message.setPayload(payload);
+        message.setData(payload);
         message.setSeqNo(seqNo);
         message.setType(type);
         return message;
@@ -66,5 +68,30 @@ public class MessageUtils {
         }
         log.warn("Could Not Convert a [{}] to [{}]", payload.getClass().getName(), Payload.class.getName());
         return null;
+    }
+
+    /**
+     * As Object
+     *
+     * @param o    object
+     * @param type target object
+     * @param <T>  target type
+     * @return obj
+     * @throws MessageException error
+     */
+    public static <T> T asObject(Object o, Class<T> type) throws MessageException {
+        if (o == null) {
+            return null;
+        }
+        if (type.isInstance(o)) {
+            return (T) o;
+        }
+        if (o instanceof String) {
+            return JSON.parseObject((String) o, type);
+        }
+        if (o instanceof JSONObject) {
+            return ((JSONObject) o).toJavaObject(type);
+        }
+        throw new MessageException("Unable Convert " + o.getClass() + " to " + type);
     }
 }

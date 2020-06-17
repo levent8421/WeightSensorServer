@@ -32,7 +32,7 @@ public class Message {
     /**
      * Payload
      */
-    private Object payload;
+    private Object data;
 
     public String asJsonString() {
         return JSON.toJSONString(this);
