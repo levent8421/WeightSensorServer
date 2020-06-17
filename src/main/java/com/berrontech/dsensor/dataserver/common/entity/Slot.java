@@ -20,6 +20,10 @@ import javax.persistence.Table;
 @Table(name = "t_slot")
 public class Slot extends AbstractEntity {
     /**
+     * 组合485地址
+     */
+    private Integer address;
+    /**
      * 货位号
      */
     private String slotNo;

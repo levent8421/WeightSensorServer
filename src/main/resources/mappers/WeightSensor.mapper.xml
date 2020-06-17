@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.berrontech.dsensor.dataserver.repository.mapper.WeightSensorMapper">
+    <sql id="columns">
+        ws.id            as ws_id,
+        ws.connection_id as ws_connection_id,
+        ws.address       as ws_address,
+        ws.device_sn     as ws_device_sn,
+        ws.state         as ws_state,
+        ws.slot_id       as ws_slot_id,
+        ws.create_time   as ws_create_time,
+        ws.update_time   as ws_update_time,
+        ws.deleted       as ws_deleted
+    </sql>
+    <sql id="select">
+        select
+        <include refid="columns"/>
+        from t_weight_sensor as ws
+        where ws.deleted = false
+    </sql>
+    <resultMap id="rm_base" type="com.berrontech.dsensor.dataserver.common.entity.WeightSensor"
+               extends="com.berrontech.dsensor.dataserver.repository.AbstractMapper.rm_base">
+        <id column="ws_id" property="id"/>
+        <result column="ws_connection_id" property="connectionId"/>
+        <result column="ws_address" property="address"/>
+        <result column="ws_device_sn" property="deviceSn"/>
+        <result column="ws_state" property="state"/>
+        <result column="ws_slot_id" property="slotId"/>
+        <result column="ws_create_time" property="createTime"/>
+        <result column="ws_update_time" property="updateTime"/>
+        <result column="ws_deleted" property="deleted"/>
+    </resultMap>
+</mapper>

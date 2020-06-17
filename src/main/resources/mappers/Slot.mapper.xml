@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper">
+    <sql id="columns">
+        s.id            as s_id,
+        s.address       as s_address,
+        s.slot_no       as s_slot_no,
+        s.sku_no        as s_sku_no,
+        s.sku_name      as s_sku_name,
+        s.sku_apw       as s_sku_apw,
+        s.sku_tolerance as s_sku_tolerance,
+        s.has_elabel    as s_has_elabel,
+        s.create_time   as s_create_time,
+        s.update_time   as s_update_time,
+        s.deleted       as s_deleted
+    </sql>
+    <sql id="select">
+        select
+        <include refid="columns"/>
+        from t_slot as s
+        where s.deleted = false
+    </sql>
+    <resultMap id="rm_base" type="com.berrontech.dsensor.dataserver.common.entity.Slot"
+               extends="com.berrontech.dsensor.dataserver.repository.AbstractMapper.rm_base">
+        <id column="s_id" property="id"/>
+        <result column="s_address" property="address"/>
+        <result column="s_slot_no" property="slotNo"/>
+        <result column="s_sku_no" property="skuNo"/>
+        <result column="s_sku_name" property="skuName"/>
+        <result column="s_sku_apw" property="skuApw"/>
+        <result column="s_sku_tolerance" property="skuTolerance"/>
+        <result column="s_has_elabel" property="hasElabel"/>
+        <result column="s_create_time" property="createTime"/>
+        <result column="s_update_time" property="updateTime"/>
+        <result column="s_deleted" property="deleted"/>
+    </resultMap>
+</mapper>
