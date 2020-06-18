@@ -45,7 +45,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
         ApplicationContextAware {
     private Socket socket;
     private final ConnectionConfiguration connectionConfiguration;
-    private boolean isConnected = false;
+    private boolean connected = false;
     private final ExecutorService threadPool;
     private final MessageReadingTask messageReadingTask;
     private final MessageSendingTask messageSendingTask;
@@ -90,7 +90,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
 
     @Override
     public boolean isConnected() {
-        return isConnected && socketStatus();
+        return connected && socketStatus();
     }
 
     private boolean socketStatus() {
@@ -104,7 +104,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
         log.debug("TCPAPI: Connecting [{}:{}]", ip, port);
         try {
             socket = new Socket(ip, port);
-            isConnected = true;
+            connected = true;
             startReadTask();
             startSendTask();
             onConnectSuccess();
@@ -133,7 +133,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
 
     @Override
     public void disconnect() {
-        if (isConnected) {
+        if (connected) {
             messageReadingTask.stop();
             messageSendingTask.stop();
             try {
@@ -141,6 +141,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
             } catch (IOException e) {
                 log.error("Error On Disconnect Socket", e);
             }
+            this.connected = false;
         }
     }
 
@@ -229,7 +230,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
     public void onReadError(Throwable error) {
         log.error("Error On Read Message!", error);
         if (error instanceof IOException) {
-            isConnected = false;
+            connected = false;
         }
     }
 
@@ -245,7 +246,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
     public void onSendError(MessageInfo messageInfo, Throwable error) {
         log.error("Error On Send Message!", error);
         if (error instanceof IOException) {
-            isConnected = false;
+            connected = false;
         }
     }
 
