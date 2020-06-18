@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Create By Levent8421
@@ -28,6 +30,14 @@ public class DeviceConnection extends AbstractEntity {
      * 网络连接
      */
     public static final int TYPE_NET = 0x02;
+    public static final Map<Integer, String> TYPE_NAME_TABLE;
+
+    static {
+        TYPE_NAME_TABLE = new HashMap<>();
+        TYPE_NAME_TABLE.put(TYPE_SERIAL, "serial");
+        TYPE_NAME_TABLE.put(TYPE_NET, "net");
+    }
+
     /**
      * 连接类型
      */

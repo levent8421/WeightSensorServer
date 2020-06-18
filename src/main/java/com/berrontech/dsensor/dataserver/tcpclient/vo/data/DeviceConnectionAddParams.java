@@ -14,8 +14,6 @@ import lombok.Data;
  */
 @Data
 public class DeviceConnectionAddParams {
-    public static final String TYPE_SERIAL = "serial";
-    public static final String TYPE_NET = "net";
     /**
      * Type
      */

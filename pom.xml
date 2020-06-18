@@ -66,13 +66,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>rxtx-comm</groupId>
-            <artifactId>rxtxcomm</artifactId>
-            <version>1.2-7</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/lib/RXTXComm.jar</systemPath>
-        </dependency>
-        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.58</version>
@@ -106,6 +99,12 @@
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
             <version>2.0.1.Final</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.sun.jna/jna -->
+        <dependency>
+            <groupId>com.sun.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>3.0.9</version>
         </dependency>
     </dependencies>
 

@@ -11,6 +11,9 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.DeviceConnectionAddParams;
 import lombok.val;
 
+import java.util.Map;
+import java.util.Objects;
+
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notEmpty;
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull;
 
@@ -37,12 +40,7 @@ public class ConnectionAddHandler implements ActionHandler {
         final DeviceConnectionAddParams params;
         try {
             params = MessageUtils.asObject(message.getData(), DeviceConnectionAddParams.class);
-            notNull(params, BadRequestException.class, "Invalidate Params!");
-            notEmpty(params.getType(), BadRequestException.class, "Type could not be blank!");
-            notEmpty(params.getTarget(), BadRequestException.class, "Target could not be empty!");
-            if (!(DeviceConnectionAddParams.TYPE_SERIAL.equals(params.getType()) || DeviceConnectionAddParams.TYPE_NET.equals(params.getType()))) {
-                throw new BadRequestException("Invalidate Connection Type!");
-            }
+            checkParams(params);
         } catch (Exception e) {
             val data = Payload.badRequest(e.getMessage());
             return MessageUtils.replyMessage(message, data);
@@ -58,6 +56,18 @@ public class ConnectionAddHandler implements ActionHandler {
         return MessageUtils.replyMessage(message, data);
     }
 
+    private void checkParams(DeviceConnectionAddParams params) {
+        notNull(params, BadRequestException.class, "Invalidate Params!");
+        notEmpty(params.getType(), BadRequestException.class, "Type could not be blank!");
+        notEmpty(params.getTarget(), BadRequestException.class, "Target could not be empty!");
+        for (Map.Entry<Integer, String> entry : DeviceConnection.TYPE_NAME_TABLE.entrySet()) {
+            if (Objects.equals(entry.getValue(), params.getType())) {
+                return;
+            }
+        }
+        throw new BadRequestException("Invalidate Connection Type!");
+    }
+
     /**
      * Convert string connection type to int enum connection type
      *
@@ -65,8 +75,11 @@ public class ConnectionAddHandler implements ActionHandler {
      * @return int enum connection type
      */
     private int asConnectionType(String type) {
-        return DeviceConnectionAddParams.TYPE_SERIAL.equals(type) ?
-                DeviceConnection.TYPE_SERIAL : DeviceConnectionAddParams.TYPE_NET.equals(type)
-                ? DeviceConnection.TYPE_NET : -1;
+        for (Map.Entry<Integer, String> entry : DeviceConnection.TYPE_NAME_TABLE.entrySet()) {
+            if (Objects.equals(entry.getValue(), type)) {
+                return entry.getKey();
+            }
+        }
+        return -1;
     }
 }

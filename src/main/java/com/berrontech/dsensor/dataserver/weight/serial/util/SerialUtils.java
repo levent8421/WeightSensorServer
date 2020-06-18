@@ -1,13 +1,15 @@
 package com.berrontech.dsensor.dataserver.weight.serial.util;
 
 import com.berrontech.dsensor.dataserver.weight.serial.SerialException;
-import gnu.io.*;
+import com.berrontech.dsensor.dataserver.weight.serial.SerialPort;
+import com.berrontech.dsensor.dataserver.weight.serial.SerialPortFinder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
-import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Create By Levent8421
@@ -24,46 +26,27 @@ public class SerialUtils {
     /**
      * Timeout in ms for serial open
      */
-    private static final int OPEN_TIMEOUT = 1000;
+    private static final int OPEN_SERIAL_FLAG = 0;
+    private static final SerialPortFinder FINDER = new SerialPortFinder();
 
     public static List<String> scan() {
-        val ports = CommPortIdentifier.getPortIdentifiers();
-        val portList = new ArrayList<CommPortIdentifier>();
-        while (ports.hasMoreElements()) {
-            portList.add((CommPortIdentifier) ports.nextElement());
-        }
-        return portList.stream().map(CommPortIdentifier::getName).collect(Collectors.toList());
+        final String[] devicesPath = FINDER.getAllDevicesPath();
+        return Arrays.asList(devicesPath);
     }
 
-    public static CommPortIdentifier getSerialPortIdentifier(String name) {
+    public static SerialPort openSerial(String name, int baudRate) throws SerialException {
         try {
-            val id = CommPortIdentifier.getPortIdentifier(name);
-            if (id.getPortType() != CommPortIdentifier.PORT_SERIAL) {
-                return null;
+            val device = new File(name);
+            if (!device.exists()) {
+                throw new FileNotFoundException("Device File [" + device.getAbsolutePath() + "] not found!");
             }
-            return id;
-        } catch (NoSuchPortException e) {
-            log.warn("Port {} not exists", name);
-            return null;
-        }
-    }
-
-    public static SerialPort openSerial(String name) throws SerialException {
-        val identifier = getSerialPortIdentifier(name);
-        if (identifier == null) {
-            return null;
-        }
-        try {
-            final CommPort port = identifier.open(name, OPEN_TIMEOUT);
-            if (port instanceof SerialPort) {
-                return (SerialPort) port;
-            } else {
-                port.close();
-                return null;
+            try {
+                return new SerialPort(device, baudRate, OPEN_SERIAL_FLAG);
+            } catch (Exception e) {
+                throw new SerialException("Error On Open Serial Port", e);
             }
-        } catch (PortInUseException e) {
-            val msg = String.format("Port [%s] in use!", name);
-            throw new SerialException(msg, e);
+        } catch (Exception e) {
+            throw new SerialException(e);
         }
     }
 }

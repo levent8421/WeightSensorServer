@@ -101,6 +101,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
     public void connect() throws TcpConnectionException {
         val ip = connectionConfiguration.getIp();
         val port = connectionConfiguration.getPort();
+        log.debug("TCPAPI: Connecting [{}:{}]", ip, port);
         try {
             socket = new Socket(ip, port);
             isConnected = true;

@@ -3,9 +3,8 @@ package com.berrontech.dsensor.dataserver.weight.serial;
 import com.berrontech.dsensor.dataserver.common.io.AbstractPackageReadConnection;
 import com.berrontech.dsensor.dataserver.weight.*;
 import com.berrontech.dsensor.dataserver.weight.serial.util.SerialUtils;
-import gnu.io.SerialPort;
-import gnu.io.UnsupportedCommOperationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +21,7 @@ import java.io.OutputStream;
  * @author Levent8421
  */
 @Slf4j
-public class SerialSensorController extends AbstractPackageReadConnection implements SensorController {
+public class SerialSensorController extends AbstractPackageReadConnection implements SensorController, DisposableBean {
     /**
      * 4 K Byte buffer
      */
@@ -33,19 +32,11 @@ public class SerialSensorController extends AbstractPackageReadConnection implem
     private final OutputStream outputStream;
 
     public SerialSensorController(String portName, int baudRate) throws SerialException {
-        serialPort = SerialUtils.openSerial(portName);
-        if (serialPort == null) {
-            throw new SerialException(String.format("Port [%s] not found!", portName));
-        }
-        try {
-            serialPort.setSerialPortParams(baudRate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-        } catch (UnsupportedCommOperationException e) {
-            throw new SerialException(e);
-        }
+        serialPort = SerialUtils.openSerial(portName, baudRate);
         try {
             this.inputStream = serialPort.getInputStream();
             this.outputStream = serialPort.getOutputStream();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new SerialException("Error On Get Stream From Serial", e);
         }
     }
@@ -94,6 +85,14 @@ public class SerialSensorController extends AbstractPackageReadConnection implem
         packet.doCRC();
 
         final byte[] bytes = PacketUtils.asBytes(packet);
+        log.debug("Send Packet Size=[{}]", bytes.length);
         outputStream.write(bytes);
+    }
+
+    @Override
+    public void destroy() {
+        if (serialPort != null) {
+            serialPort.close();
+        }
     }
 }
