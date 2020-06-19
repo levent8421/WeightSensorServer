@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.holder;
 
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
+import lombok.Data;
 
 import java.util.Collection;
 
@@ -14,12 +15,23 @@ import java.util.Collection;
  *
  * @author Levent8421
  */
+@Data
 public class MemorySlot {
     public static MemorySlot of(Slot slot) {
         final MemorySlot ms = new MemorySlot();
+        ms.setSlotNo(slot.getSlotNo());
+        ms.setId(slot.getId());
+
+        final MemorySku sku = new MemorySku();
+        sku.setName(slot.getSkuName());
+        sku.setSkuNo(slot.getSkuNo());
+        sku.setApw(slot.getSkuApw());
+        sku.setTolerance(slot.getSkuTolerance());
+        ms.setSku(sku);
         return ms;
     }
 
+    private Integer id;
     private String slotNo;
     private Collection<MemoryWeightSensor> sensors;
     private MemorySku sku;

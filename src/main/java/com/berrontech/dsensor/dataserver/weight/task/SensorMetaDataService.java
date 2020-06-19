@@ -6,10 +6,16 @@ import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
+import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Create By Levent8421
@@ -51,6 +57,29 @@ public class SensorMetaDataService {
     }
 
     private void buildMemorySlotTable() {
-//        weightDataHolder.getSlots().stream()
+        final Map<Integer, MemorySlot> slotMap = weightDataHolder
+                .getSlots()
+                .stream()
+                .map(MemorySlot::of)
+                .collect(Collectors.toMap(MemorySlot::getId, v -> v));
+        final Map<Integer, DeviceConnection> connectionMap = weightDataHolder
+                .getConnections()
+                .stream()
+                .collect(Collectors.toMap(DeviceConnection::getId, v -> v));
+        weightDataHolder.getWeightSensors().stream().map(MemoryWeightSensor::of).forEach(sensor -> {
+            sensor.setConnection(connectionMap.get(sensor.getConnectionId()));
+            final MemorySlot slot = slotMap.get(sensor.getSlotId());
+            if (slot == null) {
+                return;
+            }
+            final Collection<MemoryWeightSensor> sensors = slot.getSensors() == null ? new ArrayList<>() : slot.getSensors();
+            sensors.add(sensor);
+            slot.setSensors(sensors);
+        });
+        final Map<String, MemorySlot> slotTable = slotMap
+                .values()
+                .stream()
+                .collect(Collectors.toMap(MemorySlot::getSlotNo, v -> v));
+        weightDataHolder.setSlotTable(slotTable);
     }
 }

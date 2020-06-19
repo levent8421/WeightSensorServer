@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.holder;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import lombok.Data;
 
 /**
@@ -36,9 +37,23 @@ public class MemoryWeightSensor {
      */
     public static final int STATE_UNDERLOAD = 0x05;
 
+    public static MemoryWeightSensor of(WeightSensor sensor) {
+        final MemoryWeightSensor mws = new MemoryWeightSensor();
+        mws.setId(sensor.getId());
+        mws.setAddress485(sensor.getAddress());
+        mws.setDeviceSn(sensor.getDeviceSn());
+        mws.setState(STATE_OFFLINE);
+        mws.setConnectionId(sensor.getConnectionId());
+        mws.setSlotId(sensor.getSlotId());
+        return mws;
+    }
+
+    private Integer id;
+    private Integer slotId;
     private int address485;
+    private Integer connectionId;
     private DeviceConnection connection;
     private String deviceSn;
     private int state;
-
+    private MemoryWeightData weightData;
 }
