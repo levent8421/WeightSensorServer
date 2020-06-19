@@ -24,4 +24,13 @@ public interface SlotMapper extends AbstractMapper<Slot> {
      * @return rows
      */
     int updateSkuInfoBySlotNo(@Param("slot") Slot slot);
+
+    /**
+     * Update Slot No By Id
+     *
+     * @param id     id
+     * @param slotNo SlotNo
+     * @return rows
+     */
+    int updateSlotNoById(@Param("id") Integer id, @Param("slotNo") String slotNo);
 }

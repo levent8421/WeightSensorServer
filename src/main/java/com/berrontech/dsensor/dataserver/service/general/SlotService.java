@@ -20,4 +20,12 @@ public interface SlotService extends AbstractService<Slot> {
      * @param slot 包含SKU信息和SlotNo的Slot对象
      */
     void updateSkuInfoBySlotNo(Slot slot);
+
+    /**
+     * 更新逻辑货道号
+     *
+     * @param id     id
+     * @param slotNo slotNO
+     */
+    void updateSlotNo(Integer id, String slotNo);
 }

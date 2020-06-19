@@ -128,4 +128,20 @@ public class ParamChecker {
             throwException(exceptionClass, errMsg);
         }
     }
+
+    /**
+     * 必须是十进制整型正数
+     *
+     * @param str            str
+     * @param exceptionClass ex
+     * @param msg            err msg
+     */
+    public static void onlyDecIntNumber(String str, Class<? extends RuntimeException> exceptionClass, String msg) {
+        notEmpty(str, exceptionClass, msg);
+        for (char c : str.toCharArray()) {
+            if (c > '9' || c < '0') {
+                throwException(exceptionClass, msg);
+            }
+        }
+    }
 }

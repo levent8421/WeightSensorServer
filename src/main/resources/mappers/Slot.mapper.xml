@@ -42,4 +42,9 @@
             s.sku_tolerance=#{slot.skuTolerance}
         where s.slot_no = #{slot.slotNo}
     </update>
+    <update id="updateSlotNoById">
+        update t_slot as s
+        set s.slot_no=#{slotNo}
+        where id = #{id}
+    </update>
 </mapper>

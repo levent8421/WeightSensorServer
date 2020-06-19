@@ -37,4 +37,12 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
                             + rows);
         }
     }
+
+    @Override
+    public void updateSlotNo(Integer id, String slotNo) {
+        final int rows = slotMapper.updateSlotNoById(id, slotNo);
+        if (rows != 1) {
+            throw new InternalServerErrorException("Error On Update SlotNo! id=" + id + ",slotNo=" + slotNo + ",rows=" + rows);
+        }
+    }
 }
