@@ -5,3 +5,8 @@ spring:
     active: @profiles.active@
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
+pagehelper:
+  helper-dialect: mysql
+mybatis:
+  mapper-locations: classpath:mappers/*.mapper.xml
+  type-aliases-package: com.berrontech.dsensor.dataserver.common.entity

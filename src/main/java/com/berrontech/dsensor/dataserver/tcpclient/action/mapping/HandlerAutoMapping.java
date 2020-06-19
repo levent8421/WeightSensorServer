@@ -1,5 +1,7 @@
 package com.berrontech.dsensor.dataserver.tcpclient.action.mapping;
 
+import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.tcpclient.action.ActionHandler;
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
@@ -55,9 +57,21 @@ public class HandlerAutoMapping implements ApplicationContextAware {
         val action = message.getAction();
         if (handlerTable.containsKey(action)) {
             val handler = handlerTable.get(action);
-            return handler.onMessage(message);
+            try {
+                return handler.onMessage(message);
+            } catch (BadRequestException e) {
+                val res = Payload.badRequest(e.getMessage());
+                return MessageUtils.replyMessage(message, res);
+            } catch (InternalServerErrorException e) {
+                val res = Payload.error(e.getMessage());
+                return MessageUtils.replyMessage(message, res);
+            } catch (Exception e) {
+                val res = Payload.error("Error:" + e.getClass().getSimpleName() + "[" + e.getMessage() + "]");
+                log.warn("Error On Handle Message[{}]", message.getSeqNo(), e);
+                return MessageUtils.replyMessage(message, res);
+            }
         }
         val badRequestPayload = Payload.badRequest("Invalidate Action!");
-        return MessageUtils.responseMessage(message.getSeqNo(), null, badRequestPayload);
+        return MessageUtils.replyMessage(message, badRequestPayload);
     }
 }

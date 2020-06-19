@@ -14,4 +14,10 @@ import com.berrontech.dsensor.dataserver.service.basic.AbstractService;
  * @author Levent8421
  */
 public interface SlotService extends AbstractService<Slot> {
+    /**
+     * 通过逻辑货道号更新SKU信息
+     *
+     * @param slot 包含SKU信息和SlotNo的Slot对象
+     */
+    void updateSkuInfoBySlotNo(Slot slot);
 }

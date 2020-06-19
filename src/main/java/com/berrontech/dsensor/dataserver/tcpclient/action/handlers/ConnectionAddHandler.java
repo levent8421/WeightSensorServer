@@ -36,15 +36,10 @@ public class ConnectionAddHandler implements ActionHandler {
     }
 
     @Override
-    public Message onMessage(Message message) {
-        final DeviceConnectionAddParams params;
-        try {
-            params = MessageUtils.asObject(message.getData(), DeviceConnectionAddParams.class);
-            checkParams(params);
-        } catch (Exception e) {
-            val data = Payload.badRequest(e.getMessage());
-            return MessageUtils.replyMessage(message, data);
-        }
+    public Message onMessage(Message message) throws Exception {
+        final DeviceConnectionAddParams params = MessageUtils.asObject(message.getData(), DeviceConnectionAddParams.class);
+        checkParams(params);
+
         final int type = asConnectionType(params.getType());
         final String target = params.getTarget();
         final DeviceConnection connection = new DeviceConnection();

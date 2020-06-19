@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.repository.mapper;
 
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.repository.AbstractMapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -16,4 +17,11 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface SlotMapper extends AbstractMapper<Slot> {
+    /**
+     * 通过SlotNo更新Sku信息
+     *
+     * @param slot slot
+     * @return rows
+     */
+    int updateSkuInfoBySlotNo(@Param("slot") Slot slot);
 }

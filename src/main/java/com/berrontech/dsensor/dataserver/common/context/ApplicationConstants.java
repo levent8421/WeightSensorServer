@@ -52,7 +52,7 @@ public class ApplicationConstants {
         /**
          * 重发次数
          */
-        public static final int MESSAGE_MAX_RETRY = 3;
+        public static final int MESSAGE_MAX_RETRY = 1;
         /**
          * timeout int ms
          */

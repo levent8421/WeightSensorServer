@@ -20,8 +20,6 @@ public class WeightSensorPackageSplitter implements PackageReadConnection.Packag
     private static final int STATUS_PACKAGE_START_2 = 0x02;
     private static final int STATUS_PACKAGE_LENGTH = 0x03;
     private static final int STATUS_PACKAGE_DATA = 0x04;
-    private static final int STATUS_PACKAGE_CRC = 0x05;
-    private static final int DATA_OFFSET = 3;
 
     /**
      * 10 K Byte Buffer

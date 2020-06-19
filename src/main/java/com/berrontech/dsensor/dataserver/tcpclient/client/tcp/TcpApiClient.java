@@ -182,6 +182,10 @@ public class TcpApiClient implements ApiClient, DisposableBean,
     @Override
     public void onNewMessage(Message message) {
         val type = message.getType();
+        if (type == null) {
+            log.warn("Null Type!");
+            return;
+        }
         switch (type) {
             case Message.TYPE_REQUEST:
                 handleRequestMessage(message);

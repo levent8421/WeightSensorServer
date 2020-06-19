@@ -37,6 +37,10 @@ public class Payload<T> {
         return ok(OK_MSG, data);
     }
 
+    public static <T> Payload<T> ok() {
+        return ok(OK_MSG, null);
+    }
+
     public static <T> Payload<T> badRequest(String msg, T data) {
         return of(BAD_REQUEST, msg, data);
     }

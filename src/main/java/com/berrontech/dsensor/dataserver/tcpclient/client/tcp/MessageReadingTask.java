@@ -71,7 +71,7 @@ public class MessageReadingTask implements Runnable, NewPackageListener {
             return;
         }
         if (message == null) {
-            this.listener.onReadError(new MessageException("Read A null message!"));
+            log.warn("Convert bytes[len={}] to Message result=null", packet.length);
             return;
         }
         log.debug("Resolve Message [{}/{}/{}]", message.getType(), message.getAction(), message.getSeqNo());

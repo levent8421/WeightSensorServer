@@ -18,6 +18,7 @@ public interface ActionHandler {
      *
      * @param message message
      * @return reply message
+     * @throws Exception Error
      */
-    Message onMessage(Message message);
+    Message onMessage(Message message) throws Exception;
 }

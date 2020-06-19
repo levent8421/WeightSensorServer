@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.service.general.impl;
 
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper;
 import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
@@ -23,5 +24,17 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     public SlotServiceImpl(SlotMapper slotMapper) {
         super(slotMapper);
         this.slotMapper = slotMapper;
+    }
+
+    @Override
+    public void updateSkuInfoBySlotNo(Slot slot) {
+        final int rows = slotMapper.updateSkuInfoBySlotNo(slot);
+        if (rows != 1) {
+            throw new InternalServerErrorException(
+                    "Error On Update SkuInfo for Slot["
+                            + slot.getSlotNo()
+                            + "],res rows="
+                            + rows);
+        }
     }
 }
