@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
+import com.berrontech.dsensor.dataserver.weight.serial.SerialConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -26,15 +27,23 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
      * TCP API Client
      */
     private final ApiClient apiClient;
+    /**
+     * 串口相关配置
+     */
+    private final SerialConfiguration serialConfiguration;
 
-    public WeightServiceTaskImpl(WeightDataHolder weightDataHolder, ApiClient apiClient) {
+    public WeightServiceTaskImpl(WeightDataHolder weightDataHolder,
+                                 ApiClient apiClient,
+                                 SerialConfiguration serialConfiguration) {
         this.weightDataHolder = weightDataHolder;
         this.apiClient = apiClient;
+        this.serialConfiguration = serialConfiguration;
     }
 
     @Override
     public void setup() {
-
+        final int baudRate = serialConfiguration.getBaudRate();
+        //TODO 初始换传感器控制组件
     }
 
     /**

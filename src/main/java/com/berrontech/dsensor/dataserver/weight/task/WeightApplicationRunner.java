@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
+import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
@@ -27,11 +28,13 @@ public class WeightApplicationRunner implements ApplicationRunner, Runnable, Dis
     private static final ExecutorService EXECUTOR = ThreadUtils.createSingleThreadPool(THREAD_NAME);
     private final WeightServiceTask weightServiceTask;
     private final WeightDataHolder weightDataHolder;
+    private final SlotService slotService;
 
     public WeightApplicationRunner(WeightServiceTask weightServiceTask,
-                                   WeightDataHolder weightDataHolder) {
+                                   WeightDataHolder weightDataHolder, SlotService slotService) {
         this.weightServiceTask = weightServiceTask;
         this.weightDataHolder = weightDataHolder;
+        this.slotService = slotService;
     }
 
     @Override
