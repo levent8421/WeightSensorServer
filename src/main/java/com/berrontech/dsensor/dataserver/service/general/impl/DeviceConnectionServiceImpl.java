@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.service.general.impl;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.repository.mapper.DeviceConnectionMapper;
 import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
 import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
@@ -23,5 +24,14 @@ public class DeviceConnectionServiceImpl extends AbstractServiceImpl<DeviceConne
     public DeviceConnectionServiceImpl(DeviceConnectionMapper deviceConnectionMapper) {
         super(deviceConnectionMapper);
         this.deviceConnectionMapper = deviceConnectionMapper;
+    }
+
+    @Override
+    public DeviceConnection createConnection(DeviceConnection param) {
+        final int count = deviceConnectionMapper.countByTypeAndTarget(param.getType(), param.getTarget());
+        if (count > 0) {
+            throw new BadRequestException("Connection Are Early Exists!");
+        }
+        return save(param);
     }
 }

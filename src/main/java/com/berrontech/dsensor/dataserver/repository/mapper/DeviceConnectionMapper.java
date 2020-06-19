@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.repository.mapper;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.repository.AbstractMapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -16,4 +17,12 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface DeviceConnectionMapper extends AbstractMapper<DeviceConnection> {
+    /**
+     * 通过type和target查询数量
+     *
+     * @param type   type
+     * @param target target
+     * @return count
+     */
+    int countByTypeAndTarget(@Param("type") Integer type, @Param("target") String target);
 }

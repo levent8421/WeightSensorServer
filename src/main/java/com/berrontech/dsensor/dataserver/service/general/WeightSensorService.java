@@ -14,4 +14,10 @@ import com.berrontech.dsensor.dataserver.service.basic.AbstractService;
  * @author Levent8421
  */
 public interface WeightSensorService extends AbstractService<WeightSensor> {
+    /**
+     * Delete Sensor By Connection Id
+     *
+     * @param connectionId connection Id
+     */
+    void deleteByConnection(Integer connectionId);
 }

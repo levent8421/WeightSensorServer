@@ -24,4 +24,10 @@
         <result column="dc_update_time" property="updateTime"/>
         <result column="dc_deleted" property="deleted"/>
     </resultMap>
+    <select id="countByTypeAndTarget" resultType="java.lang.Integer">
+        select count(0)
+        from t_device_connection as dc
+        where dc.type = #{type}
+          and dc.target = #{target}
+    </select>
 </mapper>

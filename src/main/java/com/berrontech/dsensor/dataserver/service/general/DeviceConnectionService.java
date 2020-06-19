@@ -14,4 +14,11 @@ import com.berrontech.dsensor.dataserver.service.basic.AbstractService;
  * @author Levent8421
  */
 public interface DeviceConnectionService extends AbstractService<DeviceConnection> {
+    /**
+     * 新增连接
+     *
+     * @param param param
+     * @return Connection
+     */
+    DeviceConnection createConnection(DeviceConnection param);
 }

@@ -4,13 +4,14 @@ import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.repository.mapper.WeightSensorMapper;
 import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
+import lombok.val;
 import org.springframework.stereotype.Service;
 
 /**
  * Create By Levent8421
  * Create Time: 2020/6/17 11:04
  * Class Name: WeightSensorServiceImpl
- * Author: Levent8421           `   
+ * Author: Levent8421           `
  * Description:
  * 重力传感器相关业务行为实现
  *
@@ -23,5 +24,12 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     public WeightSensorServiceImpl(WeightSensorMapper weightSensorMapper) {
         super(weightSensorMapper);
         this.weightSensorMapper = weightSensorMapper;
+    }
+
+    @Override
+    public void deleteByConnection(Integer connectionId) {
+        val query = new WeightSensor();
+        query.setConnectionId(connectionId);
+        weightSensorMapper.delete(query);
     }
 }
