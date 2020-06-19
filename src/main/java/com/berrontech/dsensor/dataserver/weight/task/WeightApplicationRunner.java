@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
+import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.ApplicationArguments;
@@ -25,9 +26,12 @@ public class WeightApplicationRunner implements ApplicationRunner, Runnable, Dis
     private static final String THREAD_NAME = "Weight-Service";
     private static final ExecutorService EXECUTOR = ThreadUtils.createSingleThreadPool(THREAD_NAME);
     private final WeightServiceTask weightServiceTask;
+    private final WeightDataHolder weightDataHolder;
 
-    public WeightApplicationRunner(WeightServiceTask weightServiceTask) {
+    public WeightApplicationRunner(WeightServiceTask weightServiceTask,
+                                   WeightDataHolder weightDataHolder) {
         this.weightServiceTask = weightServiceTask;
+        this.weightDataHolder = weightDataHolder;
     }
 
     @Override
@@ -37,6 +41,7 @@ public class WeightApplicationRunner implements ApplicationRunner, Runnable, Dis
 
     @Override
     public void run() {
+        loadSensorTable();
         weightServiceTask.setup();
         while (true) {
             if (!weightServiceTask.loop()) {
@@ -52,5 +57,9 @@ public class WeightApplicationRunner implements ApplicationRunner, Runnable, Dis
         weightServiceTask.beforeStop();
         EXECUTOR.shutdownNow();
         weightServiceTask.afterStop();
+    }
+
+    private void loadSensorTable() {
+        //TODO 从数据库把传感器元数据加载到内存中
     }
 }
