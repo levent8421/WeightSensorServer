@@ -1,0 +1,115 @@
+package com.berrontech.dsensor.dataserver.weight.digitalSensor;
+
+
+import com.berrontech.dsensor.dataserver.weight.connection.BasicConnection;
+import com.berrontech.dsensor.dataserver.weight.connection.SerialConnection;
+import com.berrontech.dsensor.dataserver.weight.connection.TCPConnection;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jni.Time;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+@Slf4j
+@Data
+public class DigitalSensorDriver {
+    private String TAG = DigitalSensorDriver.class.getName();
+    private Object lock = new Object();
+
+    public int DefaultBaudrate = 115200;
+    private BasicConnection connection;
+
+    public void OpenCom(String portName) {
+        OpenCom(portName, DefaultBaudrate);
+    }
+
+    public void OpenCom(String portName, int baudrate) {
+        try {
+            setConnection(new SerialConnection().setParam(portName, baudrate));
+            connection.open();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error(TAG, ex.toString());
+        }
+    }
+
+    public void OpenNet(String address, int port) {
+        try {
+            setConnection(new TCPConnection().setParam(address, port));
+            connection.open();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error(TAG, ex.toString());
+        }
+    }
+
+    public void close() {
+        if (getConnection() != null) {
+            getConnection().close();
+        }
+    }
+
+    public DataPacket Read(int timeout) throws TimeoutException {
+        // 0x02 0xFD len:1 ver:1 add:1 cmd:1 content:n checksum:1
+        // |heads   |len  |data
+        long endTime = System.currentTimeMillis() + timeout;
+        do {
+            if (getConnection().waitByte(DataPacket.Head1, timeout)) {
+                if (getConnection().readByte(timeout) != DataPacket.Head2) {
+                    continue;
+                }
+                byte len = getConnection().readByte(timeout);
+                byte[] data = getConnection().readBytes(len, timeout);
+                DataPacket packet = DataPacket.ParseData(data);
+                log.debug(TAG, "<--- #" + packet.getAddress() + " " + (char) packet.getCmd() + " dataLen=" + packet.getContentLength());
+                return packet;
+            }
+        } while (System.currentTimeMillis() <= endTime);
+        throw new TimeoutException("Wait packet timeout");
+    }
+
+    public DataPacket Read(byte address, byte cmd, int timeout) throws TimeoutException {
+        long endTime = System.currentTimeMillis() + timeout;
+        do {
+            DataPacket packet = Read(timeout);
+            if (packet.getAddress() == address && packet.getCmd() == cmd) {
+                return packet;
+            } else {
+                log.debug(TAG, "packet error: required addr=" + address + " type=" + cmd);
+            }
+        } while (System.currentTimeMillis() <= endTime);
+        throw new TimeoutException("Wait packet with address(" + address + ") cmd({" + cmd + "}) timeout");
+    }
+
+    public void Write(DataPacket packet) throws Exception {
+        log.debug(TAG, "---> #" + packet.getAddress() + " " + (char) packet.getCmd() + " dataLen=" + packet.getContentLength());
+        // send dummy byte
+        getConnection().write(new byte[]{((byte) 0x00)});
+        // send data
+        getConnection().write(packet.ToBytes());
+    }
+
+    public DataPacket WriteRead(DataPacket packet, int timeout) throws Exception {
+        return WriteRead(packet, timeout, 0);
+    }
+
+    public DataPacket WriteRead(DataPacket packet, int timeout, int retries) throws Exception {
+        int sendCount = 0;
+        do {
+            Write(packet);
+            try {
+                DataPacket ans = Read(packet.getAddress(), packet.ToRecvCmd(), timeout);
+                return ans;
+            } catch (TimeoutException ex) {
+                // minus retry
+                sendCount++;
+                log.debug(TAG, "WriteRead(" + sendCount + ")", ex);
+            }
+        } while (sendCount <= retries);
+        throw new TimeoutException("Wait packet out of " + retries + " retries");
+    }
+}
