@@ -21,6 +21,7 @@ public class MemorySlot {
         final MemorySlot ms = new MemorySlot();
         ms.setSlotNo(slot.getSlotNo());
         ms.setId(slot.getId());
+        ms.setHasElabel(slot.getHasElabel());
 
         final MemorySku sku = new MemorySku();
         sku.setName(slot.getSkuName());
@@ -33,6 +34,7 @@ public class MemorySlot {
 
     private Integer id;
     private String slotNo;
+    private Boolean hasElabel;
     private Collection<MemoryWeightSensor> sensors;
     private MemorySku sku;
     private MemoryWeightData data;

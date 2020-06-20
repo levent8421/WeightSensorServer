@@ -7,6 +7,8 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import lombok.val;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/17 11:04
@@ -31,5 +33,12 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         val query = new WeightSensor();
         query.setConnectionId(connectionId);
         weightSensorMapper.delete(query);
+    }
+
+    @Override
+    public List<WeightSensor> findByConnection(Integer connectionId) {
+        val query = new WeightSensor();
+        query.setConnectionId(connectionId);
+        return weightSensorMapper.select(query);
     }
 }

@@ -3,6 +3,8 @@ package com.berrontech.dsensor.dataserver.service.general;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.service.basic.AbstractService;
 
+import java.util.List;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/17 11:03
@@ -20,4 +22,12 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @param connectionId connection Id
      */
     void deleteByConnection(Integer connectionId);
+
+    /**
+     * Find Sensor By Connection
+     *
+     * @param connectionId connection Id
+     * @return Sensor List
+     */
+    List<WeightSensor> findByConnection(Integer connectionId);
 }
