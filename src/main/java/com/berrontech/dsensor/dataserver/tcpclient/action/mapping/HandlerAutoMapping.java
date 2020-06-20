@@ -60,10 +60,10 @@ public class HandlerAutoMapping implements ApplicationContextAware {
             try {
                 return handler.onMessage(message);
             } catch (BadRequestException e) {
-                val res = Payload.badRequest(e.getMessage());
+                val res = Payload.badRequest(e.getMessage(), null);
                 return MessageUtils.replyMessage(message, res);
             } catch (InternalServerErrorException e) {
-                val res = Payload.error(e.getMessage());
+                val res = Payload.error(e.getMessage(), null);
                 return MessageUtils.replyMessage(message, res);
             } catch (Exception e) {
                 val res = Payload.error("Error:" + e.getClass().getSimpleName() + "[" + e.getMessage() + "]");
