@@ -84,6 +84,10 @@ public class SerialPort {
     public native void close();
 
     static {
-        System.loadLibrary("serial_port");
+        try {
+            System.loadLibrary("serial_port");
+        } catch (Throwable ex) {
+            log.error("Load serial_port failed", ex);
+        }
     }
 }

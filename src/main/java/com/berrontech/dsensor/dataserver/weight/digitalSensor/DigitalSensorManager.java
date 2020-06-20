@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Data
 public class DigitalSensorManager {
-    private static String TAG = DigitalSensorManager.class.getName();
     public static final String APP_NAME = "DigitalSensorManager";
     public static final String NAME = "DSmanager";
     private boolean AutoRestoreZeroOffset = true;
@@ -78,7 +77,7 @@ public class DigitalSensorManager {
                 try {
                     g.Open();
                 } catch (Exception ex) {
-                    log.error(TAG, "Open", ex);
+                    log.error("Open", ex);
                 }
             }
         }
@@ -94,7 +93,7 @@ public class DigitalSensorManager {
                 try {
                     g.Close();
                 } catch (Exception ex) {
-                    log.error(TAG, "Close", ex);
+                    log.error("Close", ex);
                 }
             }
         }
@@ -107,7 +106,7 @@ public class DigitalSensorManager {
                 try {
                     g.Init(this);
                 } catch (Exception ex) {
-                    log.error(TAG, "Init", ex);
+                    log.error("Init", ex);
                 }
             }
         }
@@ -119,7 +118,7 @@ public class DigitalSensorManager {
                 try {
                     g.BuildSubGroups();
                 } catch (Exception ex) {
-                    log.error(TAG, "BuildSubGroups", ex);
+                    log.error("BuildSubGroups", ex);
                 }
             }
         }
@@ -133,9 +132,10 @@ public class DigitalSensorManager {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 try {
-                    g.startReading2();
+                    g.startReading();
+                    //g.startReading2();
                 } catch (Exception ex) {
-                    log.error(TAG, "StartReading", ex);
+                    log.error("StartReading", ex);
                 }
             }
         }
@@ -151,7 +151,7 @@ public class DigitalSensorManager {
                 try {
                     g.stopReading();
                 } catch (Exception ex) {
-                    log.error(TAG, "StopReading", ex);
+                    log.error("StopReading", ex);
                 }
             }
         }

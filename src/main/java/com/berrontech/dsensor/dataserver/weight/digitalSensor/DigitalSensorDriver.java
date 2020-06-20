@@ -17,7 +17,6 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 @Data
 public class DigitalSensorDriver {
-    private String TAG = DigitalSensorDriver.class.getName();
     private Object lock = new Object();
 
     public int DefaultBaudrate = 115200;
@@ -32,8 +31,7 @@ public class DigitalSensorDriver {
             setConnection(new SerialConnection().setParam(portName, baudrate));
             connection.open();
         } catch (Exception ex) {
-            ex.printStackTrace();
-            log.error(TAG, ex.toString());
+            log.error("Open serial[{}] failed", portName, ex);
         }
     }
 
@@ -42,8 +40,7 @@ public class DigitalSensorDriver {
             setConnection(new TCPConnection().setParam(address, port));
             connection.open();
         } catch (Exception ex) {
-            ex.printStackTrace();
-            log.error(TAG, ex.toString());
+            log.error("Open net[{}:{}] failed", address, port, ex);
         }
     }
 
@@ -65,7 +62,7 @@ public class DigitalSensorDriver {
                 byte len = getConnection().readByte(timeout);
                 byte[] data = getConnection().readBytes(len, timeout);
                 DataPacket packet = DataPacket.ParseData(data);
-                log.debug(TAG, "<--- #" + packet.getAddress() + " " + (char) packet.getCmd() + " dataLen=" + packet.getContentLength());
+                //log.debug("<--- #{} {} dataLen={}", packet.getAddress(), (char) packet.getCmd(), packet.getContentLength());
                 return packet;
             }
         } while (System.currentTimeMillis() <= endTime);
@@ -79,14 +76,14 @@ public class DigitalSensorDriver {
             if (packet.getAddress() == address && packet.getCmd() == cmd) {
                 return packet;
             } else {
-                log.debug(TAG, "packet error: required addr=" + address + " type=" + cmd);
+                log.debug("packet error: required addr={} type={}", address, cmd);
             }
         } while (System.currentTimeMillis() <= endTime);
         throw new TimeoutException("Wait packet with address(" + address + ") cmd({" + cmd + "}) timeout");
     }
 
     public void Write(DataPacket packet) throws Exception {
-        log.debug(TAG, "---> #" + packet.getAddress() + " " + (char) packet.getCmd() + " dataLen=" + packet.getContentLength());
+        //log.debug("---> #{} {} dataLen={}", packet.getAddress(), (char) packet.getCmd(), packet.getContentLength());
         // send dummy byte
         getConnection().write(new byte[]{((byte) 0x00)});
         // send data
@@ -107,7 +104,7 @@ public class DigitalSensorDriver {
             } catch (TimeoutException ex) {
                 // minus retry
                 sendCount++;
-                log.debug(TAG, "WriteRead(" + sendCount + ")", ex);
+                log.debug("Retry WriteRead({})", sendCount, ex);
             }
         } while (sendCount <= retries);
         throw new TimeoutException("Wait packet out of " + retries + " retries");

@@ -6,10 +6,14 @@ import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorDriver;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorGroup;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import lombok.var;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * Create By Levent8421
@@ -52,54 +56,63 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
         //TODO 初始换传感器控制组件
 
         buildDigitalSensors();
+        sensorManager.open();
         sensorManager.startReading();
     }
 
     private void buildDigitalSensors() {
         for (DeviceConnection conn : weightDataHolder.getConnections()) {
-            int count = (int) weightDataHolder.getWeightSensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
-            if (count <= 0) {
-                continue;
-            }
-            DigitalSensorGroup group = sensorManager.NewGroup();
-            switch (conn.getType().intValue()) {
-                default: {
-                    log.info(TAG, "Unknow connection type: " + conn.getType());
-                    break;
+            try {
+                int count = (int) weightDataHolder.getWeightSensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
+                if (count <= 0) {
+                    continue;
                 }
-                case DeviceConnection.TYPE_SERIAL: {
-                    log.debug(TAG, "Add group on serial: " + conn.getTarget());
-                    group.setCommMode(DigitalSensorGroup.ECommMode.Com);
-                    group.setCommSerial(conn.getTarget());
-                    break;
-                }
-                case DeviceConnection.TYPE_NET: {
-                    log.debug(TAG, "Add group on tcp: " + conn.getTarget());
-                    String[] parts = conn.getTarget().split(":");
-                    group.setCommMode(DigitalSensorGroup.ECommMode.Net);
-                    group.setCommAddress(parts[0]);
-                    if (parts.length > 1) {
-                        group.setCommPort(Integer.parseInt(parts[1]));
-                    } else {
-                        final int defaultPort = 10086;
-                        log.info(TAG, "Use default net port: " + defaultPort);
-                        group.setCommPort(defaultPort);
+                DigitalSensorGroup group = sensorManager.NewGroup();
+                switch (conn.getType().intValue()) {
+                    default: {
+                        log.info(TAG, "Unknow connection type: " + conn.getType());
+                        break;
                     }
-                    break;
+                    case DeviceConnection.TYPE_SERIAL: {
+                        log.debug(TAG, "Add group on serial: " + conn.getTarget());
+                        group.setCommMode(DigitalSensorGroup.ECommMode.Com);
+                        group.setCommSerial(conn.getTarget());
+                        break;
+                    }
+                    case DeviceConnection.TYPE_NET: {
+                        log.debug(TAG, "Add group on tcp: " + conn.getTarget());
+                        String[] parts = conn.getTarget().split(":");
+                        group.setCommMode(DigitalSensorGroup.ECommMode.Net);
+                        group.setCommAddress(parts[0]);
+                        if (parts.length > 1) {
+                            group.setCommPort(Integer.parseInt(parts[1]));
+                        } else {
+                            final int defaultPort = 10086;
+                            log.info(TAG, "Use default net port: " + defaultPort);
+                            group.setCommPort(defaultPort);
+                        }
+                        break;
+                    }
                 }
-            }
-            log.debug(TAG, "Build sensors: " + count);
-            group.BuildSensors(count);
+                log.debug(TAG, "Build sensors: " + count);
+                group.BuildSensors(count);
 
-            int pos = 0;
-            for (WeightSensor sen : weightDataHolder.getWeightSensors()) {
-                if (sen.getConnectionId().equals(conn.getId())) {
-                    log.debug(TAG, "Config sensor: conn=" + conn + ", sen=" + sen);
-                    val sensor = group.getSensors().get(pos++);
-                    val params = sensor.getParams();
-                    params.setAddress(sen.getAddress());
-                    params.setDeviceSn(sen.getDeviceSn());
+                int pos = 0;
+                for (WeightSensor sen : weightDataHolder.getWeightSensors()) {
+                    if (sen.getConnectionId().equals(conn.getId())) {
+                        log.debug(TAG, "Config sensor: conn=" + conn + ", sen=" + sen);
+                        val sensor = group.getSensors().get(pos++);
+                        val params = sensor.getParams();
+                        params.setAddress(sen.getAddress());
+                        params.setDeviceSn(sen.getDeviceSn());
+
+                        var slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().get();
+                        sensor.setSubGroup(slot.getSlotNo());
+                    }
                 }
+            } catch (Exception ex)
+            {
+                log.error("buildDigitalSensors error: connId={}, target={}", conn.getId(), conn.getTarget(), ex);
             }
         }
     }
@@ -112,7 +125,29 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
     @Override
     public boolean loop() {
         if (sensorManager != null) {
-            return sensorManager.isOpened();
+            if (sensorManager.isOpened()) {
+                try {
+                    for (val g : sensorManager.getGroups()) {
+                        for (val s : g.getSensors()) {
+                            if (weightDataHolder.getSlotTable().containsKey(s.getSubGroup())) {
+                                val slot = weightDataHolder.getSlotTable().get(s.getSubGroup());
+                                var data = slot.getData();
+                                if (data == null) {
+                                    data = new MemoryWeightData();
+                                }
+                                slot.setData(data);
+                                val weightInGram = (int) (s.getValues().getNetWeight().doubleValue() * 1000);
+                                data.setWeight(weightInGram);
+                            }
+                        }
+                    }
+                    Thread.sleep(100);
+                } catch (Exception ex) {
+                }
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
@@ -121,6 +156,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
     @Override
     public void beforeStop() {
         if (sensorManager != null) {
+            sensorManager.StopReading();
             sensorManager.close();
         }
     }
