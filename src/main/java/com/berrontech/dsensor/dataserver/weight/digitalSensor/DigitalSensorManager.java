@@ -3,90 +3,41 @@ package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope("singleton")
 @Slf4j
 @Data
 public class DigitalSensorManager {
     private static String TAG = DigitalSensorManager.class.getName();
     public static final String APP_NAME = "DigitalSensorManager";
     public static final String NAME = "DSmanager";
-    public boolean AutoRestoreZeroOffset = true;
-    public boolean PowerUpZero = false;
-    public boolean SaveLogToFile = false;
-    public List<DigitalSensorGroup> Groups;
-    public DigitalSensorGroup CurrentGroup;
-    public DigitalSensorItem CurrentSensor;
-    public DigitalSensorItem FirstSensorOrDefault;
-    public boolean IsOpened = false;
-    public boolean IsNotOpened = true;
-    public boolean IsReading = false;
-    public boolean IsNotReading = true;
-    public boolean CanStartReading = false;
-
-    public boolean isPowerUpZero() {
-        return PowerUpZero;
-    }
-
-    public DigitalSensorManager setPowerUpZero(boolean powerUpZero) {
-        PowerUpZero = powerUpZero;
-        return this;
-    }
-
-    public boolean isSaveLogToFile() {
-        return SaveLogToFile;
-    }
-
-    public DigitalSensorManager setSaveLogToFile(boolean saveLogToFile) {
-        SaveLogToFile = saveLogToFile;
-        return this;
-    }
-
-    public List<DigitalSensorGroup> getGroups() {
-        return Groups;
-    }
-
-    public DigitalSensorManager setGroups(List<DigitalSensorGroup> groups) {
-        Groups = groups;
-        return this;
-    }
-
-    public DigitalSensorGroup getCurrentGroup() {
-        return CurrentGroup;
-    }
-
-    public DigitalSensorManager setCurrentGroup(DigitalSensorGroup currentGroup) {
-        CurrentGroup = currentGroup;
-        return this;
-    }
-
-    public DigitalSensorItem getCurrentSensor() {
-        return CurrentSensor;
-    }
-
-    public DigitalSensorManager setCurrentSensor(DigitalSensorItem currentSensor) {
-        CurrentSensor = currentSensor;
-        return this;
-    }
-
-    public DigitalSensorManager setFirstSensorOrDefault(DigitalSensorItem firstSensorOrDefault) {
-        FirstSensorOrDefault = firstSensorOrDefault;
-        return this;
-    }
+    private boolean AutoRestoreZeroOffset = true;
+    private boolean PowerUpZero = false;
+    private boolean SaveLogToFile = false;
+    private List<DigitalSensorGroup> Groups = new ArrayList<>();
+    private DigitalSensorGroup CurrentGroup;
+    private DigitalSensorItem CurrentSensor;
+    private boolean Opened = false;
+    private boolean Reading = false;
 
     public boolean isNotReading() {
-        return !IsReading;
+        return !Reading;
     }
 
-    public boolean isCanStartReading() {
-        return IsOpened && IsNotReading;
+    public boolean canStartReading() {
+        return Opened && isNotReading();
     }
 
     public boolean isNotOpened() {
-        return !IsOpened;
+        return !Opened;
     }
 
     public DigitalSensorItem getFirstSensorOrDefault() {
@@ -118,8 +69,8 @@ public class DigitalSensorManager {
 //        ToastUtils.showToast(context, context.getString(R.string.saveSuccess), false);
 //    }
 
-    public void Open() {
-        if (IsOpened) {
+    public void open() {
+        if (Opened) {
             return;
         }
         if (Groups.size() > 0) {
@@ -131,11 +82,11 @@ public class DigitalSensorManager {
                 }
             }
         }
-        IsOpened = true;
+        Opened = true;
     }
 
-    public void Close() {
-        if (!IsOpened) {
+    public void close() {
+        if (!Opened) {
             return;
         }
         if (Groups.size() > 0) {
@@ -147,7 +98,7 @@ public class DigitalSensorManager {
                 }
             }
         }
-        IsOpened = false;
+        Opened = false;
     }
 
     public void Init() {
@@ -174,11 +125,11 @@ public class DigitalSensorManager {
         }
     }
 
-    public void StartReading() {
-        if (IsReading) {
+    public void startReading() {
+        if (Reading) {
             return;
         }
-        IsReading = true;
+        Reading = true;
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 try {
@@ -191,10 +142,10 @@ public class DigitalSensorManager {
     }
 
     public void StopReading() {
-        if (!IsReading) {
+        if (!Reading) {
             return;
         }
-        IsReading = false;
+        Reading = false;
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 try {
@@ -207,23 +158,9 @@ public class DigitalSensorManager {
     }
 
     public DigitalSensorGroup NewGroup() {
-        int newid = 1;
-        List<DigitalSensorGroup> groups = Groups;
-        if (Groups.size() > 0) {
-            Collections.sort(Groups, (u1, u2) -> {
-                int diff = u1.getId() - u2.getId();
-                if (diff > 0) {
-                    return 1;
-                } else if (diff < 0) {
-                    return -1;
-                }
-                return 0;
-            });
-            newid = Groups.get(Groups.size() - 1).getId() + 1;
-        }
-        DigitalSensorGroup group = DigitalSensorGroup.NewGroup(newid);
-        groups.add(group);
-        Groups = groups;
+        int newid = Groups.stream().max(Comparator.comparingInt(a -> a.getId())).orElse(new DigitalSensorGroup()).getId() + 1;
+        DigitalSensorGroup group = DigitalSensorGroup.NewGroup(newid, this);
+        Groups.add(group);
         return group;
     }
 

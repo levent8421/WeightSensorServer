@@ -28,14 +28,6 @@ public class MemoryWeightSensor {
      * 状态 禁用
      */
     public static final int STATE_DISABLE = 0x03;
-    /**
-     * 状态 超载
-     */
-    public static final int STATE_OVERLOAD = 0x04;
-    /**
-     * 状态 欠载
-     */
-    public static final int STATE_UNDERLOAD = 0x05;
 
     public static MemoryWeightSensor of(WeightSensor sensor) {
         final MemoryWeightSensor mws = new MemoryWeightSensor();

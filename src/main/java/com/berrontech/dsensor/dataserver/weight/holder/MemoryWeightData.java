@@ -23,6 +23,14 @@ public class MemoryWeightData {
      */
     public static final int WEIGHT_STATE_DYNAMIC = 0x02;
     /**
+     * 称重状态 欠载
+     */
+    public static final int WEIGHT_STATE_UNDERLOAD = 0x03;
+    /**
+     * 称重状态 过载
+     */
+    public static final int WEIGHT_STATE_OVERLOAD = 0x04;
+    /**
      * 误差状态 可信
      */
     public static final int TOLERANCE_STATE_CREDIBLE = 0x01;

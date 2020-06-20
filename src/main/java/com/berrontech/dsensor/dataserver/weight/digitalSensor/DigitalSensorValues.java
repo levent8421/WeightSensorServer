@@ -21,7 +21,7 @@ public class DigitalSensorValues {
 
     public void setGrossWeightStr(String value) {
         try {
-            GrossWeight = new BigDecimal(value);
+            GrossWeight = new BigDecimal(value.trim());
         } catch (Exception ex) {
             GrossWeight = BigDecimal.ZERO;
         }

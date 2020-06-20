@@ -46,7 +46,7 @@ public class TCPConnection extends BasicConnection {
                         byte[] recv = new byte[2014];
                         int read = in.read(recv);
                         if (read > 0) {
-                            getRecvBuffer().push(recv);
+                            getRecvBuffer().push(recv, 0, read);
                             notifyReceived();
                         }
                         Thread.sleep(30);

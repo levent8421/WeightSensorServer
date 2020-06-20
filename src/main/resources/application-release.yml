@@ -8,8 +8,6 @@ server:
 tcp-api:
   ip: 192.168.1.113
   port: 8100
-serial:
-  baudRate: 115200
 logging:
   level:
     com.berrontech.dsensor: debug

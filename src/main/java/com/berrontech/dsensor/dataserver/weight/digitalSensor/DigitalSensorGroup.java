@@ -16,7 +16,7 @@ public class DigitalSensorGroup {
     private static String TAG = DigitalSensorGroup.class.getName();
     private DigitalSensorManager Manager;
     private String Title = "G";
-    private int Id = 1;
+    private int Id = 0;
 
     public String getName() {
         return Title + Id;
@@ -219,10 +219,9 @@ public class DigitalSensorGroup {
         }
     }
 
-    public static DigitalSensorGroup NewGroup(int id) {
+    public static DigitalSensorGroup NewGroup(int id, DigitalSensorManager manager) {
         DigitalSensorGroup group = new DigitalSensorGroup();
         group.setId(id);
-        DigitalSensorManager manager = new DigitalSensorManager();
         group.setManager(manager);
         group.BuildSensors(1);
         return group;
