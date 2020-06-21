@@ -13,8 +13,6 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 @Data
 public class DigitalSensorItem {
-    private static String TAG = DigitalSensorItem.class.getName();
-
     public DigitalSensorDriver Driver;
     public DigitalSensorGroup Group;
 
@@ -158,94 +156,91 @@ public class DigitalSensorItem {
 
     public void SetAddress() throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " SetAddress");
+            log.info("#{} SetAddress", Params.getAddress());
             DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressDefault, (byte) Params.getAddress());
             synchronized (getDriver().getLock()) {
                 packet = getDriver().WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
-            log.debug(TAG, Params.getAddress() + " SetAddress Done");
+            log.info("#{} SetAddress Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
-            log.warn(TAG, ex.toString());
             throw ex;
         }
     }
 
     public void SetELabelAddress() throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " SetELabelAddress");
-            DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressDefault, (byte) (Params.getAddress() + DataPacket.AddressELabelStart));
+            int labelAddr = Params.getAddress() + DataPacket.AddressELabelStart;
+            log.info("#{} SetELabelAddress: {}", Params.getAddress(), labelAddr);
+            DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressDefault, (byte) (labelAddr));
             synchronized (getDriver().getLock()) {
                 packet = Driver.WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
-            log.debug(TAG, Params.getAddress() + " SetAddress Done");
+            log.info("#{} SetAddress Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
-            log.warn(TAG, ex.toString());
             throw ex;
         }
     }
 
     public void ModifyAddress(byte newAddress) throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " ModifyAddress: " + newAddress);
+            log.info("#{} ModifyAddress: {}", Params.getAddress(), newAddress);
             DataPacket packet = DataPacket.BuildSetAddress((byte) Params.getAddress(), newAddress);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
-            log.debug(TAG, Params.getAddress() + " ModifyAddress Done");
+            log.info("#{} ModifyAddress Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
-            log.warn(TAG, ex.toString());
             throw ex;
         }
     }
 
     public void ClearAddress() throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " ClearAddress");
+            log.info("#{} ClearAddress", Params.getAddress());
             DataPacket packet = DataPacket.BuildSetAddress((byte) Params.getAddress(), DataPacket.AddressDefault);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
-            log.debug(TAG, Params.getAddress() + " ClearAddress Done");
+            log.info("#{} ClearAddress Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
-            log.warn(TAG, ex.toString());
             throw ex;
         }
     }
 
     public static void clearAllAddress(DigitalSensorDriver driver) {
         try {
-            log.debug(TAG, DataPacket.AddressBroadcast + " ClearAllAddress");
+            log.info("#{} ClearAllAddress", DataPacket.AddressBroadcast);
             DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressBroadcast, DataPacket.AddressDefault);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
         } catch (Exception ex) {
-            log.warn(TAG, ex.toString());
+            log.warn("clearAllAddress failed", ex);
         }
     }
 
     public static void setAllWorkMode(DigitalSensorDriver driver, int mode) {
         try {
-            log.debug(TAG, DataPacket.AddressBroadcast + " SetAllWorkMode");
+            log.info("#{} SetAllWorkMode: {}", DataPacket.AddressBroadcast, mode);
             DataPacket packet = DataPacket.BuildSetWorkMode(DataPacket.AddressBroadcast, mode);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
         } catch (Exception ex) {
-            log.warn(TAG, ex.toString());
+            log.warn("setAllWorkMode failed", ex);
         }
     }
 
     public static boolean TryReadDeviceSnBroadcast(DigitalSensorDriver driver, Map<String, Object> devInfo, int timeout) throws Exception {
-        log.debug(TAG, DataPacket.AddressConditionalBroadcast + " TryReadDeviceSnBroadcast");
+        log.debug("#{} TryReadDeviceSnBroadcast", DataPacket.AddressConditionalBroadcast);
         int type = DataPacket.EDeviceType.Unknow;
         String sn = null;
         synchronized (driver.getLock()) {
@@ -275,7 +270,7 @@ public class DigitalSensorItem {
 
     public void SetAddressByDeviceSn(int type, String sn) throws Exception {
         try {
-            log.debug(TAG, DataPacket.AddressConditionalBroadcast + " SetAddressByDeviceSn");
+            log.info("#{} SetAddressByDeviceSn", DataPacket.AddressConditionalBroadcast);
             byte newAddress;
             switch (type) {
                 default: {
@@ -292,17 +287,16 @@ public class DigitalSensorItem {
                 packet = Driver.WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
-            log.debug(TAG, DataPacket.AddressConditionalBroadcast + " SetAddressByDeviceSn: " + sn + " -> " + Params.getAddress());
+            log.info("#{} SetAddressByDeviceSn: {} -> {}", DataPacket.AddressConditionalBroadcast, sn, Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
-            log.warn(TAG, ex.toString());
             throw ex;
         }
     }
 
     public void UpdateRawCount() throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " UpdateRawCount");
+            //log.debug("#{} UpdateRawCount", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetRawCount((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
@@ -311,7 +305,7 @@ public class DigitalSensorItem {
             Values.setDynamicRawCount(ByteHelper.bytesToInt(packet.Content, 0, 4));
             Values.setRawCount(ByteHelper.bytesToInt(packet.Content, 4, 4));
             Values.setRamp(Params.calcRamp(Values.getRawCount()));
-            log.debug(TAG, Params.getAddress() + " UpdateRawCount Done");
+            //log.debug("#{} UpdateRawCount Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -320,7 +314,7 @@ public class DigitalSensorItem {
 
     public void UpdateWeight() throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " UpdateWeight");
+            //log.debug("#{} UpdateWeight", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetWeight((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout());
@@ -328,7 +322,7 @@ public class DigitalSensorItem {
             SetCommResult(true);
             Values.setGrossWeightStr(new String(packet.Content, 1, packet.Content.length - 1));
             Values.CheckStatus(packet.Content[0], Params.getCapacity(), Params.getIncrement());
-            log.debug(TAG, Params.getAddress() + " UpdateWeight Done");
+            //log.debug("#{} UpdateWeight Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -337,7 +331,7 @@ public class DigitalSensorItem {
 
     public void UpdateHighResolution(boolean skipUnStable) throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " UpdateHighResolution");
+            //log.debug("#{} UpdateHighResolution", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetHighResolution((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
@@ -367,7 +361,7 @@ public class DigitalSensorItem {
                     Values.CheckStatus(packet.Content[1], Params.getCapacity(), Params.getIncrement());
                 }
             }
-            log.debug(TAG, Params.getAddress() + " UpdateHighResolution Done");
+            //log.debug("#{} UpdateHighResolution Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -376,7 +370,7 @@ public class DigitalSensorItem {
 
     public void UpdateHighResolution2(boolean skipUnStable) throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " UpdateHighResolution2");
+            //log.debug("#{} UpdateHighResolution2", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetHighResolution((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
@@ -414,7 +408,7 @@ public class DigitalSensorItem {
                     UpdateELabel();
                 }
             }
-            log.debug(TAG, Params.getAddress() + " UpdateHighResolution2 Done");
+            //log.debug("#{} UpdateHighResolution2 Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -507,14 +501,14 @@ public class DigitalSensorItem {
 
     public void DoZero(boolean save) throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " DoZero: save=" + save);
+            log.info("#{} DoZero: save={}", Params.getAddress(), save);
             DataPacket packet = DataPacket.BuildDoZero((byte) Params.getAddress(), save);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getDoZeroTimeout());
             }
             SetCommResult(true);
             Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 0, 4));
-            log.debug(TAG, Params.getAddress() + " DoZero Done");
+            log.info("#{} DoZero Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -523,14 +517,14 @@ public class DigitalSensorItem {
 
     public void SetZeroOffset(boolean save, float offset) throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " SetZeroOffset: save=" + save + ", offset=" + offset);
+            log.info("#{} SetZeroOffset: save={}, offset={}", Params.getAddress(), save, offset);
             DataPacket packet = DataPacket.BuildDoZero((byte) Params.getAddress(), save, offset);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getDoZeroTimeout());
             }
             SetCommResult(true);
             Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 0, 4));
-            log.debug(TAG, Params.getAddress() + " SetZeroOffset Done");
+            log.info("#{} SetZeroOffset Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -539,14 +533,13 @@ public class DigitalSensorItem {
 
     public static void doAllZero(DigitalSensorDriver driver, boolean save) {
         try {
-            log.debug(TAG, DataPacket.AddressBroadcast + " DoAllFactoryZero: save=" + save);
+            log.info("#{} DoAllFactoryZero: save={}", DataPacket.AddressBroadcast, save);
             DataPacket packet = DataPacket.BuildDoZero(DataPacket.AddressBroadcast, save);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            log.debug(TAG, e.toString());
+            log.warn("DoAllZero failed", e);
         }
     }
 
@@ -568,6 +561,7 @@ public class DigitalSensorItem {
     }
 
     public void Reference(int count) {
+        log.info("#{} Reference", Params.getAddress());
         try {
             if (count <= 0) {
                 count = 10;
@@ -581,7 +575,7 @@ public class DigitalSensorItem {
             Values.setAPW(total / times / count);
         } catch (Exception ex) {
             // ignore
-            log.debug(TAG, "Reference failed");
+            log.warn("#{} Reference failed", Params.getAddress(), ex);
         }
     }
 
@@ -592,7 +586,7 @@ public class DigitalSensorItem {
 
     public void CalibrateZero() throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " CalibrateZero");
+            log.info("#{} CalibrateZero", Params.getAddress());
             int point = DataPacket.ECalibrationPoint.PointZero;
             float weight = 0;
             DataPacket packet = DataPacket.BuildCalibrate((byte) Params.getAddress(), point, weight);
@@ -609,7 +603,7 @@ public class DigitalSensorItem {
                     throw new Exception("Calibrate zero failed: point=" + point + ", weight=" + weight + ", result=" + result);
                 }
             }
-            log.debug(TAG, Params.getAddress() + " CalibrateZero Done");
+            log.info("#{} CalibrateZero Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -618,7 +612,7 @@ public class DigitalSensorItem {
 
     public void CalibrateSpan(float weight) throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " CalibrateSpan: weight=" + weight);
+            log.info("#{} CalibrateSpan: weight={}", Params.getAddress(), weight);
             int point = DataPacket.ECalibrationPoint.PointSpan;
             DataPacket packet = DataPacket.BuildCalibrate((byte) Params.getAddress(), point, weight);
             synchronized (Driver.getLock()) {
@@ -634,7 +628,7 @@ public class DigitalSensorItem {
                     throw new Exception("Calibrate span failed: point=" + point + ", weight=" + weight + ", result=" + result);
                 }
             }
-            log.debug(TAG, Params.getAddress() + " CalibrateSpan Done");
+            log.info("#{} CalibrateSpan Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -643,7 +637,7 @@ public class DigitalSensorItem {
 
     public DataPacket ReadParam(int param) throws Exception {
         DataPacket packet = DataPacket.BuildReadParam((byte) Params.getAddress(), param);
-        log.debug(TAG, packet.getAddress() + " ReadParam: name=" + param);
+        log.info("#{} ReadParam: name={}", packet.getAddress(), param);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
@@ -664,13 +658,13 @@ public class DigitalSensorItem {
             DataPacket packet = ReadParam(param);
             byte[] value = new byte[packet.getContentLength()];
             System.arraycopy(packet.Content, 1, value, 0, packet.getContentLength());
-            log.debug(TAG, Params.getAddress() + " ReadParamAsBytes: name=" + param + ", counts=" + value.length);
+            log.info("#{} ReadParamAsBytes: name={}, counts={}", Params.getAddress(), param, value.length);
             return value;
         } catch (IOException ex) {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn(TAG, "ReadParamAsBytes", ex);
+            log.warn("#{} ReadParamAsBytes failed", Params.getAddress(), ex);
             return defaultValue;
         }
     }
@@ -680,13 +674,13 @@ public class DigitalSensorItem {
             DataPacket packet = ReadParam(param);
             float str = ByteHelper.bytesToFloat(packet.Content, 1, 4);
             BigDecimal d = BigDecimal.valueOf(str);
-            log.debug(TAG, Params.getAddress() + " ReadParamAsDecimal: name=" + param + ", value=" + d);
+            log.info("#{} ReadParamAsDecimal: name={}, value={}", Params.getAddress(), param, d);
             return d;
         } catch (IOException ex) {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn(TAG, "ReadParamAsDecimal", ex);
+            log.warn("#{} ReadParamAsDecimal failed", Params.getAddress(), ex);
             return defaultValue;
         }
     }
@@ -695,13 +689,13 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = ReadParam(param);
             float value = ByteHelper.bytesToFloat(packet.Content, 1, 4);
-            log.debug(TAG, Params.getAddress() + " ReadParamAsFloat: name=" + param + ", value=" + value);
+            log.info("#{} ReadParamAsFloat: name={}, value={}", Params.getAddress(), param, value);
             return value;
         } catch (IOException ex) {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn(TAG, "ReadParamAsFloat", ex);
+            log.warn("#{} ReadParamAsFloat failed", Params.getAddress(), ex);
             return defaultValue;
         }
     }
@@ -710,14 +704,14 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = ReadParam(param);
             int value = ByteHelper.bytesToInt(packet.Content, 1, 4);
-            log.debug(TAG, Params.getAddress() + " ReadParamAsInt: name=" + param + ", value=" + value);
+            log.info("#{} ReadParamAsInt: name={}, value={}", Params.getAddress(), param, value);
             return value;
         } catch (IOException ex) {
             // port is closed
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn(TAG, "ReadParamAsInt", ex);
+            log.warn("#{} ReadParamAsInt failed", Params.getAddress(), ex);
             return defaultValue;
         }
     }
@@ -726,14 +720,14 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = ReadParam(param);
             String value = new String(packet.Content, 1, packet.getContentLength() - 1, Charset.forName(DataPacket.DefaultCharsetName));
-            log.debug(TAG, Params.getAddress() + " ReadParamAsString: name=" + param + ", value=" + value);
+            log.info("#{} ReadParamAsString: name={}, value={}", Params.getAddress(), param, value);
             return value;
         } catch (IOException ex) {
             // port is closed
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.error(TAG, "ReadParamAsString", ex);
+            log.error("#{} ReadParamAsString failed", Params.getAddress(), ex);
             return defaultValue;
         }
     }
@@ -745,44 +739,43 @@ public class DigitalSensorItem {
             }
             SetCommResult(true);
             int result = (int) packet.Content[0];
-            log.debug(TAG, "WriteParam: result=" + result);
+            log.info("#{} WriteParam: result={}", Params.getAddress(), result);
             return result;
         } catch (IOException ex) {
             // port is closed
             throw ex;
         } catch (Exception ex) {
-            log.warn(TAG, "WriteParam", ex);
             SetCommResult(false);
             throw ex;
         }
     }
 
     public int WriteParam(int param, int value) throws Exception {
-        log.debug(TAG, Params.getAddress() + " WriteParam: name=" + param + ", value=" + value);
+        log.info("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
         DataPacket packet = DataPacket.BuildWriteParam((byte) Params.getAddress(), param, value);
         return WriteParam(packet);
     }
 
     public int WriteParam(int param, BigDecimal value) throws Exception {
-        log.debug(TAG, Params.getAddress() + " WriteParam: name=" + param + ", value=" + value);
+        log.info("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
         DataPacket packet = DataPacket.BuildWriteParam((byte) Params.getAddress(), param, value);
         return WriteParam(packet);
     }
 
     public int WriteParam(int param, float value) throws Exception {
-        log.debug(TAG, Params.getAddress() + " WriteParam: name=" + param + ", value=" + value);
+        log.info("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
         DataPacket packet = DataPacket.BuildWriteParam((byte) Params.getAddress(), param, value);
         return WriteParam(packet);
     }
 
     public int WriteParam(int param, String value, int maxLen) throws Exception {
-        log.debug(TAG, Params.getAddress() + " WriteParam: name=" + param + ", value=" + value);
+        log.debug("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
         DataPacket packet = DataPacket.BuildWriteParam((byte) Params.getAddress(), param, value, maxLen);
         return WriteParam(packet);
     }
 
     public int WriteParam(int param, byte[] value) throws Exception {
-        log.debug(TAG, Params.getAddress() + " WriteParam: name=" + param + ", value=" + value.length);
+        log.debug("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value.length);
         DataPacket packet = DataPacket.BuildWriteParam((byte) Params.getAddress(), param, value);
         return WriteParam(packet);
     }
@@ -837,14 +830,14 @@ public class DigitalSensorItem {
 
     public static void setAllCreepCorrect(DigitalSensorDriver driver, double value) {
         try {
-            log.debug(TAG, DataPacket.AddressBroadcast + " SetAllCreepCorrect: value=" + value);
+            log.info("#{} SetAllCreepCorrect: value={}", DataPacket.AddressBroadcast, value);
             int param = DataPacket.EParam.CreepCorrect;
             DataPacket packet = DataPacket.BuildWriteParam(DataPacket.AddressBroadcast, param, (float) value);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
         } catch (Exception ex) {
-            log.warn(TAG, "SetAllCreepCorrect Error: " + ex);
+            log.warn("#{} SetAllCreepCorrect failed", ex);
         }
     }
 
@@ -874,14 +867,13 @@ public class DigitalSensorItem {
 
     public String GetFirmwareVersion() throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " GetFirmwareVersion");
+            log.info("#{} GetFirmwareVersion", Params.getAddress());
             byte[] value = GetFirmwareVersionBytes();
             String d = value[0] + ":D2." + value[1] + ":D2." + value[2] + ":D2." + value[3] + ":D3";
-            log.debug(TAG, Params.getAddress() + " GetFirmwareVersion: value=" + d);
+            log.info("#{} GetFirmwareVersion: value={}", Params.getAddress(), d);
             return d;
         } catch (Exception ex) {
             SetCommResult(false);
-            log.error(TAG, ex.toString());
             throw ex;
         }
     }
@@ -953,7 +945,7 @@ public class DigitalSensorItem {
             dataLen = data.length;
         }
         DataPacket packet = DataPacket.BuildELabelCmd((byte) address, cmd, page, totalPage, data);
-        log.debug(TAG, packet.getAddress() + "OperateELabel: cmd=" + cmd + ", page=" + page + ", totalPage=" + totalPage + ", dataLen=" + dataLen);
+        log.info("#{} OperateELabel: cmd={}, page={}, totalPage={}, dataLen={}", packet.getAddress(), cmd, page, totalPage, dataLen);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
@@ -972,14 +964,13 @@ public class DigitalSensorItem {
     private int ReadELabelAsInt(byte cmd, byte page, byte totalPage) throws Exception {
         try {
             DataPacket packet = OperateELabel(cmd, page, totalPage, null);
-            log.debug(TAG, Params.getAddress() + " ReadELabelAsInt: cmd=" + cmd + ", counts=" + (packet.getContentLength() - 1));
+            log.info("#{} ReadELabelAsInt: cmd={}, counts={}", Params.getAddress(), cmd, (packet.getContentLength() - 1));
             return ByteHelper.bytesToInt(packet.Content, 3, 4);
         } catch (IOException ex) {
             // port is closed
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn(TAG, "ReadELabelAsInt", ex);
             throw ex;
         }
     }
@@ -992,14 +983,12 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = OperateELabel((byte) DataPacket.EELabelCmdID.WriteStatus, (byte) 0, (byte) 1, ByteHelper.intToBytes(status));
             byte result = packet.Content[0];
-            log.debug(TAG, Params.getAddress() + " WriteELabelStatus: status=" + String.format("%x", status) + ", result=" + result);
+            log.debug("#{} WriteELabelStatus: status={}, result={}", Params.getAddress(), String.format("%x", status), result);
         } catch (IOException ex) {
             // port is closed
             throw ex;
         } catch (Exception ex) {
-            // read error used default
-            log.warn(TAG, "WriteELabelStatus", ex);
-            throw ex;
+            // read error used defaultthrow ex;
         }
     }
 
@@ -1015,7 +1004,7 @@ public class DigitalSensorItem {
             System.arraycopy(bts, 0, content, 5, bts.length);
             DataPacket packet = OperateELabel(cmd, page, totalPage, content);
             byte result = packet.Content[0];
-            log.warn(TAG, Params.getAddress() + " WriteELabelString: str=" + str + ", result=" + result);
+            log.info("#{} WriteELabelString: str={}, result={}", Params.getAddress(), str, result);
             if (result != DataPacket.EResult.OK) {
                 throw new Exception("WriteELabelString Failed");
             }
@@ -1024,34 +1013,33 @@ public class DigitalSensorItem {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn(TAG, "WriteELabelString", ex);
             throw ex;
         }
     }
 
     public void WriteELabelPartNumber(String value) throws Exception {
-        WriteELabelString((byte)DataPacket.EELabelCmdID.WritePartNumber, (byte)0, (byte)1, DataPacket.EELabelColor.White, value);
+        WriteELabelString((byte) DataPacket.EELabelCmdID.WritePartNumber, (byte) 0, (byte) 1, DataPacket.EELabelColor.White, value);
     }
 
     public void WriteELabelPartName(String value) throws Exception {
-        WriteELabelString((byte)DataPacket.EELabelCmdID.WritePartName, (byte)0, (byte)1, DataPacket.EELabelColor.White, value);
+        WriteELabelString((byte) DataPacket.EELabelCmdID.WritePartName, (byte) 0, (byte) 1, DataPacket.EELabelColor.White, value);
     }
 
     public void WriteELabelWeight(String value) throws Exception {
-        WriteELabelString((byte)DataPacket.EELabelCmdID.WriteWeight, (byte)0, (byte)1, DataPacket.EELabelColor.Black, value);
+        WriteELabelString((byte) DataPacket.EELabelCmdID.WriteWeight, (byte) 0, (byte) 1, DataPacket.EELabelColor.Black, value);
     }
 
     public void WriteELabelPCS(String value) throws Exception {
-        WriteELabelString((byte)DataPacket.EELabelCmdID.WritePCS, (byte)0, (byte)1, isCountInAccuracy() ? DataPacket.EELabelColor.Black : DataPacket.EELabelColor.Red, value);
+        WriteELabelString((byte) DataPacket.EELabelCmdID.WritePCS, (byte) 0, (byte) 1, isCountInAccuracy() ? DataPacket.EELabelColor.Black : DataPacket.EELabelColor.Red, value);
     }
 
     public void WriteELabelBinNo(String value) throws Exception {
-        WriteELabelString((byte)DataPacket.EELabelCmdID.WriteBinNo, (byte)0, (byte)1, DataPacket.EELabelColor.Black, value);
+        WriteELabelString((byte) DataPacket.EELabelCmdID.WriteBinNo, (byte) 0, (byte) 1, DataPacket.EELabelColor.Black, value);
     }
 
     public void UpdateParams() throws Exception {
         try {
-            log.debug(TAG, Params.getAddress() + " UpdateParams");
+            log.info("#{} UpdateParams", Params.getAddress());
             synchronized (Driver.getLock()) {
                 Params.setPoint1RawCount(GetPoint1RawCount());
                 Params.setPoint2RawCount(GetPoint2RawCount());
@@ -1069,7 +1057,7 @@ public class DigitalSensorItem {
                 Params.setDeviceModel(GetDeviceModel());
             }
             SetCommResult(true);
-            log.debug(TAG, Params.getAddress() + " UpdateParams Done");
+            log.info("#{} UpdateParams Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
