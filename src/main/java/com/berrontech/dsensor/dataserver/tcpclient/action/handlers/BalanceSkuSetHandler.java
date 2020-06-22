@@ -9,6 +9,10 @@ import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SkuParam;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
+import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.val;
 
 import java.util.List;
@@ -29,9 +33,13 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
 @ActionHandlerMapping("balance.sku.set")
 public class BalanceSkuSetHandler implements ActionHandler {
     private final SlotService slotService;
+    private final WeightController weightController;
+    private final WeightDataHolder weightDataHolder;
 
-    public BalanceSkuSetHandler(SlotService slotService) {
+    public BalanceSkuSetHandler(SlotService slotService, WeightController weightController, WeightDataHolder weightDataHolder) {
         this.slotService = slotService;
+        this.weightController = weightController;
+        this.weightDataHolder = weightDataHolder;
     }
 
     @Override
@@ -47,9 +55,22 @@ public class BalanceSkuSetHandler implements ActionHandler {
             query.setSkuApw(param.getApw());
             query.setSkuTolerance(param.getTolerance());
             slotService.updateSkuInfoBySlotNo(query);
+            notifySkuChanged(param.getSlotNo(), param);
         }
         val res = Payload.ok();
         return MessageUtils.replyMessage(message, res);
+    }
+
+    private void notifySkuChanged(String slotNo, SkuParam param) {
+        final MemorySku sku = new MemorySku();
+        sku.setSkuNo(param.getSkuNo());
+        sku.setName(param.getName());
+        sku.setApw(param.getApw());
+        sku.setTolerance(param.getTolerance());
+        weightController.setSku(slotNo, sku);
+
+        final MemorySlot slot = weightDataHolder.getSlotTable().get(slotNo);
+        slot.setSku(sku);
     }
 
     private void checkParams(List<SkuParam> params) {

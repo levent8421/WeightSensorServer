@@ -9,8 +9,10 @@ import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.DeviceConnectionAddParams;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
 import lombok.val;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,9 +32,11 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
 @ActionHandlerMapping("connection.add")
 public class ConnectionAddHandler implements ActionHandler {
     private final DeviceConnectionService deviceConnectionService;
+    private final WeightController weightController;
 
-    public ConnectionAddHandler(DeviceConnectionService deviceConnectionService) {
+    public ConnectionAddHandler(DeviceConnectionService deviceConnectionService, WeightController weightController) {
         this.deviceConnectionService = deviceConnectionService;
+        this.weightController = weightController;
     }
 
     @Override
@@ -46,9 +50,14 @@ public class ConnectionAddHandler implements ActionHandler {
         connection.setTarget(target);
         connection.setType(type);
         val saved = deviceConnectionService.save(connection);
-
+        notifyConnectionChanged();
         val data = Payload.ok(saved.getId());
         return MessageUtils.replyMessage(message, data);
+    }
+
+    private void notifyConnectionChanged() {
+        final List<DeviceConnection> connections = deviceConnectionService.all();
+        weightController.onConnectionChanged(connections);
     }
 
     private void checkParams(DeviceConnectionAddParams params) {

@@ -1,16 +1,20 @@
 package com.berrontech.dsensor.dataserver.tcpclient.action.handlers;
 
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.tcpclient.action.ActionHandler;
 import com.berrontech.dsensor.dataserver.tcpclient.action.mapping.ActionHandlerMapping;
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -27,9 +31,15 @@ import java.util.Set;
 @ActionHandlerMapping("balance.no.set")
 public class BalanceNoSetHandler implements ActionHandler {
     private final SlotService slotService;
+    private final WeightController weightController;
+    private final WeightDataHolder weightDataHolder;
 
-    public BalanceNoSetHandler(SlotService slotService) {
+    public BalanceNoSetHandler(SlotService slotService,
+                               WeightController weightController,
+                               WeightDataHolder weightDataHolder) {
         this.slotService = slotService;
+        this.weightController = weightController;
+        this.weightDataHolder = weightDataHolder;
     }
 
     @Override
@@ -43,8 +53,27 @@ public class BalanceNoSetHandler implements ActionHandler {
         for (Integer id : idList) {
             val slotNo = data.get(id);
             slotService.updateSlotNo(id, slotNo);
+            notifySlotNoChanged(id, slotNo);
         }
         val res = Payload.ok();
         return MessageUtils.replyMessage(message, res);
+    }
+
+    private void notifySlotNoChanged(int slotId, String slotNo) {
+        val slotTable = weightDataHolder.getSlotTable();
+        String oldSlotNo = null;
+        for (val entry : slotTable.entrySet()) {
+            val slot = entry.getValue();
+            if (Objects.equals(slot.getId(), slotId)) {
+                oldSlotNo = entry.getKey();
+                break;
+            }
+        }
+        if (oldSlotNo == null) {
+            throw new InternalServerErrorException("Could Not Found Slot[" + slotId + "]");
+        }
+        val slot = slotTable.remove(oldSlotNo);
+        slotTable.put(slotNo, slot);
+        weightController.updateSlotNo(slotId, slotNo);
     }
 }

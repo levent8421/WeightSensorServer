@@ -34,11 +34,11 @@ public interface WeightController {
     void setSku(String slotNo, MemorySku sku);
 
     /**
-     * 添加连接
+     * 连接数据变化时调用
      *
-     * @param connection connection
+     * @param connections 连接
      */
-    void addConnection(DeviceConnection connection);
+    void onConnectionChanged(Collection<DeviceConnection> connections);
 
     /**
      * 元数据改变通知
