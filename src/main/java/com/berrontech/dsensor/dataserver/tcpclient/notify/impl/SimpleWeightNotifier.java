@@ -1,8 +1,11 @@
 package com.berrontech.dsensor.dataserver.tcpclient.notify.impl;
 
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
+import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
@@ -52,6 +55,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
      * Action 上报货道列表
      */
     private static final String ACTION_BALANCE_LIST = "notify.balance.list";
+    private String dbVersion;
     /**
      * API客户端引用
      */
@@ -63,13 +67,16 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
     private int dataSendFailureTimes = 0;
     private final WeightSensorService weightSensorService;
     private final SlotService slotService;
+    private final ApplicationConfigService applicationConfigService;
 
     public SimpleWeightNotifier(ApiClient apiClient,
                                 WeightSensorService weightSensorService,
-                                SlotService slotService) {
+                                SlotService slotService,
+                                ApplicationConfigService applicationConfigService) {
         this.apiClient = apiClient;
         this.weightSensorService = weightSensorService;
         this.slotService = slotService;
+        this.applicationConfigService = applicationConfigService;
     }
 
     @Override
@@ -148,13 +155,24 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
                 messageInfo.getMaxRetry());
     }
 
+    private String getDbVersion() {
+        if (this.dbVersion == null) {
+            val config = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
+            if (config == null) {
+                throw new InternalServerErrorException("No DbVersion Set!");
+            }
+            this.dbVersion = config.getValue();
+        }
+        return this.dbVersion;
+    }
+
     @Override
     public void heartbeat() {
         val heartbeat = new Heartbeat();
         heartbeat.setAlive(true);
         heartbeat.setAppName(ApplicationConstants.Context.APP_NAME);
         heartbeat.setAppVersion(ApplicationConstants.Context.APP_VERSION);
-        heartbeat.setDbVersion(ApplicationConstants.Context.APP_VERSION);
+        heartbeat.setDbVersion(getDbVersion());
         val seqNo = MessageUtils.nextSeqNo();
         val message = MessageUtils.requestMessage(seqNo, ApplicationConstants.Actions.HEARTBEAT, heartbeat);
         try {

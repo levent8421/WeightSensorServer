@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.berrontech.dsensor.dataserver.repository.mapper.ApplicationConfigMapper">
+    <sql id="columns">
+        ac.id          as ac_id,
+        ac.name        as ac_name,
+        ac.value       as ac_value,
+        ac.create_time as ac_create_time,
+        ac.update_time as ac_update_time,
+        ac.deleted     as ac_deleted
+    </sql>
+    <sql id="select">
+        select
+        <include refid="columns"/>
+        from t_application_config as ac
+        where ac.deleted = false
+    </sql>
+    <resultMap id="rm_base" type="com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig"
+               extends="com.berrontech.dsensor.dataserver.repository.AbstractMapper.rm_base">
+        <id column="ac_id" property="id"/>
+        <result column="ac_name" property="name"/>
+        <result column="ac_value" property="value"/>
+        <result column="ac_create_time" property="createTime"/>
+        <result column="ac_update_time" property="updateTime"/>
+        <result column="ac_deleted" property="deleted"/>
+    </resultMap>
+</mapper>
