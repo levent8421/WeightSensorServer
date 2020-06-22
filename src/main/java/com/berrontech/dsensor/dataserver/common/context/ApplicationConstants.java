@@ -66,9 +66,9 @@ public class ApplicationConstants {
          */
         public static final int HEARTBEAT_INTERVAL = 2 * 60 * 1000;
         /**
-         * 最大心跳是被次数 心跳失败超过该值将导致API重新连接
+         * 数据最大连续发送失败次数
          */
-        public static final int MAX_HEART_BEAT_FAILURE_TIMES = 3;
+        public static final int MAXIMUM_CONSECUTIVE_SEND_FAILURES = 3;
     }
 
     public static class Context {

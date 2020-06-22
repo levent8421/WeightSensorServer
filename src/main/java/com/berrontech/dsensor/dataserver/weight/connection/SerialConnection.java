@@ -14,7 +14,7 @@ public class SerialConnection extends BasicConnection {
     private final static String TAG = SerialConnection.class.getSimpleName();
 
     private String portName;
-    private int baudrate =115200;
+    private int baudrate = 115200;
     private SerialPort serialPort;
     private OutputStream serialOutput;
     private InputStream serialInput;

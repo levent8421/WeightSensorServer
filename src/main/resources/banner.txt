@@ -5,4 +5,4 @@ ${AnsiColor.BLUE} | |\/| | | |    | |______${AnsiColor.WHITE}| |  | |/ /\ \ | | 
 ${AnsiColor.BLUE} | |  | |_| |_   | |      ${AnsiColor.WHITE}| |__| / ____ \| |/ ____ \ ____) | |____| | \ \  \  /  | |____| | \ \
 ${AnsiColor.BLUE} |_|  |_|_____|  |_|      ${AnsiColor.WHITE}|_____/_/    \_\_/_/    \_\_____/|______|_|  \_\  \/   |______|_|  \_\
 ${AnsiColor.RED}SpringBoot: ${spring-boot.version}
-${AnsiColor.RED}Author: MonolithIoT
+${AnsiColor.RED}Author: MonolithIoT${AnsiColor.WHITE}

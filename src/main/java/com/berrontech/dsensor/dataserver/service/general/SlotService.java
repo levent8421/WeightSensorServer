@@ -3,6 +3,8 @@ package com.berrontech.dsensor.dataserver.service.general;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.service.basic.AbstractService;
 
+import java.util.List;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/17 12:15
@@ -28,4 +30,13 @@ public interface SlotService extends AbstractService<Slot> {
      * @param slotNo slotNO
      */
     void updateSlotNo(Integer id, String slotNo);
+
+    /**
+     * 通过SKU号或SKU名称查找数据
+     *
+     * @param skuNo   SKU号
+     * @param skuName SKU名称
+     * @return 货道列表
+     */
+    List<Slot> searchBySku(String skuNo, String skuName);
 }

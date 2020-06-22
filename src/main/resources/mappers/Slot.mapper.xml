@@ -47,4 +47,11 @@
         set s.slot_no=#{slotNo}
         where id = #{id}
     </update>
+    <select id="selectBySkuLike" resultMap="rm_base">
+        <include refid="select"/>
+        and (
+        s.sku_no like #{skuNo}
+        or s.sku_name like #{skuName}
+        )
+    </select>
 </mapper>

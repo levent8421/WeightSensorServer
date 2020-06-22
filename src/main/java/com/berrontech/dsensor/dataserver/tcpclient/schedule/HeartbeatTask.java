@@ -2,7 +2,7 @@ package com.berrontech.dsensor.dataserver.tcpclient.schedule;
 
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
-import com.berrontech.dsensor.dataserver.tcpclient.util.HeartbeatHelper;
+import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -21,18 +21,18 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class HeartbeatTask {
     private final ApiClient apiClient;
-    private final HeartbeatHelper heartbeatHelper;
+    private final WeightNotifier weightNotifier;
 
-    public HeartbeatTask(ApiClient apiClient, HeartbeatHelper heartbeatHelper) {
+    public HeartbeatTask(ApiClient apiClient, WeightNotifier weightNotifier) {
         this.apiClient = apiClient;
-        this.heartbeatHelper = heartbeatHelper;
+        this.weightNotifier = weightNotifier;
     }
 
     @Scheduled(fixedRate = ApplicationConstants.Message.HEARTBEAT_INTERVAL,
             initialDelay = ApplicationConstants.Message.HEARTBEAT_INTERVAL)
     public void heartbeat() {
         if (apiClient.isConnected()) {
-            heartbeatHelper.sendHeartbeat();
+            weightNotifier.heartbeat();
         }
     }
 }
