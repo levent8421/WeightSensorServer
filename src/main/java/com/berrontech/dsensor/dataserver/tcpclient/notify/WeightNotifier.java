@@ -24,17 +24,17 @@ public interface WeightNotifier {
     /**
      * 物料数量改变后调用
      *
-     * @param slot slot readonly
+     * @param slots 发送哼数据改变的货道列表 readonly
      */
-    void countChange(MemorySlot slot);
+    void countChange(Collection<MemorySlot> slots);
 
     /**
      * 货道状态该表时调用
      *
-     * @param slot  货道 readonly
+     * @param slots 发生状态改变的货道列表 readonly
      * @param state 状态
      */
-    void deviceStateChanged(MemorySlot slot, int state);
+    void deviceStateChanged(Collection<MemorySlot> slots, int state);
 
     /**
      * 通知扫描到的所有重力传感器

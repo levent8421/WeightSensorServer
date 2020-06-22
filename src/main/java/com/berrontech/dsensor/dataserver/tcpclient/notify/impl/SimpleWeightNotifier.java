@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.tcpclient.notify.impl;
 
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
+import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListener;
 import com.berrontech.dsensor.dataserver.tcpclient.client.tcp.MessageInfo;
@@ -10,6 +11,9 @@ import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.Heartbeat;
+import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SkuVo;
+import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SlotVo;
+import com.berrontech.dsensor.dataserver.tcpclient.vo.data.WeightDataVo;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +21,9 @@ import lombok.val;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Create By Levent8421
@@ -32,6 +38,18 @@ import java.util.Objects;
 @Component
 @Slf4j
 public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
+    /**
+     * Action 通知货道数据改变
+     */
+    private static final String ACTION_COUNT_CHANGED = "notify.balance.weight_changed";
+    /**
+     * Action 通知货道状态改变
+     */
+    private static final String ACTION_STATE_CHANGED = "notify.balance.state";
+    /**
+     * Action 上报货道列表
+     */
+    private static final String ACTION_BALANCE_LIST = "notify.balance.list";
     /**
      * API客户端引用
      */
@@ -110,10 +128,10 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
      * @return message string
      */
     private String asMessageString(MessageInfo messageInfo) {
-        val message = messageInfo.getMessage();
-        if (message == null) {
+        if (messageInfo == null || messageInfo.getMessage() == null) {
             return "[Null_Message]";
         }
+        val message = messageInfo.getMessage();
         return String.format("[%s:%s/%s-%d/%d]",
                 message.getType(),
                 message.getSeqNo(),
@@ -139,17 +157,53 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
     }
 
     @Override
-    public void countChange(MemorySlot slot) {
-
+    public void countChange(Collection<MemorySlot> slots) {
+        val dataList = asSlotVo(slots);
+        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_COUNT_CHANGED, dataList);
+        sendMessage(message);
     }
 
     @Override
-    public void deviceStateChanged(MemorySlot slot, int state) {
-
+    public void deviceStateChanged(Collection<MemorySlot> slots, int state) {
+        log.info("Slot State Changed: state=[{}]", state);
+        val dataList = asSlotVo(slots);
+        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_STATE_CHANGED, dataList);
+        sendMessage(message);
     }
 
     @Override
     public void notifySensorList(Collection<MemoryWeightSensor> sensors) {
+        final List<Slot> slots = createOrUpdateSlot(sensors);
+        // TODO 转换slot实体为SlotVo对象 并发送通知消息
+    }
 
+    private List<Slot> createOrUpdateSlot(Collection<MemoryWeightSensor> sensors) {
+        // TODO 当传感器对应的货道存在时 更新货道数据 否则创建新的货道
+        return null;
+    }
+
+    private String nextSeqNo() {
+        return MessageUtils.nextSeqNo();
+    }
+
+    private List<SlotVo> asSlotVo(Collection<MemorySlot> slots) {
+        return slots.stream().map(this::asSlotVo).collect(Collectors.toList());
+    }
+
+    private SlotVo asSlotVo(MemorySlot slot) {
+        val slotVo = SlotVo.of(slot);
+        val weightData = slot.getData();
+        slotVo.setData(WeightDataVo.of(weightData));
+        val sku = slot.getSku();
+        slotVo.setSku(SkuVo.of(sku));
+        return slotVo;
+    }
+
+    private void sendMessage(Message message) {
+        try {
+            apiClient.send(message, ApplicationConstants.Message.MESSAGE_TIMEOUT, this);
+        } catch (MessageException e) {
+            log.error("Error On Send Notify Message:{}", message, e);
+        }
     }
 }
