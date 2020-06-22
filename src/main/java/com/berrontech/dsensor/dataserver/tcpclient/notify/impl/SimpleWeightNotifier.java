@@ -2,6 +2,9 @@ package com.berrontech.dsensor.dataserver.tcpclient.notify.impl;
 
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
+import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.service.general.SlotService;
+import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListener;
 import com.berrontech.dsensor.dataserver.tcpclient.client.tcp.MessageInfo;
@@ -19,10 +22,9 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,9 +61,15 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
      * 当失败次数超过最大次数时认为当前连接已经失效，并主动断开TCP连接，等待系统重新连接
      */
     private int dataSendFailureTimes = 0;
+    private final WeightSensorService weightSensorService;
+    private final SlotService slotService;
 
-    public SimpleWeightNotifier(ApiClient apiClient) {
+    public SimpleWeightNotifier(ApiClient apiClient,
+                                WeightSensorService weightSensorService,
+                                SlotService slotService) {
         this.apiClient = apiClient;
+        this.weightSensorService = weightSensorService;
+        this.slotService = slotService;
     }
 
     @Override
@@ -168,22 +176,53 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
         log.info("Slot State Changed: state=[{}]", state);
         val dataList = asSlotVo(slots);
         val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_STATE_CHANGED, dataList);
+        for (MemorySlot slot : slots) {
+            slotService.updateState(slot.getId(), state);
+        }
         sendMessage(message);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void notifySensorList(Collection<MemoryWeightSensor> sensors) {
         final List<Slot> slots = createOrUpdateSlot(sensors);
-        // TODO 转换slot实体为SlotVo对象 并发送通知消息
+        final List<SlotVo> resList = asSlotVo(slots);
+        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_BALANCE_LIST, resList);
+        sendMessage(message);
+    }
+
+    @Override
+    public void sensorStateChanged(Collection<MemoryWeightSensor> sensors) {
+        final Map<Integer, SlotVo> slotMap = new HashMap<>(16);
+        for (MemoryWeightSensor sensor : sensors) {
+            weightSensorService.updateState(sensor.getId(), sensor.getState());
+            if (!slotMap.containsKey(sensor.getId())) {
+                val slot = slotService.get(sensor.getSlotId());
+                val ms = MemorySlot.of(slot);
+                ms.setState(sensor.getState());
+                val vo = SlotVo.of(ms);
+                slotMap.put(vo.getId(), vo);
+            }
+        }
+        val slots = new ArrayList<>(slotMap.values());
+        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_STATE_CHANGED, slots);
+        sendMessage(message);
     }
 
     private List<Slot> createOrUpdateSlot(Collection<MemoryWeightSensor> sensors) {
-        // TODO 当传感器对应的货道存在时 更新货道数据 否则创建新的货道
-        return null;
+        final List<WeightSensor> weightSensors = weightSensorService.createOrUpdateSensor(sensors);
+        return slotService.createOrUpdateSlotsBySensor(weightSensors, weightSensorService);
     }
 
     private String nextSeqNo() {
         return MessageUtils.nextSeqNo();
+    }
+
+    private List<SlotVo> asSlotVo(List<Slot> slots) {
+        return slots.stream()
+                .map(MemorySlot::of)
+                .map(SlotVo::of)
+                .collect(Collectors.toList());
     }
 
     private List<SlotVo> asSlotVo(Collection<MemorySlot> slots) {

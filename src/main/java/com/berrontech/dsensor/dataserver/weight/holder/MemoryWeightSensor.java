@@ -19,15 +19,15 @@ public class MemoryWeightSensor {
     /**
      * 状态 在线 正常
      */
-    public static final int STATE_ONLINE = 0x01;
+    public static final int STATE_ONLINE = WeightSensor.STATE_ONLINE;
     /**
      * 状态 离线
      */
-    public static final int STATE_OFFLINE = 0x02;
+    public static final int STATE_OFFLINE = WeightSensor.STATE_OFFLINE;
     /**
      * 状态 禁用
      */
-    public static final int STATE_DISABLE = 0x03;
+    public static final int STATE_DISABLE = WeightSensor.STATE_DISABLE;
 
     public static MemoryWeightSensor of(WeightSensor sensor) {
         final MemoryWeightSensor mws = new MemoryWeightSensor();

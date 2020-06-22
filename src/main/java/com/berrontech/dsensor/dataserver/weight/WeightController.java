@@ -3,6 +3,9 @@ package com.berrontech.dsensor.dataserver.weight;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 
+import java.io.IOException;
+import java.util.Collection;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/21 16:43
@@ -16,8 +19,11 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 public interface WeightController {
     /**
      * 开始扫描所有连接下的传感器设备
+     *
+     * @param connections 要扫描的连接
+     * @throws IOException 开始扫描失败时抛出
      */
-    void startScan();
+    void startScan(Collection<DeviceConnection> connections) throws IOException;
 
     /**
      * 更新货道SKU

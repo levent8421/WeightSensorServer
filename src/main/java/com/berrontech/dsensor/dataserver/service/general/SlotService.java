@@ -1,8 +1,10 @@
 package com.berrontech.dsensor.dataserver.service.general;
 
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
+import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.service.basic.AbstractService;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,4 +41,21 @@ public interface SlotService extends AbstractService<Slot> {
      * @return 货道列表
      */
     List<Slot> searchBySku(String skuNo, String skuName);
+
+    /**
+     * 通过扫描到的传感器创建或更新货道数据
+     *
+     * @param sensors             传感器集合
+     * @param weightSensorService 重力传感器相关业务组件
+     * @return 货道列表
+     */
+    List<Slot> createOrUpdateSlotsBySensor(Collection<WeightSensor> sensors, WeightSensorService weightSensorService);
+
+    /**
+     * 更新货道状态
+     *
+     * @param id    id
+     * @param state state
+     */
+    void updateState(Integer id, int state);
 }

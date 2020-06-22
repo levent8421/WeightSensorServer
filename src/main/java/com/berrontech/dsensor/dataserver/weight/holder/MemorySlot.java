@@ -22,6 +22,7 @@ public class MemorySlot {
         ms.setSlotNo(slot.getSlotNo());
         ms.setId(slot.getId());
         ms.setHasElabel(slot.getHasElabel());
+        ms.setState(slot.getState());
 
         final MemorySku sku = new MemorySku();
         sku.setName(slot.getSkuName());
@@ -34,6 +35,7 @@ public class MemorySlot {
 
     private Integer id;
     private String slotNo;
+    private Integer state;
     private Boolean hasElabel;
     private Collection<MemoryWeightSensor> sensors;
     private MemorySku sku;

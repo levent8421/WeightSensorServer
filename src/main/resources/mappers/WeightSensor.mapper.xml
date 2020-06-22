@@ -30,4 +30,9 @@
         <result column="ws_update_time" property="updateTime"/>
         <result column="ws_deleted" property="deleted"/>
     </resultMap>
+    <update id="updateState">
+        update t_weight_sensor as ws
+        set ws.state=#{state}
+        where ws.id = #{id}
+    </update>
 </mapper>

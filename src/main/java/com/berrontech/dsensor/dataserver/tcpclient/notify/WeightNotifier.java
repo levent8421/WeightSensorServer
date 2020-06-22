@@ -24,7 +24,7 @@ public interface WeightNotifier {
     /**
      * 物料数量改变后调用
      *
-     * @param slots 发送哼数据改变的货道列表 readonly
+     * @param slots 发生数据改变的货道 readonly
      */
     void countChange(Collection<MemorySlot> slots);
 
@@ -42,4 +42,11 @@ public interface WeightNotifier {
      * @param sensors 传感器 readonly
      */
     void notifySensorList(Collection<MemoryWeightSensor> sensors);
+
+    /**
+     * 传感器状态发生改变时调用
+     *
+     * @param sensors 发生状态改变的传感器
+     */
+    void sensorStateChanged(Collection<MemoryWeightSensor> sensors);
 }

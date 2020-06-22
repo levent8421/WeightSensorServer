@@ -44,4 +44,13 @@ public interface SlotMapper extends AbstractMapper<Slot> {
      * @return 货道列表
      */
     List<Slot> selectBySkuLike(@Param("skuNo") String skuNo, @Param("skuName") String skuName);
+
+    /**
+     * 更新货道状态
+     *
+     * @param id    id
+     * @param state state
+     * @return rows
+     */
+    int updateState(@Param("id") Integer id, @Param("state") int state);
 }

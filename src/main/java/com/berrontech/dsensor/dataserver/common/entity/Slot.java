@@ -47,4 +47,8 @@ public class Slot extends AbstractEntity {
      * 是否有电子标签
      */
     private Boolean hasElabel;
+    /**
+     * 状态
+     */
+    private Integer state;
 }

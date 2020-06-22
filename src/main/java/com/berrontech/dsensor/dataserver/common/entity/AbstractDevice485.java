@@ -18,6 +18,29 @@ import javax.persistence.Column;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public abstract class AbstractDevice485 extends AbstractEntity {
+    public static final int STATE_ONLINE = 0x01;
+    public static final int STATE_OFFLINE = 0x02;
+    public static final int STATE_DISABLE = 0x03;
+    public static final int STATE_OVERLOAD = 0x04;
+    public static final int STATE_UNDER_LOAD = 0x05;
+
+    public static String getStateString(int state) {
+        switch (state) {
+            case STATE_ONLINE:
+                return "online";
+            case STATE_OFFLINE:
+                return "offline";
+            case STATE_DISABLE:
+                return "disable";
+            case STATE_OVERLOAD:
+                return "overload";
+            case STATE_UNDER_LOAD:
+                return "underload";
+            default:
+                return String.valueOf(state);
+        }
+    }
+
     /**
      * 连接ID
      */

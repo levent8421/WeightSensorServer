@@ -47,6 +47,11 @@
         set s.slot_no=#{slotNo}
         where id = #{id}
     </update>
+    <update id="updateState">
+        update t_slot as s
+        set s.state=#{state}
+        where s.id = #{id}
+    </update>
     <select id="selectBySkuLike" resultMap="rm_base">
         <include refid="select"/>
         and (
