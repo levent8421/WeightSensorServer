@@ -57,4 +57,12 @@ public interface WeightController {
      * @param slotNo 货道号
      */
     void updateSlotNo(Integer slotId, String slotNo);
+
+    /**
+     * 货道状态被改变时调用
+     *
+     * @param slotNo 货道号
+     * @param state  状态 参考 AbstractDevice485.STATE_***
+     */
+    void onSlotStateChanged(String slotNo, int state);
 }
