@@ -43,4 +43,12 @@ public interface WeightController {
      * 停止所有读取操作
      */
     void shutdown();
+
+    /**
+     * 设置逻辑货道号
+     *
+     * @param slotId 货道ID
+     * @param slotNo 货道号
+     */
+    void updateSlotNo(Integer slotId, String slotNo);
 }
