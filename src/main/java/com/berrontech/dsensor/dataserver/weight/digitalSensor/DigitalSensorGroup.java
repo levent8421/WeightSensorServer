@@ -570,7 +570,6 @@ public class DigitalSensorGroup {
                                     // exists
                                     log.info("#{} Found elabel on this device: sn={}", addr, sn);
                                     newp.setELabelModel(DigitalSensorParams.EELabelModel.V3);
-                                    ScanResult.add(newp);
                                 }
                             }
                         }

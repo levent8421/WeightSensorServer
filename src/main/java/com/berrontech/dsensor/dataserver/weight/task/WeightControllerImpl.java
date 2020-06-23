@@ -48,15 +48,21 @@ public class WeightControllerImpl implements WeightController {
             throw new IOException("Scanning is in processing");
         }
 
+        log.debug("Notify scan with full addresses");
         // shutdown connections
+        log.debug("Try shutdown connections");
         weightServiceTask.getSensorManager().shutdown();
 
         // build scanner
         if (scanManager == null) {
+            log.debug("Try build scan manager");
             scanManager = new DigitalSensorManager();
         }
+        log.debug("Try build connection");
         buildDigitalSensors(scanManager, connections);
+        scanManager.open();
         for (val g : scanManager.getGroups()) {
+            log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
             g.startScan();
         }
         createThreadPool().execute(() ->
@@ -70,6 +76,7 @@ public class WeightControllerImpl implements WeightController {
                             break;
                         }
                     }
+                    log.debug("Scan done, try build weight sensors");
                     if (done) {
                         List<MemoryWeightSensor> sensors = new ArrayList<>();
                         // convert to MemoryWeightSensor objects
@@ -82,7 +89,10 @@ public class WeightControllerImpl implements WeightController {
                                 sensors.add(sensor);
                             }
                         }
+                        log.debug("Build done, count={}", sensors.size());
+
                         weightNotifier.notifySensorList(sensors);
+                        break;
                     } else {
                         Thread.sleep(300);
                     }
