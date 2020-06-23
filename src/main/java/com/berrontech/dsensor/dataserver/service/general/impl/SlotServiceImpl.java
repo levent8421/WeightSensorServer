@@ -68,8 +68,6 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     public List<Slot> createOrUpdateSlotsBySensor(Collection<WeightSensor> sensors, WeightSensorService weightSensorService) {
         val existsSlots = all();
         val existsSlotTable = existsSlots.stream().collect(Collectors.toMap(Slot::getId, v -> v));
-        final Map<String, List<WeightSensor>> sensorTable = new HashMap<>(16);
-        final List<Slot> saveSlot = new ArrayList<>();
         final Map<Integer, Slot> returnSlots = new HashMap<>(16);
         for (WeightSensor sensor : sensors) {
             final Slot slot;
@@ -77,7 +75,6 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
                 // 当前传感器未绑定货道 此时应该创建默认货道
                 slot = createDefaultSlot(sensor);
                 weightSensorService.updateById(sensor);
-                saveSlot.add(slot);
             } else {
                 slot = existsSlotTable.get(sensor.getSlotId());
             }
@@ -85,7 +82,6 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
                 returnSlots.put(slot.getId(), slot);
             }
         }
-        save(saveSlot);
         return new ArrayList<>(returnSlots.values());
     }
 

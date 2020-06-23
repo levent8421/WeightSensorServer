@@ -26,6 +26,15 @@ public interface WeightController {
     void startScan(Collection<DeviceConnection> connections) throws IOException;
 
     /**
+     * 扫描指定连接下指定数量的传感器
+     *
+     * @param connection     连接
+     * @param countOfSensors 传感器数量
+     * @throws IOException 开启扫描失败时抛出
+     */
+    void startScan(DeviceConnection connection, int countOfSensors) throws IOException;
+
+    /**
      * 更新货道SKU
      *
      * @param slotNo 货道号

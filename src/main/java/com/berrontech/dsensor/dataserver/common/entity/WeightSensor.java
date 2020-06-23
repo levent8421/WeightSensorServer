@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.common.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.persistence.Column;
 import javax.persistence.Table;
 
 /**
@@ -22,6 +23,7 @@ public class WeightSensor extends AbstractDevice485 {
     /**
      * 货位ID
      */
+    @Column(name = "slot_id", length = 10)
     private Integer slotId;
     /**
      * 管理按的货位对象

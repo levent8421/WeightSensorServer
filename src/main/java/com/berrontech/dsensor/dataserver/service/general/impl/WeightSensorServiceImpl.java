@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.service.general.impl;
 
+import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.repository.mapper.WeightSensorMapper;
@@ -9,7 +10,11 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import lombok.val;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Create By Levent8421
@@ -46,34 +51,35 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
 
     @Override
     public List<WeightSensor> createOrUpdateSensor(Collection<MemoryWeightSensor> sensors) {
-        final Map<Integer, Map<Integer, WeightSensor>> connectionSensorTable = new HashMap<>(16);
         val existsSensors = all();
-        for (WeightSensor sensor : existsSensors) {
-            val sensorTable = connectionSensorTable.computeIfAbsent(sensor.getConnectionId(), key -> new HashMap<>(16));
-            sensorTable.put(sensor.getId(), sensor);
-        }
-        final Map<Integer, WeightSensor> returnSensors = new HashMap<>(16);
-        final List<WeightSensor> saveSensors = new ArrayList<>();
+        final Map<String, WeightSensor> sensorTable = existsSensors.stream()
+                .collect(Collectors.toMap(WeightSensor::getDeviceSn, v -> v));
+        final List<WeightSensor> updatedSensors = new ArrayList<>();
+        final List<WeightSensor> sensorsToSave = new ArrayList<>();
         for (MemoryWeightSensor sensor : sensors) {
-            val connection = sensor.getConnectionId();
-            val address = sensor.getAddress485();
-            final WeightSensor weightSensor;
-            if (!connectionSensorTable.containsKey(connection) || !connectionSensorTable.get(connection).containsKey(address)) {
-                weightSensor = createSensor(sensor);
-                saveSensors.add(weightSensor);
+            if (sensorTable.containsKey(sensor.getDeviceSn())) {
+                // 扫描到的传感器已经在数据库中
+                val existsSensor = sensorTable.get(sensor.getDeviceSn());
+                val res = updateSensorInfo(existsSensor, sensor);
+                updatedSensors.add(res);
             } else {
-                val existsSensor = connectionSensorTable.get(connection).get(address);
-                existsSensor.setConnectionId(connection);
-                existsSensor.setDeviceSn(sensor.getDeviceSn());
-                existsSensor.setState(WeightSensor.getStateString(sensor.getState()));
-                weightSensor = updateById(existsSensor);
-            }
-            if (!returnSensors.containsKey(weightSensor.getId())) {
-                returnSensors.put(weightSensor.getId(), weightSensor);
+                // 新的传感器被扫描到
+                val res = createSensor(sensor);
+                sensorTable.put(res.getDeviceSn(), res);
+                sensorsToSave.add(res);
+                updatedSensors.add(res);
             }
         }
-        save(saveSensors);
-        return new ArrayList<>(returnSensors.values());
+        save(sensorsToSave);
+        return updatedSensors;
+    }
+
+    private WeightSensor updateSensorInfo(WeightSensor base, MemoryWeightSensor update) {
+        base.setDeviceSn(update.getDeviceSn());
+        base.setAddress(update.getAddress485());
+        base.setConnectionId(update.getConnectionId());
+        base.setState(AbstractDevice485.getStateString(update.getState()));
+        return updateById(base);
     }
 
     @Override
@@ -90,6 +96,6 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         weightSensor.setConnectionId(sensor.getConnectionId());
         weightSensor.setAddress(sensor.getAddress485());
         weightSensor.setDeviceSn(sensor.getDeviceSn());
-        return save(weightSensor);
+        return weightSensor;
     }
 }

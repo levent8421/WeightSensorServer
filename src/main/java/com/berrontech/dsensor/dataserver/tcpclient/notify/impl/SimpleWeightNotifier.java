@@ -122,6 +122,11 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
         onMessageSendFailure(messageInfo);
     }
 
+    /**
+     * 统一处理消息发送失败事件， 累计失败次数达到指定值时，认为当前连接失效，将断开TCP连接， 等待系统再次发起连接
+     *
+     * @param messageInfo 发送失败的消息
+     */
     private void onMessageSendFailure(MessageInfo messageInfo) {
         this.dataSendFailureTimes++;
         if (dataSendFailureTimes >= ApplicationConstants.Message.MAXIMUM_CONSECUTIVE_SEND_FAILURES) {
@@ -132,6 +137,11 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
         }
     }
 
+    /**
+     * 当发生以下任意一种情况时将当前失败次数的计数器重置为0，重新开始失败计数
+     * 1. 收到任意一条消息的回应
+     * 2. 失败次数达到指定值，并将TCP连接断开后，应该重新开始计数
+     */
     private void reset() {
         this.dataSendFailureTimes = 0;
     }
@@ -155,6 +165,11 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
                 messageInfo.getMaxRetry());
     }
 
+    /**
+     * 从数据库中查询出当前数据库的版本
+     *
+     * @return 版本
+     */
     private String getDbVersion() {
         if (this.dbVersion == null) {
             val config = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
@@ -175,11 +190,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
         heartbeat.setDbVersion(getDbVersion());
         val seqNo = MessageUtils.nextSeqNo();
         val message = MessageUtils.requestMessage(seqNo, ApplicationConstants.Actions.HEARTBEAT, heartbeat);
-        try {
-            apiClient.send(message, ApplicationConstants.Message.MESSAGE_TIMEOUT, this);
-        } catch (MessageException e) {
-            log.error("Error on send heart beat!", e);
-        }
+        sendMessage(message);
     }
 
     @Override
