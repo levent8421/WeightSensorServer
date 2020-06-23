@@ -157,6 +157,12 @@ public class DigitalSensorManager {
         }
     }
 
+    public void shutdown()
+    {
+        StopReading();
+        close();
+    }
+
     public DigitalSensorGroup NewGroup() {
         int newid = Groups.stream().max(Comparator.comparingInt(a -> a.getId())).orElse(new DigitalSensorGroup()).getId() + 1;
         DigitalSensorGroup group = DigitalSensorGroup.NewGroup(newid, this);

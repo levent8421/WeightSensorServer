@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 
+import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 @Data
 public class DigitalSensorGroup {
-    private static String TAG = DigitalSensorGroup.class.getName();
     private DigitalSensorManager Manager;
     private String Title = "G";
     private int Id = 0;
@@ -29,6 +29,7 @@ public class DigitalSensorGroup {
     }
 
     public List<ECommMode> CommModes = Arrays.asList(ECommMode.None, ECommMode.Com, ECommMode.Net);
+    private int ConnectionId;
     private ECommMode CommMode = ECommMode.Com;
     private String CommSerial;
     private String CommAddress;
@@ -214,8 +215,7 @@ public class DigitalSensorGroup {
             }
             SubGroups = sgs;
         } catch (Exception ex) {
-            ex.printStackTrace();
-            log.warn(TAG, ex.toString());
+            log.warn("BuildSubGroups failed", ex);
         }
     }
 
@@ -249,6 +249,8 @@ public class DigitalSensorGroup {
         }
         Reading = true;
 
+        log.info("Start reading");
+
         createThreadPool().execute(() -> {
             try {
                 int idx = 0;
@@ -265,7 +267,7 @@ public class DigitalSensorGroup {
                     idx++;
                 }
             } catch (Exception ex) {
-                log.warn(TAG, ex.toString());
+                log.warn("Do Reading failed", ex);
             } finally {
                 Reading = false;
             }
@@ -277,6 +279,8 @@ public class DigitalSensorGroup {
             return;
         }
         Reading = true;
+
+        log.info("Start reading2");
 
         createThreadPool().execute(() ->
         {
@@ -292,20 +296,20 @@ public class DigitalSensorGroup {
                             sensor.UpdateHighResolution2(OnlyShowStable);
                         }
                     } catch (TimeoutException ex) {
-                        log.warn(TAG, sensor.getParams().getAddress() + " Packet Lost");
+                        log.warn("#{} Packet Lost", sensor.getParams().getAddress());
                     } catch (IOException ex) {
                         // port closed
-                        log.debug(TAG, "Port is closed");
+                        log.debug("Port is closed");
                         break;
                     } catch (Exception ex) {
                         // unexpected error
-                        log.warn(TAG, "StartReading2", ex);
+                        log.warn("Error in StartReading2 ", ex);
                     }
                     Thread.sleep(CommInterval);
                     idx++;
                 }
             } catch (Exception ex) {
-                log.warn(TAG, ex.toString());
+                log.warn("StartReading2 failed", ex);
             } finally {
                 Reading = false;
             }
@@ -337,10 +341,10 @@ public class DigitalSensorGroup {
         }
         AddressPrograming = true;
 
-        log.debug(TAG, "Start programing addresses");
+        log.info("Start programing addresses");
         createThreadPool().execute(() -> {
             try {
-                log.debug(TAG, "Clear online status");
+                log.debug("Clear online status");
                 for (DigitalSensorItem s : sensors) {
                     s.setAddressMode(DigitalSensorItem.EAddressMode.Waiting);
                 }
@@ -352,17 +356,17 @@ public class DigitalSensorGroup {
                         while (isAddressPrograming() && !done) {
                             s.setAddressMode(DigitalSensorItem.EAddressMode.BindingELabel);
                             try {
-                                log.debug(TAG, "Programing " + s.getParams().getAddress());
+                                log.debug("#{} Programing", s.getParams().getAddress());
                                 if (s.getAddressMode() == DigitalSensorItem.EAddressMode.ProgramingSensor) {
                                     s.SetAddress();
-                                    log.debug(TAG, "Address setted " + s.getParams().getAddress());
+                                    log.debug("#{} Address set", s.getParams().getAddress());
                                     if (s.getParams().hasELabel()) {
                                         s.setAddressMode(DigitalSensorItem.EAddressMode.BindingELabel);
                                     }
                                 }
                                 if (s.getAddressMode() == DigitalSensorItem.EAddressMode.BindingELabel) {
                                     s.SetELabelAddress();
-                                    log.debug(TAG, "Address setted " + s.getParams().getAddress() + DataPacket.AddressELabelStart);
+                                    log.debug("#{} Address set", s.getParams().getAddress() + DataPacket.AddressELabelStart);
                                 }
                                 s.setAddressMode(DigitalSensorItem.EAddressMode.Done);
                                 done = true;
@@ -370,11 +374,11 @@ public class DigitalSensorGroup {
                                 // ignore
                             } catch (IOException ex) {
                                 // closed
-                                log.debug(TAG, "Port is closed");
+                                log.debug("Port is closed");
                                 return;
                             } catch (Exception ex) {
                                 // log unexpected errors
-                                log.warn(TAG, ex.toString());
+                                log.warn("Error in startAddressProgramming", ex);
                             }
                             Thread.sleep(CommInterval);
                         }
@@ -384,7 +388,7 @@ public class DigitalSensorGroup {
                     }
                 }
             } catch (Exception ex) {
-                log.warn(TAG, "addressProgramingTask", ex);
+                log.warn("addressProgramingTask failed", ex);
             } finally {
                 AddressPrograming = false;
                 for (DigitalSensorItem s : Sensors) {
@@ -400,7 +404,7 @@ public class DigitalSensorGroup {
         }
         AddressPrograming = true;
 
-        log.warn(TAG, "Start APM addresses programing");
+        log.info("Start APM addresses programing");
 
         createThreadPool().execute(() ->
         {
@@ -433,7 +437,7 @@ public class DigitalSensorGroup {
                         }
                         while (isAddressPrograming() && !(sensorDone && labelDone)) {
                             try {
-                                log.debug(TAG, "Wait DeviceSn Broadcast at " + s.getParams().getAddress());
+                                log.debug("#{} Wait DeviceSn Broadcast", s.getParams().getAddress());
                                 int type = 0;
                                 String sn = "";
                                 Map<String, Object> map = new HashMap<>();
@@ -451,16 +455,19 @@ public class DigitalSensorGroup {
                                             labelDone = true;
                                             break;
                                         }
+                                        default: {
+                                            break;
+                                        }
                                     }
                                 }
                             } catch (TimeoutException ex) {
                                 // ignore
                             } catch (IOException ex) {
                                 // closed
-                                log.debug(TAG, "Port is closed");
+                                log.debug("Port is closed");
                                 return;
                             } catch (Exception ex) {
-                                log.warn(TAG, ex.toString());
+                                log.warn("Error in APM Programming", ex);
                             }
                             if (s != CurrentSensor) {
                                 break;
@@ -488,7 +495,7 @@ public class DigitalSensorGroup {
                     DigitalSensorItem.setAllWorkMode(Driver, DataPacket.EWorkMode.Normal);
                 }
             } catch (Exception ex) {
-                log.warn(TAG, "addressProgramingTask", ex);
+                log.warn("addressProgramingTask failed", ex);
             } finally {
                 AddressPrograming = false;
                 for (DigitalSensorItem s : Sensors) {
@@ -503,13 +510,88 @@ public class DigitalSensorGroup {
             return;
         }
         AddressPrograming = false;
-        log.debug(TAG, "Stop programing addresses");
+        log.debug("Stop programing addresses");
         try {
             Thread.sleep(1000);
         } catch (Exception ex) {
 
         }
     }
+
+    private List<DigitalSensorParams> ScanResult;
+
+    public void startScan() {
+        startScan(DataPacket.AddressMin, DataPacket.AddressELabelStart - 1);
+    }
+
+    public void startScan(int startAddress, int endAddress) {
+        if (isNotOpened() || isAddressPrograming()) {
+            return;
+        }
+        AddressPrograming = true;
+
+        log.info("Start scan");
+
+        ScanResult = new ArrayList<>();
+        createThreadPool().execute(() ->
+        {
+            try {
+                DigitalSensorItem sensor = DigitalSensorItem.NewDefaultSensor(Driver, this);
+                synchronized (Driver.getLock()) {
+                    for (int addr = startAddress; addr <= endAddress; addr++) {
+                        DigitalSensorParams params = sensor.getParams();
+                        params.setAddress(addr);
+                        params.setDeviceSn(null);
+                        log.debug("#{} Try scan this device", addr);
+                        String sn = sensor.GetDeviceSn(1);
+                        if (TextUtils.isTrimedEmpty(sn)) {
+                            // this address not exists
+                            log.debug("#{} This device not exists", addr);
+                        } else {
+                            // exists
+                            log.info("#{} Found this device: sn={}", addr, sn);
+                            DigitalSensorParams newp = new DigitalSensorParams();
+                            newp.setAddress(addr);
+                            newp.setDeviceSn(sn);
+                            ScanResult.add(newp);
+
+                            // check ELabel
+                            {
+                                params.setAddress(addr + DataPacket.AddressELabelStart);
+                                params.setDeviceSn(null);
+                                log.debug("#{} Try scan elabel on this device", addr);
+                                Thread.sleep(getCommLongInterval());
+                                sn = sensor.GetDeviceSn(1);
+                                if (TextUtils.isTrimedEmpty(sn)) {
+                                    // this device has no elabel
+                                    log.debug("#{} This device has no elabel", addr);
+                                    newp.setELabelModel(DigitalSensorParams.EELabelModel.None);
+                                } else {
+                                    // exists
+                                    log.info("#{} Found elabel on this device: sn={}", addr, sn);
+                                    newp.setELabelModel(DigitalSensorParams.EELabelModel.V3);
+                                    ScanResult.add(newp);
+                                }
+                            }
+                        }
+                        Thread.sleep(getCommInterval());
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Scan failed", ex);
+            } finally {
+                AddressPrograming = false;
+                for (DigitalSensorItem s : Sensors) {
+                    s.setAddressMode(DigitalSensorItem.EAddressMode.Not);
+                }
+            }
+        });
+    }
+
+    public void stopScan() {
+        stopAddressPrograming();
+    }
+
 
     public void ClearAllAddresses() {
         if (isNotOpened()) {

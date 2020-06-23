@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
+import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -636,14 +637,17 @@ public class DigitalSensorItem {
     }
 
     public DataPacket ReadParam(int param) throws Exception {
+        return ReadParam(param, 0);
+    }
+
+    public DataPacket ReadParam(int param, int retries) throws Exception {
         DataPacket packet = DataPacket.BuildReadParam((byte) Params.getAddress(), param);
-        log.info("#{} ReadParam: name={}", packet.getAddress(), param);
+        log.info("#{} ReadParam: name={}, retries={}", packet.getAddress(), param, retries);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
-            Driver.Write(packet);
             do {
-                packet = Driver.Read(packet.getAddress(), DataPacket.ERecvCmd.ReadParam, getReadTimeout());
+                packet = Driver.WriteRead(packet, getReadTimeout(), retries);
                 if (packet.Content[0] == param) {
                     SetCommResult(true);
                     return packet;
@@ -717,6 +721,10 @@ public class DigitalSensorItem {
     }
 
     public String ReadParamAsString(int param, String defaultValue) throws IOException {
+        return ReadParamAsString(param, defaultValue, 0);
+    }
+
+    public String ReadParamAsString(int param, String defaultValue, int retries) throws IOException {
         try {
             DataPacket packet = ReadParam(param);
             String value = new String(packet.Content, 1, packet.getContentLength() - 1, Charset.forName(DataPacket.DefaultCharsetName));
@@ -733,9 +741,13 @@ public class DigitalSensorItem {
     }
 
     private int WriteParam(DataPacket packet) throws Exception {
+        return WriteParam(packet, 0);
+    }
+
+    private int WriteParam(DataPacket packet, int retries) throws Exception {
         try {
             synchronized (Driver.getLock()) {
-                packet = Driver.WriteRead(packet, getWriteParamTimeout());
+                packet = Driver.WriteRead(packet, getWriteParamTimeout(), retries);
             }
             SetCommResult(true);
             int result = (int) packet.Content[0];
@@ -892,7 +904,11 @@ public class DigitalSensorItem {
     }
 
     public String GetDeviceSn() throws Exception {
-        return ReadParamAsString(DataPacket.EParam.DeviceSn, Params.getDeviceSn());
+        return GetDeviceSn(0);
+    }
+
+    public String GetDeviceSn(int retries) throws Exception {
+        return ReadParamAsString(DataPacket.EParam.DeviceSn, Params.getDeviceSn(), retries);
     }
 
     public void SetDeviceModel(String value) throws Exception {
@@ -907,10 +923,6 @@ public class DigitalSensorItem {
 
     public void SetELabelPartNumber(String value) throws Exception {
         WriteELabelPartNumber(value);
-//        if (string.IsNullOrWhiteSpace(value))
-//            WriteELabelDefaultLogo();
-//        else
-//            WriteELabelBarcode(value);
     }
 
     public void SetELabelPartName(String value) throws Exception {
@@ -927,6 +939,10 @@ public class DigitalSensorItem {
 
     public void SetELabelBinNo(String value) throws Exception {
         WriteELabelBinNo(value);
+//        if (TextUtils.isTrimedEmpty(value))
+//            writeELabelDefaultLogo();
+//        else
+//            writeELabelBarcode(value);
     }
 
     public void SetELabelStatus(int value) throws Exception {
