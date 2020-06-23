@@ -647,10 +647,15 @@ public class DigitalSensorItem {
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
             do {
-                packet = Driver.WriteRead(packet, getReadTimeout(), retries);
-                if (packet.Content[0] == param) {
-                    SetCommResult(true);
-                    return packet;
+                try {
+
+                    packet = Driver.WriteRead(packet, getReadTimeout(), retries);
+                    if (packet.Content[0] == param) {
+                        SetCommResult(true);
+                        return packet;
+                    }
+                } catch (TimeoutException ex) {
+                    // ignore
                 }
             } while (System.currentTimeMillis() <= endTime);
         }
@@ -668,7 +673,7 @@ public class DigitalSensorItem {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn("#{} ReadParamAsBytes failed", Params.getAddress(), ex);
+            log.debug("#{} ReadParamAsBytes failed: {}", Params.getAddress(), ex.getMessage());
             return defaultValue;
         }
     }
@@ -684,7 +689,7 @@ public class DigitalSensorItem {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn("#{} ReadParamAsDecimal failed", Params.getAddress(), ex);
+            log.debug("#{} ReadParamAsDecimal failed: {}", Params.getAddress(), ex.getMessage());
             return defaultValue;
         }
     }
@@ -699,7 +704,7 @@ public class DigitalSensorItem {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn("#{} ReadParamAsFloat failed", Params.getAddress(), ex);
+            log.debug("#{} ReadParamAsFloat failed: {}", Params.getAddress(), ex.getMessage());
             return defaultValue;
         }
     }
@@ -715,7 +720,7 @@ public class DigitalSensorItem {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.warn("#{} ReadParamAsInt failed", Params.getAddress(), ex);
+            log.debug("#{} ReadParamAsInt failed: {}", Params.getAddress(), ex.getMessage());
             return defaultValue;
         }
     }
@@ -726,7 +731,7 @@ public class DigitalSensorItem {
 
     public String ReadParamAsString(int param, String defaultValue, int retries) throws IOException {
         try {
-            DataPacket packet = ReadParam(param);
+            DataPacket packet = ReadParam(param, retries);
             String value = new String(packet.Content, 1, packet.getContentLength() - 1, Charset.forName(DataPacket.DefaultCharsetName));
             log.info("#{} ReadParamAsString: name={}, value={}", Params.getAddress(), param, value);
             return value;
@@ -735,7 +740,7 @@ public class DigitalSensorItem {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.error("#{} ReadParamAsString failed", Params.getAddress(), ex);
+            log.debug("#{} ReadParamAsString failed: {}", Params.getAddress(), ex.getMessage());
             return defaultValue;
         }
     }

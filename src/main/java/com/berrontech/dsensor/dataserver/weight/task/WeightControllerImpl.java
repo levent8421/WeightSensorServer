@@ -31,6 +31,7 @@ public class WeightControllerImpl implements WeightController {
 
     DigitalSensorManager scanManager;
     boolean scanning = false;
+    Object scanLock = new Object();
 
 
     public WeightControllerImpl(WeightServiceTaskImpl weightServiceTask,
@@ -44,8 +45,12 @@ public class WeightControllerImpl implements WeightController {
 
     @Override
     public void startScan(Collection<DeviceConnection> connections) throws IOException {
-        if (scanning) {
-            throw new IOException("Scanning is in processing");
+
+        synchronized (scanLock) {
+            if (scanning) {
+                throw new IOException("Scanning is in processing");
+            }
+            scanning = true;
         }
 
         log.debug("Notify scan with full addresses");
@@ -86,6 +91,7 @@ public class WeightControllerImpl implements WeightController {
                                 sensor.setConnectionId(g.getConnectionId());
                                 sensor.setDeviceSn(s.getDeviceSn());
                                 sensor.setAddress485(s.getAddress());
+                                sensor.setState(MemoryWeightSensor.STATE_ONLINE);
                                 sensors.add(sensor);
                             }
                         }
@@ -100,8 +106,10 @@ public class WeightControllerImpl implements WeightController {
             } catch (Exception ex) {
                 log.warn("Scan failed", ex);
             } finally {
-                scanning = false;
                 scanManager.shutdown();
+                synchronized (scanLock) {
+                    scanning = false;
+                }
             }
         });
     }

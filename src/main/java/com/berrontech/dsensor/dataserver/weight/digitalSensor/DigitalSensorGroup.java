@@ -296,10 +296,10 @@ public class DigitalSensorGroup {
                             sensor.UpdateHighResolution2(OnlyShowStable);
                         }
                     } catch (TimeoutException ex) {
-                        log.warn("#{} Packet Lost", sensor.getParams().getAddress());
+                        log.debug("#{} Packet Lost", sensor.getParams().getAddress());
                     } catch (IOException ex) {
                         // port closed
-                        log.debug("Port is closed");
+                        log.info("Port is closed");
                         break;
                     } catch (Exception ex) {
                         // unexpected error
