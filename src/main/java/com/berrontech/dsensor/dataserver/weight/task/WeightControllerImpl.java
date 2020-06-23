@@ -114,6 +114,11 @@ public class WeightControllerImpl implements WeightController {
         });
     }
 
+    @Override
+    public void startScan(DeviceConnection connection, int countOfSensors) throws IOException {
+
+    }
+
 
     public static void buildDigitalSensors(DigitalSensorManager sensorManager, Collection<DeviceConnection> connections) {
         sensorManager.shutdown();
