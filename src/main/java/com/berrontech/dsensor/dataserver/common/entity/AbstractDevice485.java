@@ -64,5 +64,5 @@ public abstract class AbstractDevice485 extends AbstractEntity {
      * 设备状态
      */
     @Column(name = "state", length = 2, nullable = false)
-    private String state;
+    private Integer state;
 }

@@ -1,6 +1,5 @@
 package com.berrontech.dsensor.dataserver.service.general.impl;
 
-import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.repository.mapper.WeightSensorMapper;
@@ -78,7 +77,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         base.setDeviceSn(update.getDeviceSn());
         base.setAddress(update.getAddress485());
         base.setConnectionId(update.getConnectionId());
-        base.setState(AbstractDevice485.getStateString(update.getState()));
+        base.setState(update.getState());
         return updateById(base);
     }
 
@@ -92,7 +91,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
 
     private WeightSensor createSensor(MemoryWeightSensor sensor) {
         val weightSensor = new WeightSensor();
-        weightSensor.setState(WeightSensor.getStateString(sensor.getState()));
+        weightSensor.setState(sensor.getState());
         weightSensor.setConnectionId(sensor.getConnectionId());
         weightSensor.setAddress(sensor.getAddress485());
         weightSensor.setDeviceSn(sensor.getDeviceSn());

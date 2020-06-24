@@ -101,10 +101,10 @@ public class DigitalSensorDriver {
             try {
                 DataPacket ans = Read(packet.getAddress(), packet.ToRecvCmd(), timeout);
                 return ans;
-            } catch (TimeoutException ex) {
+            } catch (TimeoutException e) {
                 // minus retry
                 sendCount++;
-                log.debug("Retry WriteRead({})", sendCount, ex);
+                log.debug("Retry WriteRead({})", sendCount);
             }
         } while (sendCount <= retries);
         throw new TimeoutException("Wait packet out of " + retries + " retries");
