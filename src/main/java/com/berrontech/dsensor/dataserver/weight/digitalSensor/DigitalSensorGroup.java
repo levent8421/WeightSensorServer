@@ -258,12 +258,17 @@ public class DigitalSensorGroup {
                     if (idx >= Sensors.size()) {
                         idx = 0;
                     }
-                    DigitalSensorItem sensor = Sensors.get(idx);
-                    if (sensor != null) {
-                        sensor.UpdateRawCount();
-                        sensor.UpdateHighResolution(OnlyShowStable);
+                    try {
+
+                        DigitalSensorItem sensor = Sensors.get(idx);
+                        if (sensor != null) {
+                            sensor.UpdateRawCount();
+                            sensor.UpdateHighResolution(OnlyShowStable);
+                        }
+                        Thread.sleep(CommInterval);
+                    } catch (TimeoutException ex) {
+                        log.debug(ex.getMessage());
                     }
-                    Thread.sleep(CommInterval);
                     idx++;
                 }
             } catch (Exception ex) {

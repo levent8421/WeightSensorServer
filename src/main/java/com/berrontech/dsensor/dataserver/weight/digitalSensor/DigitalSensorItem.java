@@ -360,6 +360,8 @@ public class DigitalSensorItem {
                     Values.setHighGross(ByteHelper.bytesToFloat(packet.Content, 10, 4));
                     Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 14, 4));
                     Values.CheckStatus(packet.Content[1], Params.getCapacity(), Params.getIncrement());
+
+                    TryNotifyListener();
                 }
             }
             //log.debug("#{} UpdateHighResolution Done", Params.getAddress());
@@ -403,6 +405,7 @@ public class DigitalSensorItem {
                         // apw from passenger will replace local apw
                         Values.setAPW(Passenger.getMaterial().getAPW());
                         setCountInAccuracy(Math.abs(1 - Values.getPieceCountAccuracy()) <= Passenger.getMaterial().getTolerance());
+                        TryNotifyListener();
                     } else {
                         setCountInAccuracy(true);
                     }
@@ -413,6 +416,30 @@ public class DigitalSensorItem {
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
+        }
+    }
+
+
+    DigitalSensorValues.EStatus LatsNotifyState = DigitalSensorValues.EStatus.Unknow;
+    int LastNotifyPCS = -999999;
+    double LastNotifyWeight = -999999;
+
+    private void TryNotifyListener() {
+        if (LatsNotifyState != Values.getStatus())
+        {
+            if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
+                LatsNotifyState = Values.getStatus();
+            }
+        }
+        if (LastNotifyWeight != Values.getNetWeight().doubleValue()) {
+            if (getGroup().getManager().getSensorListener().onWeightChanged(this)) {
+                LastNotifyWeight = Values.getNetWeight().doubleValue();
+            }
+        }
+        if (LastNotifyPCS != Values.getPieceCount()) {
+            if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
+                LastNotifyPCS = Values.getPieceCount();
+            }
         }
     }
 

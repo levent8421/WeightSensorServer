@@ -67,7 +67,8 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         buildDigitalSensors(sensorManager, weightDataHolder);
         sensorManager.setSensorListener(new DigitalSensorListener() {
             @Override
-            public void onSensorStateChanged(DigitalSensorItem sensor) {
+            public boolean onSensorStateChanged(DigitalSensorItem sensor) {
+                log.debug("#{} Notify onSensorStateChanged", sensor.getParams().getAddress());
                 try {
                     WeightSensor s1 = weightDataHolder.getWeightSensors().stream().filter(s -> s.getDeviceSn().equals(sensor.getParams().getDeviceSn())).findFirst().get();
                     if (s1 != null) {
@@ -100,13 +101,17 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         Collection<MemoryWeightSensor> sensors = Collections.singleton(s2);
                         weightNotifier.sensorStateChanged(sensors);
                     }
+                    return true;
                 } catch (Exception ex) {
                     log.warn("notify onSensorStateChanged error: {}", ex.getMessage());
+                    return false;
                 }
             }
 
             @Override
-            public void onPieceCountChanged(DigitalSensorItem sensor) {
+            public boolean onPieceCountChanged(DigitalSensorItem sensor) {
+                log.debug("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
+
                 try {
                     MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
                     slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
@@ -115,19 +120,42 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                     slot.getData().setTolerance(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
                     Collection<MemorySlot> slots = Collections.singleton(slot);
                     weightNotifier.countChange(slots);
+                    return true;
                 } catch (Exception ex) {
                     log.warn("notify onPieceCountChanged error: {}", ex.getMessage());
+                    return false;
                 }
             }
 
             @Override
-            public void onSlotStateChanged(DigitalSensorItem sensor) {
+            public boolean onSlotStateChanged(DigitalSensorItem sensor) {
+                log.debug("#{} Notify onSlotStateChanged", sensor.getParams().getAddress());
+
+                return true;
 //                MemorySlot slot = weightDataHolder.getSlotTable().getOrDefault(sensor.getShortName(), null);
 //                if (slot != null) {
 //                    List<MemoryWeightSensor> sensors = Collections.singleton(slot.get);
 //                    weightNotifier.sensorStateChanged();
 //                }
             }
+
+            @Override
+            public boolean onWeightChanged(DigitalSensorItem sensor) {
+                log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
+
+                try {
+                    MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
+                    if (slot != null) {
+                        slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+                    }
+                    return true;
+                } catch (Exception ex) {
+                    log.warn("notify onPieceCountChanged error: {}", ex.getMessage());
+                    return false;
+                }
+            }
+
+
         });
         sensorManager.open();
         sensorManager.startReading();

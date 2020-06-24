@@ -61,7 +61,10 @@ public class DigitalSensorDriver {
                 }
                 byte len = getConnection().readByte(timeout);
                 byte[] data = getConnection().readBytes(len, timeout);
-                DataPacket packet = DataPacket.ParseData(data);
+                DataPacket packet = null;
+                if (data != null) {
+                    packet = DataPacket.ParseData(data);
+                }
                 //log.debug("<--- #{} {} dataLen={}", packet.getAddress(), (char) packet.getCmd(), packet.getContentLength());
                 return packet;
             }
@@ -73,7 +76,7 @@ public class DigitalSensorDriver {
         long endTime = System.currentTimeMillis() + timeout;
         do {
             DataPacket packet = Read(timeout);
-            if (packet.getAddress() == address && packet.getCmd() == cmd) {
+            if (packet != null && packet.getAddress() == address && packet.getCmd() == cmd) {
                 return packet;
             } else {
                 log.debug("packet error: required addr={} type={}", address, cmd);
@@ -100,7 +103,9 @@ public class DigitalSensorDriver {
             Write(packet);
             try {
                 DataPacket ans = Read(packet.getAddress(), packet.ToRecvCmd(), timeout);
-                return ans;
+                if (ans != null) {
+                    return ans;
+                }
             } catch (TimeoutException e) {
                 // minus retry
                 sendCount++;
