@@ -1,13 +1,22 @@
 package com.berrontech.dsensor.dataserver.weight.connection;
 
 
-import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Create By Levent8421
+ * Create Time: 2020/6/24 14:44
+ * Class Name: DataBuffer
+ * Author: lastnika
+ * Description:
+ * Data Buffer
+ *
+ * @author Levent8421
+ */
+@SuppressWarnings("unused")
 public class DataBuffer {
     private List<Byte> buffer = new ArrayList<>();
     private Lock lock = new ReentrantLock();
@@ -48,8 +57,7 @@ public class DataBuffer {
     public boolean isEmpty() {
         lock.lock();
         try {
-            if (buffer.size() == 0) return true;
-            return false;
+            return buffer.size() == 0;
         } finally {
             lock.unlock();
         }
@@ -64,7 +72,7 @@ public class DataBuffer {
         }
     }
 
-    public void push(byte newBuf[]) {
+    public void push(byte[] newBuf) {
         lock.lock();
         try {
             for (byte b : newBuf) {
@@ -75,7 +83,7 @@ public class DataBuffer {
         }
     }
 
-    public void push(byte newBuf[], int offset, int count) {
+    public void push(byte[] newBuf, int offset, int count) {
         lock.lock();
         try {
             for (int pos = 0; pos < count && offset + pos < newBuf.length; pos++) {
@@ -126,7 +134,7 @@ public class DataBuffer {
             for (int p = 0; p < buf.length; p++) {
                 buf[p] = subList.get(p);
             }
-            //buf = Bytes.toArray(buffer.subList(0, count));
+            /*buf = Bytes.toArray(buffer.subList(0, count));*/
             subList.clear();
         } finally {
             lock.unlock();
@@ -244,5 +252,4 @@ public class DataBuffer {
         }
         return false;
     }
-
 }
