@@ -95,6 +95,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         weightSensor.setConnectionId(sensor.getConnectionId());
         weightSensor.setAddress(sensor.getAddress485());
         weightSensor.setDeviceSn(sensor.getDeviceSn());
+        weightSensor.setZeroReference(WeightSensor.DEFAULT_ZERO_REFERENCE);
         return weightSensor;
     }
 }

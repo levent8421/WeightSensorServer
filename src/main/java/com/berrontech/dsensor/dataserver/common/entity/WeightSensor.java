@@ -21,6 +21,20 @@ import javax.persistence.Table;
 @Table(name = "t_weight_sensor")
 public class WeightSensor extends AbstractDevice485 {
     /**
+     * 默认零点参考
+     */
+    public static final double DEFAULT_ZERO_REFERENCE = 0D;
+    /**
+     * 零点参考
+     */
+    @Column(name = "zero_reference", nullable = false)
+    private Double zeroReference;
+    /**
+     * 配置字符串
+     */
+    @Column(name = "config_str")
+    private String configStr;
+    /**
      * 货位ID
      */
     @Column(name = "slot_id", length = 10)

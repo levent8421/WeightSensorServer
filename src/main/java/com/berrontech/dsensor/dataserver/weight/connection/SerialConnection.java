@@ -10,6 +10,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
+/**
+ * Create By Lastnika
+ * Create Time: 2020/6/24 14:51
+ * Class Name: SerialConnection
+ * Author: Lastnika
+ * Description:
+ * 串口连接
+ *
+ * @author Lastnika
+ */
 public class SerialConnection extends BasicConnection {
     private final static String TAG = SerialConnection.class.getSimpleName();
 
@@ -45,8 +55,8 @@ public class SerialConnection extends BasicConnection {
                                 int cnt = serialInput.available();
                                 if (cnt > 0) {
                                     byte[] buf = new byte[cnt];
-                                    serialInput.read(buf);
-                                    getRecvBuffer().push(buf);
+                                    cnt = serialInput.read(buf);
+                                    getRecvBuffer().push(buf, 0, cnt);
                                     notifyReceived();
                                 }
                                 Thread.sleep(10);
@@ -81,6 +91,7 @@ public class SerialConnection extends BasicConnection {
             serialInput = null;
             threadPool.shutdown();
         } catch (Exception ex) {
+            // Do Nothing
         }
     }
 
