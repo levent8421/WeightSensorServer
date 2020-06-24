@@ -2,13 +2,12 @@ package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorDriver;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorGroup;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
-import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
-import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
+import com.berrontech.dsensor.dataserver.weight.holder.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -16,7 +15,10 @@ import lombok.var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Create By Levent8421
@@ -31,7 +33,7 @@ import java.util.Map;
 @Component
 @Slf4j
 @Data
-public class WeightServiceTaskImpl implements WeightServiceTask {
+public class WeightServiceTaskImpl implements WeightServiceTask, WeightController {
 
     /**
      * 称重数据临时保存于此
@@ -42,8 +44,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
      */
     private final ApiClient apiClient;
 
-    final
-    WeightNotifier weightNotifier;
+    private final WeightNotifier weightNotifier;
     /**
      * Digital Sensor Manager
      */
@@ -64,6 +65,70 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
         //TODO 初始换传感器控制组件
 
         buildDigitalSensors(sensorManager, weightDataHolder);
+        sensorManager.setSensorListener(new DigitalSensorListener() {
+            @Override
+            public void onSensorStateChanged(DigitalSensorItem sensor) {
+                try {
+                    WeightSensor s1 = weightDataHolder.getWeightSensors().stream().filter(s -> s.getDeviceSn().equals(sensor.getParams().getDeviceSn())).findFirst().get();
+                    if (s1 != null) {
+                        MemoryWeightSensor s2 = MemoryWeightSensor.of(s1);
+                        int state = WeightSensor.STATE_ONLINE;
+                        if (!sensor.IsOnline()) {
+                            state = WeightSensor.STATE_OFFLINE;
+                        } else {
+                            switch (sensor.getValues().getStatus()) {
+                                case Dynamic:
+                                case Stable: {
+                                    state = WeightSensor.STATE_ONLINE;
+                                    break;
+                                }
+                                case UnderLoad: {
+                                    state = WeightSensor.STATE_UNDER_LOAD;
+                                    break;
+                                }
+                                case OverLoad: {
+                                    state = WeightSensor.STATE_OVERLOAD;
+                                    break;
+                                }
+                                default: {
+                                    state = MemoryWeightSensor.STATE_OFFLINE;
+                                    break;
+                                }
+                            }
+                        }
+                        s2.setState(state);
+                        Collection<MemoryWeightSensor> sensors = Collections.singleton(s2);
+                        weightNotifier.sensorStateChanged(sensors);
+                    }
+                } catch (Exception ex) {
+                    log.warn("notify onSensorStateChanged error: {}", ex.getMessage());
+                }
+            }
+
+            @Override
+            public void onPieceCountChanged(DigitalSensorItem sensor) {
+                try {
+                    MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
+                    slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+                    slot.getData().setCount(sensor.getValues().getPieceCount());
+                    slot.getData().setTolerance((int) (sensor.getValues().getPieceCountAccuracy() * 100));
+                    slot.getData().setTolerance(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
+                    Collection<MemorySlot> slots = Collections.singleton(slot);
+                    weightNotifier.countChange(slots);
+                } catch (Exception ex) {
+                    log.warn("notify onPieceCountChanged error: {}", ex.getMessage());
+                }
+            }
+
+            @Override
+            public void onSlotStateChanged(DigitalSensorItem sensor) {
+//                MemorySlot slot = weightDataHolder.getSlotTable().getOrDefault(sensor.getShortName(), null);
+//                if (slot != null) {
+//                    List<MemoryWeightSensor> sensors = Collections.singleton(slot.get);
+//                    weightNotifier.sensorStateChanged();
+//                }
+            }
+        });
         sensorManager.open();
         sensorManager.startReading();
     }
@@ -84,7 +149,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
                         break;
                     }
                     case DeviceConnection.TYPE_SERIAL: {
-                        log.debug( "Add group on serial: {}", conn.getTarget());
+                        log.debug("Add group on serial: {}", conn.getTarget());
                         group.setCommMode(DigitalSensorGroup.ECommMode.Com);
                         group.setCommSerial(conn.getTarget());
                         break;
@@ -120,8 +185,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
                         sensor.setSubGroup(slot.getSlotNo());
                     }
                 }
-            } catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 log.error("buildDigitalSensors error: connId={}, target={}", conn.getId(), conn.getTarget(), ex);
             }
         }
@@ -175,4 +239,176 @@ public class WeightServiceTaskImpl implements WeightServiceTask {
     public void afterStop() {
 
     }
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    // WeightControllerImpl
+
+    DigitalSensorManager scanManager;
+    boolean scanning = false;
+    Object scanLock = new Object();
+
+
+    @Override
+    public void startScan(Collection<DeviceConnection> connections) throws IOException {
+
+        synchronized (scanLock) {
+            if (scanning) {
+                throw new IOException("Scanning is in processing");
+            }
+            scanning = true;
+        }
+
+        log.debug("Notify scan with full addresses");
+        // shutdown connections
+        log.debug("Try shutdown connections");
+        sensorManager.shutdown();
+
+        // build scanner
+        if (scanManager == null) {
+            log.debug("Try build scan manager");
+            scanManager = new DigitalSensorManager();
+        }
+        log.debug("Try build connection");
+        buildDigitalSensors(scanManager, connections);
+        scanManager.open();
+        for (val g : scanManager.getGroups()) {
+            log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
+            g.startScan();
+        }
+        createThreadPool().execute(() ->
+        {
+            try {
+                while (scanManager.isOpened()) {
+                    boolean done = true;
+                    for (val g : scanManager.getGroups()) {
+                        if (g.isAddressPrograming()) {
+                            done = false;
+                            break;
+                        }
+                    }
+                    log.debug("Scan done, try build weight sensors");
+                    if (done) {
+                        List<MemoryWeightSensor> sensors = new ArrayList<>();
+                        // convert to MemoryWeightSensor objects
+                        for (val g : scanManager.getGroups()) {
+                            for (val s : g.getScanResult()) {
+                                MemoryWeightSensor sensor = new MemoryWeightSensor();
+                                sensor.setConnectionId(g.getConnectionId());
+                                sensor.setDeviceSn(s.getDeviceSn());
+                                sensor.setAddress485(s.getAddress());
+                                sensor.setState(MemoryWeightSensor.STATE_ONLINE);
+                                sensors.add(sensor);
+                            }
+                        }
+                        log.debug("Build done, count={}", sensors.size());
+
+                        weightNotifier.notifySensorList(sensors);
+                        break;
+                    } else {
+                        Thread.sleep(300);
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Scan failed", ex);
+            } finally {
+                scanManager.shutdown();
+                synchronized (scanLock) {
+                    scanning = false;
+                }
+            }
+        });
+    }
+
+    @Override
+    public void startScan(DeviceConnection connection, int countOfSensors) throws IOException {
+
+    }
+
+
+    public static void buildDigitalSensors(DigitalSensorManager sensorManager, Collection<DeviceConnection> connections) {
+        sensorManager.shutdown();
+        sensorManager.getGroups().clear();
+        for (DeviceConnection conn : connections) {
+            try {
+                DigitalSensorGroup group = sensorManager.NewGroup();
+                switch (conn.getType()) {
+                    default: {
+                        log.info("Unknow connection type: {}", conn.getType());
+                        break;
+                    }
+                    case DeviceConnection.TYPE_SERIAL: {
+                        log.debug("Add group on serial: {}", conn.getTarget());
+                        group.setConnectionId(conn.getId());
+                        group.setCommMode(DigitalSensorGroup.ECommMode.Com);
+                        group.setCommSerial(conn.getTarget());
+                        break;
+                    }
+                    case DeviceConnection.TYPE_NET: {
+                        log.debug("Add group on tcp: {}", conn.getTarget());
+                        String[] parts = conn.getTarget().split(":");
+                        group.setConnectionId(conn.getId());
+                        group.setCommMode(DigitalSensorGroup.ECommMode.Net);
+                        group.setCommAddress(parts[0]);
+                        if (parts.length > 1) {
+                            group.setCommPort(Integer.parseInt(parts[1]));
+                        } else {
+                            final int defaultPort = 10086;
+                            log.info("Use default net port: {}", defaultPort);
+                            group.setCommPort(defaultPort);
+                        }
+                        break;
+                    }
+                }
+                log.debug("Build single default sensor");
+                group.BuildSingleDefaultSensors();
+            } catch (Exception ex) {
+                log.error("buildDigitalSensors error: connId={}, target={}", conn.getId(), conn.getTarget(), ex);
+            }
+        }
+    }
+
+    private ExecutorService ThreadPool = null;
+
+    private ExecutorService createThreadPool() {
+        if (ThreadPool == null) {
+            ThreadPool = ThreadUtils.createThreadPoolExecutorService(2, 2, "WeightControllerThread");
+        }
+        return ThreadPool;
+    }
+
+
+    ///////////////////////////////////////////////////////////////
+
+    @Override
+    public void setSku(String slotNo, MemorySku sku) {
+
+    }
+
+    @Override
+    public void onConnectionChanged(Collection<DeviceConnection> connections) {
+
+    }
+
+    @Override
+    public void onMetaDataChanged() {
+
+    }
+
+    @Override
+    public void shutdown() {
+
+    }
+
+    @Override
+    public void updateSlotNo(Integer slotId, String slotNo) {
+
+    }
+
+    @Override
+    public void onSlotStateChanged(String slotNo, int state) {
+
+    }
+
+
 }

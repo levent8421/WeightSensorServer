@@ -26,6 +26,7 @@ public class DigitalSensorManager {
     private DigitalSensorItem CurrentSensor;
     private boolean Opened = false;
     private boolean Reading = false;
+    private DigitalSensorListener sensorListener;
 
     public boolean isNotReading() {
         return !Reading;
