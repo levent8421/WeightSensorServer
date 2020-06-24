@@ -133,8 +133,8 @@ public class DigitalSensorManager {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 try {
-                    g.startReading();
-                    //g.startReading2();
+                    //g.startReading();
+                    g.startReading2();
                 } catch (Exception ex) {
                     log.error("StartReading", ex);
                 }

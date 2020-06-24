@@ -210,7 +210,19 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         params.setDeviceSn(sen.getDeviceSn());
 
                         var slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().get();
-                        sensor.setSubGroup(slot.getSlotNo());
+                        val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
+                        sensor.setSubGroup(ms.getSlotNo());
+                        val sku = ms.getSku();
+                        if (sku != null) {
+                            sensor.getPassenger().getMaterial().setNumber(sku.getSkuNo());
+                            sensor.getPassenger().getMaterial().setName(sku.getName());
+                            sensor.getPassenger().getMaterial().setAPW(sku.getApw() / 1000.0);
+                            sensor.getPassenger().getMaterial().setTolerancePercent(sku.getTolerance());
+                        }
+                        if (slot.getHasElabel()) {
+                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
+                        }
+
                     }
                 }
             } catch (Exception ex) {

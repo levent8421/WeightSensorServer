@@ -443,11 +443,11 @@ public class DigitalSensorItem {
         }
     }
 
-    private String LastPartNumber;
-    private String LastPartName;
-    private String LastBinNo;
-    private String LastWeight;
-    private String LastPCS;
+    private String LastPartNumber = "";
+    private String LastPartName = "";
+    private String LastBinNo = "";
+    private String LastWeight = "";
+    private String LastPCS = "";
 
     public void UpdateELabel() throws Exception {
         if (!Params.hasELabel()) {

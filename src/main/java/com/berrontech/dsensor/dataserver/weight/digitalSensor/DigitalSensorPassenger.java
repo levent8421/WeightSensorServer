@@ -9,8 +9,7 @@ import lombok.Data;
 @Data
 public class DigitalSensorPassenger {
     public String MaterialUUID;
-    public MaterialInfo Material;
-    public List<MaterialInfo> Materials;
+    public MaterialInfo Material = new MaterialInfo();
     public MaterialManager MaterialMgr = new MaterialManager();
 
     public List<MaterialInfo> getMaterials() {
@@ -45,8 +44,8 @@ public class DigitalSensorPassenger {
     }
 
     public void PickupMaterial() {
-        if (Materials != null) {
-            for (MaterialInfo m : Materials) {
+        if (getMaterials() != null) {
+            for (MaterialInfo m : getMaterials()) {
                 if (m.UUID.equalsIgnoreCase(MaterialUUID)) {
                     Material = m;
                     return;
