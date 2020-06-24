@@ -37,11 +37,15 @@ public class MemoryWeightSensor {
         mws.setState(STATE_OFFLINE);
         mws.setConnectionId(sensor.getConnectionId());
         mws.setSlotId(sensor.getSlotId());
+        mws.setZeroReference(sensor.getZeroReference());
+        mws.setConfigStr(sensor.getConfigStr());
         return mws;
     }
 
     private Integer id;
     private Integer slotId;
+    private Double zeroReference;
+    private String configStr;
     private int address485;
     private Integer connectionId;
     private DeviceConnection connection;

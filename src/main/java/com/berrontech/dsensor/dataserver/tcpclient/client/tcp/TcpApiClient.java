@@ -109,7 +109,8 @@ public class TcpApiClient implements ApiClient, DisposableBean,
             startSendTask();
             onConnectSuccess();
         } catch (IOException e) {
-            log.error("Error On Create TCP Connection[{}:{}]", ip, port, e);
+            log.error("Error On Create TCP Connection[{}:{}], error=[{}:{}]",
+                    ip, port, e.getClass().getSimpleName(), e.getMessage());
             throw new TcpConnectionException("Error On Create TCP Connection!", e);
         }
     }

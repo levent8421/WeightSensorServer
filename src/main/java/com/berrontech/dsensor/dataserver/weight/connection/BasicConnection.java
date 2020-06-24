@@ -1,9 +1,18 @@
 package com.berrontech.dsensor.dataserver.weight.connection;
 
 
-import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
 
+/**
+ * Create By Levent8421
+ * Create Time: 2020/6/24 14:50
+ * Class Name: BasicConnection
+ * Author: lastnika
+ * Description:
+ * IO连接基类
+ *
+ * @author Levent8421
+ */
 public abstract class BasicConnection {
     protected String tag;
     protected boolean paused;

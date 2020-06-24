@@ -7,6 +7,8 @@
         ws.address       as ws_address,
         ws.device_sn     as ws_device_sn,
         ws.state         as ws_state,
+        ws.zero_reference as ws_zero_reference,
+        ws.config_str     as ws_config_str,
         ws.slot_id       as ws_slot_id,
         ws.create_time   as ws_create_time,
         ws.update_time   as ws_update_time,
@@ -25,6 +27,8 @@
         <result column="ws_address" property="address"/>
         <result column="ws_device_sn" property="deviceSn"/>
         <result column="ws_state" property="state"/>
+        <result column="ws_zero_reference" property="zeroReference"/>
+        <result column="ws_config_str" property="configStr"/>
         <result column="ws_slot_id" property="slotId"/>
         <result column="ws_create_time" property="createTime"/>
         <result column="ws_update_time" property="updateTime"/>
