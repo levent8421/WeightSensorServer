@@ -149,6 +149,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 try {
                     MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
                     if (slot != null) {
+                        if (slot.getData() == null) {
+                            slot.setData(new MemoryWeightData());
+                        }
                         slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
                     }
                     return true;
@@ -244,20 +247,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         if (sensorManager != null) {
             if (sensorManager.isOpened()) {
                 try {
-                    for (val g : sensorManager.getGroups()) {
-                        for (val s : g.getSensors()) {
-                            if (weightDataHolder.getSlotTable().containsKey(s.getSubGroup())) {
-                                val slot = weightDataHolder.getSlotTable().get(s.getSubGroup());
-                                var data = slot.getData();
-                                if (data == null) {
-                                    data = new MemoryWeightData();
-                                }
-                                slot.setData(data);
-                                val weightInGram = (int) (s.getValues().getNetWeight().doubleValue() * 1000);
-                                data.setWeight(weightInGram);
-                            }
-                        }
-                    }
+                    // I do not know what todo now
                     Thread.sleep(100);
                 } catch (Exception ex) {
                 }
