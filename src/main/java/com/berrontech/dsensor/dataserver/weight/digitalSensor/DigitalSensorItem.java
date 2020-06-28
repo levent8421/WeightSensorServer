@@ -427,8 +427,7 @@ public class DigitalSensorItem {
     double LastNotifyWeight = -999999;
 
     private void TryNotifyListener() {
-        if (LatsNotifyState != Values.getStatus())
-        {
+        if (LatsNotifyState != Values.getStatus()) {
             if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
                 LatsNotifyState = Values.getStatus();
             }
@@ -456,7 +455,8 @@ public class DigitalSensorItem {
             return;
         }
 
-        int status = GetELabelStatus();
+        int oldStatus = GetELabelStatus();
+        int status = oldStatus;
         if (status == -1) {
             // not online
             return;
@@ -484,7 +484,6 @@ public class DigitalSensorItem {
         } else {
             status &= ~DataPacket.EELabelStatusBits.Highlight;
         }
-        SetELabelStatus(status);
         String number;
         String name;
         String bin;
@@ -502,6 +501,10 @@ public class DigitalSensorItem {
             bin = getShortName();
             wgt = Values.getNetWeight() + " " + Values.getUnit();
             pcs = " ";
+        }
+
+        if (status != oldStatus) {
+            SetELabelStatus(status);
         }
         if (!Objects.equals(LastPartNumber, number)) {
             SetELabelPartNumber(number);
@@ -995,7 +998,7 @@ public class DigitalSensorItem {
             dataLen = data.length;
         }
         DataPacket packet = DataPacket.BuildELabelCmd((byte) address, cmd, page, totalPage, data);
-        //log.info("#{} OperateELabel: cmd={}, page={}, totalPage={}, dataLen={}", packet.getAddress(), cmd, page, totalPage, dataLen);
+        //log.debug("#{} OperateELabel: cmd={}, page={}, totalPage={}, dataLen={}", packet.getAddress(), cmd, page, totalPage, dataLen);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
@@ -1014,7 +1017,7 @@ public class DigitalSensorItem {
     private int ReadELabelAsInt(byte cmd, byte page, byte totalPage) throws Exception {
         try {
             DataPacket packet = OperateELabel(cmd, page, totalPage, null);
-            //log.info("#{} ReadELabelAsInt: cmd={}, counts={}", Params.getAddress(), cmd, (packet.getContentLength() - 1));
+            //log.debug("#{} ReadELabelAsInt: cmd={}, counts={}", Params.getAddress(), cmd, (packet.getContentLength() - 1));
             return ByteHelper.bytesToInt(packet.Content, 3, 4);
         } catch (IOException ex) {
             // port is closed
