@@ -114,6 +114,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
                 try {
                     MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
+                    if (slot == null) {
+                        log.debug("#{} Could not found slot ({})", sensor.getParams().getAddress(), sensor.getShortName());
+                        return false;
+                    }
                     if (slot.getData() == null) {
                         slot.setData(new MemoryWeightData());
                     }

@@ -27,7 +27,8 @@ public class DigitalSensorItem {
     public String Cluster = "";
 
     public String getShortName() {
-        return getSubGroup() + "-" + getSubGroupPosition();
+        //return getSubGroup() + "-" + getSubGroupPosition();
+        return getSubGroup();
     }
 
     public DigitalSensorDriver getDriver() {
