@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
 @Slf4j
@@ -443,11 +444,11 @@ public class DigitalSensorItem {
         }
     }
 
-    private String LastPartNumber = "";
-    private String LastPartName = "";
-    private String LastBinNo = "";
-    private String LastWeight = "";
-    private String LastPCS = "";
+    private String LastPartNumber;
+    private String LastPartName;
+    private String LastBinNo;
+    private String LastWeight;
+    private String LastPCS;
 
     public void UpdateELabel() throws Exception {
         if (!Params.hasELabel()) {
@@ -501,23 +502,23 @@ public class DigitalSensorItem {
             wgt = Values.getNetWeight() + " " + Values.getUnit();
             pcs = " ";
         }
-        if (!LastPartNumber.equals(number)) {
+        if (Objects.equals(LastPartNumber, number)) {
             SetELabelPartNumber(number);
             LastPartNumber = number;
         }
-        if (!LastPartName.equals(name)) {
+        if (Objects.equals(LastPartName, name)) {
             SetELabelPartName(name);
             LastPartName = name;
         }
-        if (!LastBinNo.equals(bin)) {
+        if (Objects.equals(LastBinNo, bin)) {
             SetELabelBinNo(bin);
             LastBinNo = bin;
         }
-        if (!LastWeight.equals(wgt)) {
+        if (Objects.equals(LastWeight, wgt)) {
             SetELabelWeight(wgt);
             LastWeight = wgt;
         }
-        if (!LastPCS.equals(pcs)) {
+        if (Objects.equals(LastPCS, pcs)) {
             SetELabelPieceCount(pcs);
             LastPCS = pcs;
         }

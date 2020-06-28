@@ -117,7 +117,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                     slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
                     slot.getData().setCount(sensor.getValues().getPieceCount());
                     slot.getData().setTolerance((int) (sensor.getValues().getPieceCountAccuracy() * 100));
-                    slot.getData().setTolerance(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
+                    slot.getData().setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
                     Collection<MemorySlot> slots = Collections.singleton(slot);
                     weightNotifier.countChange(slots);
                     return true;
