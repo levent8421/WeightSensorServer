@@ -503,23 +503,23 @@ public class DigitalSensorItem {
             wgt = Values.getNetWeight() + " " + Values.getUnit();
             pcs = " ";
         }
-        if (Objects.equals(LastPartNumber, number)) {
+        if (!Objects.equals(LastPartNumber, number)) {
             SetELabelPartNumber(number);
             LastPartNumber = number;
         }
-        if (Objects.equals(LastPartName, name)) {
+        if (!Objects.equals(LastPartName, name)) {
             SetELabelPartName(name);
             LastPartName = name;
         }
-        if (Objects.equals(LastBinNo, bin)) {
+        if (!Objects.equals(LastBinNo, bin)) {
             SetELabelBinNo(bin);
             LastBinNo = bin;
         }
-        if (Objects.equals(LastWeight, wgt)) {
+        if (!Objects.equals(LastWeight, wgt)) {
             SetELabelWeight(wgt);
             LastWeight = wgt;
         }
-        if (Objects.equals(LastPCS, pcs)) {
+        if (!Objects.equals(LastPCS, pcs)) {
             SetELabelPieceCount(pcs);
             LastPCS = pcs;
         }
@@ -995,7 +995,7 @@ public class DigitalSensorItem {
             dataLen = data.length;
         }
         DataPacket packet = DataPacket.BuildELabelCmd((byte) address, cmd, page, totalPage, data);
-        log.info("#{} OperateELabel: cmd={}, page={}, totalPage={}, dataLen={}", packet.getAddress(), cmd, page, totalPage, dataLen);
+        //log.info("#{} OperateELabel: cmd={}, page={}, totalPage={}, dataLen={}", packet.getAddress(), cmd, page, totalPage, dataLen);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
@@ -1014,7 +1014,7 @@ public class DigitalSensorItem {
     private int ReadELabelAsInt(byte cmd, byte page, byte totalPage) throws Exception {
         try {
             DataPacket packet = OperateELabel(cmd, page, totalPage, null);
-            log.info("#{} ReadELabelAsInt: cmd={}, counts={}", Params.getAddress(), cmd, (packet.getContentLength() - 1));
+            //log.info("#{} ReadELabelAsInt: cmd={}, counts={}", Params.getAddress(), cmd, (packet.getContentLength() - 1));
             return ByteHelper.bytesToInt(packet.Content, 3, 4);
         } catch (IOException ex) {
             // port is closed
@@ -1033,7 +1033,7 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = OperateELabel((byte) DataPacket.EELabelCmdID.WriteStatus, (byte) 0, (byte) 1, ByteHelper.intToBytes(status));
             byte result = packet.Content[0];
-            log.debug("#{} WriteELabelStatus: status={}, result={}", Params.getAddress(), String.format("%x", status), result);
+            //log.debug("#{} WriteELabelStatus: status={}, result={}", Params.getAddress(), String.format("%x", status), result);
         } catch (IOException ex) {
             // port is closed
             throw ex;
