@@ -114,6 +114,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
                 try {
                     MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
+                    if (slot.getData() == null) {
+                        slot.setData(new MemoryWeightData());
+                    }
                     slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
                     slot.getData().setCount(sensor.getValues().getPieceCount());
                     slot.getData().setTolerance((int) (sensor.getValues().getPieceCountAccuracy() * 100));
