@@ -131,6 +131,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         }
                         slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
                         slot.getData().setWeightState(toState(sensor));
+                        slot.setState(toState(sensor));
                     }
                     return true;
                 } catch (Exception ex) {
