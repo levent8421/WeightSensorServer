@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.Table;
+import java.util.List;
 
 /**
  * Create By Levent8421
@@ -51,4 +52,8 @@ public class Slot extends AbstractEntity {
      * 状态
      */
     private Integer state;
+    /**
+     * 传感器列表
+     */
+    private List<WeightSensor> sensors;
 }

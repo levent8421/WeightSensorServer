@@ -98,4 +98,11 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         weightSensor.setZeroReference(WeightSensor.DEFAULT_ZERO_REFERENCE);
         return weightSensor;
     }
+
+    @Override
+    public List<WeightSensor> findBySlot(Integer slotId) {
+        val query = new WeightSensor();
+        query.setSlotId(slotId);
+        return findByQuery(query);
+    }
 }

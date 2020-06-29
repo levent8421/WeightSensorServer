@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.tcpclient.vo.data;
 
+import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
@@ -22,6 +23,7 @@ public class SlotVo {
         vo.setId(slot.getId());
         vo.setNo(slot.getSlotNo());
         vo.setHasElabel(slot.getHasElabel());
+        vo.setState(AbstractDevice485.getStateString(slot.getState()));
         return vo;
     }
 
@@ -33,6 +35,7 @@ public class SlotVo {
         vo.setData(dataVo);
         return vo;
     }
+
 
     private Integer id;
     private String no;

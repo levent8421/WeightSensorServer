@@ -448,7 +448,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void doZeroAll() {
-        // TODO  全部清零
         if (sensorManager.isOpened()) {
             sensorManager.DoAllZero(true);
             log.info("Do all zero");
@@ -457,7 +456,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void doZero(String slotNo) {
-        // TODO 清零指定货道
         val sensor = sensorManager.FirstOrNull(slotNo);
         if (sensor == null)
             log.info("Can not found slot ({})", slotNo);

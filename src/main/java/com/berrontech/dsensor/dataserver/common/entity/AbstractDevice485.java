@@ -24,7 +24,10 @@ public abstract class AbstractDevice485 extends AbstractEntity {
     public static final int STATE_OVERLOAD = 0x04;
     public static final int STATE_UNDER_LOAD = 0x05;
 
-    public static String getStateString(int state) {
+    public static String getStateString(Integer state) {
+        if (state == null) {
+            return "null_state";
+        }
         switch (state) {
             case STATE_ONLINE:
                 return "online";

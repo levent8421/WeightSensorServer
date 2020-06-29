@@ -48,4 +48,12 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @param state state
      */
     void updateState(Integer id, int state);
+
+    /**
+     * Find Sensor By Slot Id
+     *
+     * @param slotId slotId
+     * @return Sensors
+     */
+    List<WeightSensor> findBySlot(Integer slotId);
 }
