@@ -56,4 +56,20 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @return Sensors
      */
     List<WeightSensor> findBySlot(Integer slotId);
+
+    /**
+     * 设置零点参考值
+     *
+     * @param id            id
+     * @param zeroReference 零点
+     */
+    void setZeroReference(Integer id, Double zeroReference);
+
+    /**
+     * 设置配置字符串
+     *
+     * @param id        id
+     * @param configStr configuration string
+     */
+    void setConfigStr(Integer id, String configStr);
 }

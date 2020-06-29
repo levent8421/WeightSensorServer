@@ -25,4 +25,22 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return rows
      */
     int updateState(@Param("id") Integer id, @Param("state") int state);
+
+    /**
+     * 更新传感器零点
+     *
+     * @param id            sensor id
+     * @param zeroReference zero
+     * @return rows
+     */
+    int updateZeroReference(@Param("id") Integer id, @Param("zeroReference") Double zeroReference);
+
+    /**
+     * 设置配置字符串
+     *
+     * @param id        sensor id
+     * @param configStr configuration string
+     * @return rows
+     */
+    int updateConfigStr(@Param("id") Integer id, @Param("configStr") String configStr);
 }

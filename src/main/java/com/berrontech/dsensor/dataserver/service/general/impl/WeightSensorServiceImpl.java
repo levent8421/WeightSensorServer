@@ -105,4 +105,28 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         query.setSlotId(slotId);
         return findByQuery(query);
     }
+
+    @Override
+    public void setZeroReference(Integer id, Double zeroReference) {
+        final int rows = weightSensorMapper.updateZeroReference(id, zeroReference);
+        if (rows != 1) {
+            throw new InternalServerErrorException("Error On Update ZeroReference["
+                    + zeroReference
+                    + "] for id ["
+                    + id
+                    + "]!");
+        }
+    }
+
+    @Override
+    public void setConfigStr(Integer id, String configStr) {
+        final int rows = weightSensorMapper.updateConfigStr(id, configStr);
+        if (rows != 1) {
+            throw new InternalServerErrorException("Error On Update ConfigStr["
+                    + configStr
+                    + "] for id ["
+                    + id
+                    + "]!");
+        }
+    }
 }

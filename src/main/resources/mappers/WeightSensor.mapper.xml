@@ -39,4 +39,14 @@
         set ws.state=#{state}
         where ws.id = #{id}
     </update>
+    <update id="updateZeroReference">
+        update t_weight_sensor as ws
+        set ws.zero_reference=#{zeroReference}
+        where ws.id = #{id}
+    </update>
+    <update id="updateConfigStr">
+        update t_weight_sensor as ws
+        set config_str=#{configStr}
+        where ws.id = #{id}
+    </update>
 </mapper>
