@@ -39,6 +39,7 @@ public class MemoryWeightSensor {
         mws.setSlotId(sensor.getSlotId());
         mws.setZeroReference(sensor.getZeroReference());
         mws.setConfigStr(sensor.getConfigStr());
+        mws.setHasElable(sensor.getHasElable());
         return mws;
     }
 
@@ -52,4 +53,5 @@ public class MemoryWeightSensor {
     private String deviceSn;
     private int state;
     private MemoryWeightData weightData;
+    private Boolean hasElable;
 }

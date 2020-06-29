@@ -10,6 +10,7 @@
         ws.zero_reference as ws_zero_reference,
         ws.config_str     as ws_config_str,
         ws.slot_id       as ws_slot_id,
+        ws.has_elable as ws_has_elable ,
         ws.create_time   as ws_create_time,
         ws.update_time   as ws_update_time,
         ws.deleted       as ws_deleted
@@ -30,6 +31,7 @@
         <result column="ws_zero_reference" property="zeroReference"/>
         <result column="ws_config_str" property="configStr"/>
         <result column="ws_slot_id" property="slotId"/>
+        <result column="ws_has_elable" property="hasElable"/>
         <result column="ws_create_time" property="createTime"/>
         <result column="ws_update_time" property="updateTime"/>
         <result column="ws_deleted" property="deleted"/>
@@ -48,5 +50,10 @@
         update t_weight_sensor as ws
         set config_str=#{configStr}
         where ws.id = #{id}
+    </update>
+    <update id="updateHasElableBySlotId">
+        update t_weight_sensor as ws
+        set ws.has_elable=#{hasElable}
+        where ws.slot_id = #{slotId}
     </update>
 </mapper>

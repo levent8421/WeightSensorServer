@@ -53,4 +53,13 @@ public interface SlotMapper extends AbstractMapper<Slot> {
      * @return rows
      */
     int updateState(@Param("id") Integer id, @Param("state") int state);
+
+    /**
+     * 设置货道是否存在电子标签
+     *
+     * @param id        id
+     * @param hasElabel 是否存在电子标签
+     * @return rows
+     */
+    int updateHasELable(@Param("id") Integer id, @Param("hasElable") Boolean hasElabel);
 }

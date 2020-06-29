@@ -43,4 +43,9 @@ public class WeightSensor extends AbstractDevice485 {
      * 管理按的货位对象
      */
     private Slot slot;
+    /**
+     * 是否有电子标签
+     */
+    @Column(name = "has_elable", nullable = false, length = 1)
+    private Boolean hasElable;
 }

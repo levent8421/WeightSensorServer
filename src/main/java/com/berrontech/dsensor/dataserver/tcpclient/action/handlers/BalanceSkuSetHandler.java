@@ -54,6 +54,7 @@ public class BalanceSkuSetHandler implements ActionHandler {
             query.setSkuName(param.getName());
             query.setSkuApw(param.getApw());
             query.setSkuTolerance(param.getTolerance());
+            query.setSkuShelfLifeOpenDays(param.getSkuShelfLifeOpenDays());
             slotService.updateSkuInfoBySlotNo(query);
             notifySkuChanged(param.getSlotNo(), param);
         }

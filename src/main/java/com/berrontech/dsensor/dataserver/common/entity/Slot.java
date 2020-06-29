@@ -45,6 +45,10 @@ public class Slot extends AbstractEntity {
      */
     private Integer skuTolerance;
     /**
+     * 开封后保存天数
+     */
+    private Integer skuShelfLifeOpenDays;
+    /**
      * 是否有电子标签
      */
     private Boolean hasElabel;

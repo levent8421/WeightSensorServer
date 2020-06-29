@@ -43,4 +43,13 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return rows
      */
     int updateConfigStr(@Param("id") Integer id, @Param("configStr") String configStr);
+
+    /**
+     * 批量更新某个货道传感器的电子标签状态
+     *
+     * @param slotId    slot ID
+     * @param hasElable has ELable
+     * @return rows
+     */
+    int updateHasElableBySlotId(@Param("slotId") Integer slotId, @Param("hasElable") Boolean hasElable);
 }

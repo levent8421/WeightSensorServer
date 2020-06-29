@@ -96,11 +96,23 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     private Slot createDefaultSlot(WeightSensor sensor) {
         val slot = new Slot();
         slot.setAddress(sensor.getAddress());
-        slot.setSlotNo(sensor.getDeviceSn());
+        slot.setSlotNo(defaultSlotNo(sensor));
         slot.setHasElabel(false);
         slot.setState(WeightSensor.STATE_ONLINE);
         save(slot);
         sensor.setSlotId(slot.getId());
         return slot;
+    }
+
+    private String defaultSlotNo(WeightSensor sensor) {
+        return String.format("#-%d-%d", sensor.getConnectionId(), sensor.getAddress());
+    }
+
+    @Override
+    public void setElabelState(Integer id, Boolean hasElabel) {
+        final int rows = slotMapper.updateHasELable(id, hasElabel);
+        if (rows != 1) {
+            throw new InternalServerErrorException("Error On Update ELabel State! rows=" + rows);
+        }
     }
 }

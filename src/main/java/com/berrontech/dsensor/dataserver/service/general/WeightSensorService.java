@@ -72,4 +72,12 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @param configStr configuration string
      */
     void setConfigStr(Integer id, String configStr);
+
+    /**
+     * 批量设置某个货道传感器的电子标签状态
+     *
+     * @param slotId    slot id
+     * @param hasElable has E-Label
+     */
+    void setElabelStateBySlotId(Integer slotId, Boolean hasElable);
 }

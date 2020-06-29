@@ -25,12 +25,13 @@ public class SkuVo {
         vo.setSkuNo(sku.getSkuNo());
         vo.setApw(sku.getApw());
         vo.setTolerance(sku.getTolerance());
+        vo.setShelfLifeOpenDays(sku.getShelfLifeOpenDays());
         return vo;
     }
 
     private String name;
     private String skuNo;
     private Integer apw;
-
     private Integer tolerance;
+    private Integer shelfLifeOpenDays;
 }

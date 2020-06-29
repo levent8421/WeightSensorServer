@@ -29,6 +29,7 @@ public class MemorySlot {
         sku.setSkuNo(slot.getSkuNo());
         sku.setApw(slot.getSkuApw());
         sku.setTolerance(slot.getSkuTolerance());
+        sku.setShelfLifeOpenDays(slot.getSkuShelfLifeOpenDays());
         ms.setSku(sku);
         return ms;
     }

@@ -51,10 +51,11 @@ public class BalanceDataGetHandler implements ActionHandler {
         val slotList = new ArrayList<MemorySlot>();
         val slotTable = weightDataHolder.getSlotTable();
         for (String slotNo : slotNoList) {
-            if (!slotTable.containsKey(slotNo)) {
-                throw new BadRequestException("Invalidate SlotNo[" + slotNo + "]!");
+            if (slotTable.containsKey(slotNo)) {
+                slotList.add(slotTable.get(slotNo));
+            } else {
+                log.warn("Can not find Slot by slotNo [{}]!", slotNo);
             }
-            slotList.add(slotTable.get(slotNo));
         }
         return slotList;
     }

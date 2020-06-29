@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.service.general.impl;
 
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.repository.mapper.WeightSensorMapper;
 import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
@@ -96,6 +97,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         weightSensor.setAddress(sensor.getAddress485());
         weightSensor.setDeviceSn(sensor.getDeviceSn());
         weightSensor.setZeroReference(WeightSensor.DEFAULT_ZERO_REFERENCE);
+        weightSensor.setHasElable(false);
         return weightSensor;
     }
 
@@ -127,6 +129,14 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
                     + "] for id ["
                     + id
                     + "]!");
+        }
+    }
+
+    @Override
+    public void setElabelStateBySlotId(Integer slotId, Boolean hasElable) {
+        final int rows = weightSensorMapper.updateHasElableBySlotId(slotId, hasElable);
+        if (rows <= 0) {
+            throw new BadRequestException("No Rows updated," + rows);
         }
     }
 }

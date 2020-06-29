@@ -9,6 +9,7 @@
         s.sku_name      as s_sku_name,
         s.sku_apw       as s_sku_apw,
         s.sku_tolerance as s_sku_tolerance,
+        s.sku_shelf_life_open_days as s_sku_shelf_life_open_days,
         s.has_elabel    as s_has_elabel,
         s.create_time   as s_create_time,
         s.update_time   as s_update_time,
@@ -29,6 +30,7 @@
         <result column="s_sku_name" property="skuName"/>
         <result column="s_sku_apw" property="skuApw"/>
         <result column="s_sku_tolerance" property="skuTolerance"/>
+        <result column="s_sku_shelf_life_open_days" property="skuShelfLifeOpenDays"/>
         <result column="s_has_elabel" property="hasElabel"/>
         <result column="s_create_time" property="createTime"/>
         <result column="s_update_time" property="updateTime"/>
@@ -59,4 +61,9 @@
         or s.sku_name like #{skuName}
         )
     </select>
+    <update id="updateHasELable">
+        update t_slot as s
+        set s.has_elabel=#{hasElable}
+        where s.id = #{id}
+    </update>
 </mapper>

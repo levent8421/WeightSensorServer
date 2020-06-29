@@ -58,4 +58,12 @@ public interface SlotService extends AbstractService<Slot> {
      * @param state state
      */
     void updateState(Integer id, int state);
+
+    /**
+     * 设置货道是否有电子标签
+     *
+     * @param id        id
+     * @param hasElabel 电子标签
+     */
+    void setElabelState(Integer id, Boolean hasElabel);
 }

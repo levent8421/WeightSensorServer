@@ -18,4 +18,5 @@ public class MemorySku {
     private String skuNo;
     private Integer apw;
     private Integer tolerance;
+    private Integer shelfLifeOpenDays;
 }

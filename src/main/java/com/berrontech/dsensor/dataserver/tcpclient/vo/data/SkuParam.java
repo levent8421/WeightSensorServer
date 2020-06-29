@@ -19,4 +19,5 @@ public class SkuParam {
     private Integer apw;
     private String skuNo;
     private Integer tolerance;
+    private Integer skuShelfLifeOpenDays;
 }
