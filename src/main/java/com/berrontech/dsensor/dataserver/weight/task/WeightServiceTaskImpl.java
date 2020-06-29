@@ -76,31 +76,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                             .orElse(null);
                     if (s1 != null) {
                         MemoryWeightSensor s2 = MemoryWeightSensor.of(s1);
-                        int state;
-                        if (!sensor.IsOnline()) {
-                            state = WeightSensor.STATE_OFFLINE;
-                        } else {
-                            switch (sensor.getValues().getStatus()) {
-                                case Dynamic:
-                                case Stable: {
-                                    state = WeightSensor.STATE_ONLINE;
-                                    break;
-                                }
-                                case UnderLoad: {
-                                    state = WeightSensor.STATE_UNDER_LOAD;
-                                    break;
-                                }
-                                case OverLoad: {
-                                    state = WeightSensor.STATE_OVERLOAD;
-                                    break;
-                                }
-                                default: {
-                                    state = MemoryWeightSensor.STATE_OFFLINE;
-                                    break;
-                                }
-                            }
-                        }
-                        s2.setState(state);
+                        s2.setState(toState(sensor));
                         Collection<MemoryWeightSensor> sensors = Collections.singleton(s2);
                         weightNotifier.sensorStateChanged(sensors);
                     }
@@ -154,6 +130,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                             slot.setData(new MemoryWeightData());
                         }
                         slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+                        slot.getData().setWeightState(toState(sensor));
                     }
                     return true;
                 } catch (Exception ex) {
@@ -164,6 +141,34 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         });
         sensorManager.open();
         sensorManager.startReading();
+    }
+
+    private int toState(DigitalSensorItem sensor) {
+        int state;
+        if (!sensor.IsOnline()) {
+            state = WeightSensor.STATE_OFFLINE;
+        } else {
+            switch (sensor.getValues().getStatus()) {
+                case Dynamic:
+                case Stable: {
+                    state = WeightSensor.STATE_ONLINE;
+                    break;
+                }
+                case UnderLoad: {
+                    state = WeightSensor.STATE_UNDER_LOAD;
+                    break;
+                }
+                case OverLoad: {
+                    state = WeightSensor.STATE_OVERLOAD;
+                    break;
+                }
+                default: {
+                    state = MemoryWeightSensor.STATE_OFFLINE;
+                    break;
+                }
+            }
+        }
+        return state;
     }
 
     public static void buildDigitalSensors(DigitalSensorManager sensorManager, WeightDataHolder weightDataHolder) {
@@ -444,10 +449,24 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public void doZeroAll() {
         // TODO  全部清零
+        if (sensorManager.isOpened()) {
+            sensorManager.DoAllZero(true);
+            log.info("Do all zero");
+        }
     }
 
     @Override
     public void doZero(String slotNo) {
         // TODO 清零指定货道
+        val sensor = sensorManager.FirstOrNull(slotNo);
+        if (sensor == null)
+            log.info("Can not found slot ({})", slotNo);
+        else {
+            try {
+                sensor.DoZero(true);
+            } catch (Exception ex) {
+                log.warn("#{} Do zero failed", sensor.getParams().getAddress(), ex.getMessage());
+            }
+        }
     }
 }

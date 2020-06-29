@@ -1,10 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -158,8 +155,7 @@ public class DigitalSensorManager {
         }
     }
 
-    public void shutdown()
-    {
+    public void shutdown() {
         StopReading();
         close();
     }
@@ -201,6 +197,20 @@ public class DigitalSensorManager {
                 g.SetAllCreepCorrect(value);
             }
         }
+    }
+
+    public DigitalSensorItem FirstOrNull(String slotNo) {
+        boolean found = false;
+        if (Groups.size() > 0) {
+            for (DigitalSensorGroup g : Groups) {
+                for (DigitalSensorItem s : g.getSensors()) {
+                    if (Objects.equals(s.getShortName(), slotNo)) {
+                        return s;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public boolean HighlightMaterial(String barcode) {
