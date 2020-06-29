@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Create By Levent8421
@@ -27,7 +28,9 @@ import java.util.List;
  */
 @Slf4j
 public class MessageUtils {
-    private static final String SEQ_NO_FORMAT = "yyyyMMddHHmmssSSS";
+    private static final String SEQ_NO_FORMAT = "yyMMddHHmmssSSS";
+    private static final int MAX_SEQ_SUFFIX = 999;
+    private static final AtomicInteger NEXT_SEQ_SUFFIX = new AtomicInteger();
 
     public static Message requestMessage(String seqNo, String action, Object payload) {
         return asMessage(Message.TYPE_REQUEST, seqNo, action, payload);
@@ -47,7 +50,9 @@ public class MessageUtils {
     }
 
     public static String nextSeqNo() {
-        return DateTimeUtils.format(DateTimeUtils.now(), SEQ_NO_FORMAT);
+        val timestamp = DateTimeUtils.format(DateTimeUtils.now(), SEQ_NO_FORMAT);
+        val suffix = nextSeqSuffix();
+        return timestamp + suffix;
     }
 
     public static Message replyMessage(Message message, Payload<?> payload) {
@@ -114,5 +119,16 @@ public class MessageUtils {
             return new ArrayList<>(Arrays.asList(arr));
         }
         throw new MessageException("Unable to convert [" + o.getClass() + "] to [List<" + type + "]");
+    }
+
+    private static int nextSeqSuffix() {
+        synchronized (NEXT_SEQ_SUFFIX) {
+            int i = NEXT_SEQ_SUFFIX.incrementAndGet();
+            if (i > MAX_SEQ_SUFFIX) {
+                NEXT_SEQ_SUFFIX.set(0);
+                return 0;
+            }
+            return i;
+        }
     }
 }

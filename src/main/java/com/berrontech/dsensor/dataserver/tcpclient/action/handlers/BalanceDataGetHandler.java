@@ -7,9 +7,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.action.mapping.ActionHandlerM
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
-import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SkuVo;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SlotVo;
-import com.berrontech.dsensor.dataserver.tcpclient.vo.data.WeightDataVo;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -65,11 +63,6 @@ public class BalanceDataGetHandler implements ActionHandler {
         if (slot == null) {
             return null;
         }
-        val slotVo = SlotVo.of(slot);
-        val sku = SkuVo.of(slot.getSku());
-        slotVo.setSku(sku);
-        val data = WeightDataVo.of(slot.getData());
-        slotVo.setData(data);
-        return slotVo;
+        return SlotVo.of(slot, slot.getSku(), slot.getData());
     }
 }

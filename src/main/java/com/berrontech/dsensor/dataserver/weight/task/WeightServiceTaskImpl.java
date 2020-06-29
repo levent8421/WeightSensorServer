@@ -12,12 +12,14 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import lombok.var;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -62,18 +64,19 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void setup() {
-        //TODO 初始换传感器控制组件
-
         buildDigitalSensors(sensorManager, weightDataHolder);
         sensorManager.setSensorListener(new DigitalSensorListener() {
             @Override
             public boolean onSensorStateChanged(DigitalSensorItem sensor) {
                 log.debug("#{} Notify onSensorStateChanged", sensor.getParams().getAddress());
                 try {
-                    WeightSensor s1 = weightDataHolder.getWeightSensors().stream().filter(s -> s.getDeviceSn().equals(sensor.getParams().getDeviceSn())).findFirst().get();
+                    WeightSensor s1 = weightDataHolder.getWeightSensors().stream()
+                            .filter(s -> s.getDeviceSn().equals(sensor.getParams().getDeviceSn()))
+                            .findFirst()
+                            .orElse(null);
                     if (s1 != null) {
                         MemoryWeightSensor s2 = MemoryWeightSensor.of(s1);
-                        int state = WeightSensor.STATE_ONLINE;
+                        int state;
                         if (!sensor.IsOnline()) {
                             state = WeightSensor.STATE_OFFLINE;
                         } else {
@@ -113,7 +116,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 log.debug("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
 
                 try {
-                    MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
+                    final MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
                     if (slot == null) {
                         log.debug("#{} Could not found slot ({})", sensor.getParams().getAddress(), sensor.getShortName());
                         return false;
@@ -121,11 +124,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                     if (slot.getData() == null) {
                         slot.setData(new MemoryWeightData());
                     }
-                    slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
-                    slot.getData().setCount(sensor.getValues().getPieceCount());
-                    slot.getData().setTolerance((int) (sensor.getValues().getPieceCountAccuracy() * 100));
-                    slot.getData().setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
-                    Collection<MemorySlot> slots = Collections.singleton(slot);
+                    val slotData = slot.getData();
+                    slotData.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+                    slotData.setCount(sensor.getValues().getPieceCount());
+                    slotData.setTolerance((int) (sensor.getValues().getPieceCountAccuracy() * 100));
+                    slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
+                    final Collection<MemorySlot> slots = Collections.singleton(slot);
                     weightNotifier.countChange(slots);
                     return true;
                 } catch (Exception ex) {
@@ -137,19 +141,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             @Override
             public boolean onSlotStateChanged(DigitalSensorItem sensor) {
                 log.debug("#{} Notify onSlotStateChanged", sensor.getParams().getAddress());
-
                 return true;
-//                MemorySlot slot = weightDataHolder.getSlotTable().getOrDefault(sensor.getShortName(), null);
-//                if (slot != null) {
-//                    List<MemoryWeightSensor> sensors = Collections.singleton(slot.get);
-//                    weightNotifier.sensorStateChanged();
-//                }
             }
 
             @Override
             public boolean onWeightChanged(DigitalSensorItem sensor) {
                 log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
-
                 try {
                     MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
                     if (slot != null) {
@@ -164,8 +161,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                     return false;
                 }
             }
-
-
         });
         sensorManager.open();
         sensorManager.startReading();
@@ -254,6 +249,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                     // I do not know what todo now
                     Thread.sleep(100);
                 } catch (Exception ex) {
+                    // Do nothing
                 }
                 return true;
             } else {
@@ -283,12 +279,11 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     DigitalSensorManager scanManager;
     boolean scanning = false;
-    Object scanLock = new Object();
+    final Object scanLock = new Object();
 
 
     @Override
     public void startScan(Collection<DeviceConnection> connections) throws IOException {
-
         synchronized (scanLock) {
             if (scanning) {
                 throw new IOException("Scanning is in processing");
@@ -361,7 +356,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public void startScan(DeviceConnection connection, int countOfSensors) throws IOException {
 
     }
-
 
     public static void buildDigitalSensors(DigitalSensorManager sensorManager, Collection<DeviceConnection> connections) {
         sensorManager.shutdown();
@@ -447,5 +441,13 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     }
 
+    @Override
+    public void doZeroAll() {
+        // TODO  全部清零
+    }
 
+    @Override
+    public void doZero(String slotNo) {
+        // TODO 清零指定货道
+    }
 }

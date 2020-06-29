@@ -96,7 +96,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
     public void onReply(MessageInfo messageInfo, Message reply) {
         final Payload replyPayload;
         try {
-            replyPayload = MessageUtils.asObject(reply, Payload.class);
+            replyPayload = MessageUtils.asObject(reply.getData(), Payload.class);
         } catch (MessageException e) {
             log.warn("Error On Convert Reply Payload", e);
             onMessageSendFailure(messageInfo);

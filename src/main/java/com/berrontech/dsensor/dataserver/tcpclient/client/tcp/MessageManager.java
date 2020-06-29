@@ -76,7 +76,7 @@ public class MessageManager {
     public void reply(Message reply) {
         val seqNo = reply.getSeqNo();
         if (messageTable.containsKey(seqNo)) {
-            val message = messageTable.get(seqNo);
+            val message = messageTable.remove(seqNo);
             callReply(message, reply);
         } else {
             log.warn("Resolve A Invalidate Reply:[{}]", reply);

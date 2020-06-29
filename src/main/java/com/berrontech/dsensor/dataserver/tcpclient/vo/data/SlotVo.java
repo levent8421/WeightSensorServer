@@ -1,6 +1,8 @@
 package com.berrontech.dsensor.dataserver.tcpclient.vo.data;
 
+import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
 import lombok.Data;
 
 /**
@@ -20,6 +22,15 @@ public class SlotVo {
         vo.setId(slot.getId());
         vo.setNo(slot.getSlotNo());
         vo.setHasElabel(slot.getHasElabel());
+        return vo;
+    }
+
+    public static SlotVo of(MemorySlot slot, MemorySku sku, MemoryWeightData data) {
+        final SlotVo vo = of(slot);
+        final SkuVo skuVo = SkuVo.of(sku);
+        final WeightDataVo dataVo = WeightDataVo.of(data);
+        vo.setSku(skuVo);
+        vo.setData(dataVo);
         return vo;
     }
 

@@ -74,4 +74,16 @@ public interface WeightController {
      * @param state  状态 参考 AbstractDevice485.STATE_***
      */
     void onSlotStateChanged(String slotNo, int state);
+
+    /**
+     * 全部清零
+     */
+    void doZeroAll();
+
+    /**
+     * 清零指定货道
+     *
+     * @param slotNo 货道号
+     */
+    void doZero(String slotNo);
 }
