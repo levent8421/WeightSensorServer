@@ -18,7 +18,9 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @SuppressWarnings("unused")
 public class DataBuffer {
-    private List<Byte> buffer = new ArrayList<>();
+    private final int bufferMaxSize = 32 * 1024;
+    private Byte[] buffer = new Byte[bufferMaxSize];
+    private int bufferOffset = 0;
     private Lock lock = new ReentrantLock();
     private int workingCounter = 0;
     private int readInterval = 50;
@@ -55,39 +57,30 @@ public class DataBuffer {
     }
 
     public boolean isEmpty() {
-        lock.lock();
-        try {
-            return buffer.size() == 0;
-        } finally {
-            lock.unlock();
-        }
+        return getLength() == 0;
     }
 
     public int getLength() {
         lock.lock();
         try {
-            return buffer.size();
+            return bufferOffset;
         } finally {
             lock.unlock();
         }
     }
 
     public void push(byte[] newBuf) {
-        lock.lock();
-        try {
-            for (byte b : newBuf) {
-                buffer.add(b);
-            }
-        } finally {
-            lock.unlock();
-        }
+        push(newBuf, 0, newBuf.length);
     }
 
     public void push(byte[] newBuf, int offset, int count) {
         lock.lock();
         try {
-            for (int pos = 0; pos < count && offset + pos < newBuf.length; pos++) {
-                buffer.add(newBuf[pos + offset]);
+            if (count + bufferOffset > buffer.length) {
+                count = buffer.length - bufferOffset;
+            }
+            if (count > 0) {
+                System.arraycopy(newBuf, offset, buffer, bufferOffset, count);
             }
         } finally {
             lock.unlock();
@@ -97,21 +90,27 @@ public class DataBuffer {
     public void clear() {
         lock.lock();
         try {
-            buffer.clear();
+            bufferOffset = 0;
         } finally {
             lock.unlock();
         }
     }
 
     public void delete(int offset, int count) {
+        if (offset >= getLength()) {
+            return;
+        }
+
         lock.lock();
         try {
-            if (offset >= buffer.size()) {
-                return;
+            if (offset + count > getLength()) {
+                count = getLength() - offset;
             }
-            count = (offset + count <= buffer.size()) ? count : buffer.size() - offset;
-            while (count-- > 0) {
-                buffer.remove(offset);
+            int len = getLength() - offset - count;
+            if (len > 0) {
+                System.arraycopy(buffer, offset + count, buffer, offset, len);
+            } else {
+                bufferOffset = offset;
             }
         } finally {
             lock.unlock();
@@ -129,13 +128,9 @@ public class DataBuffer {
 
         lock.lock();
         try {
-            List<Byte> subList = buffer.subList(0, count);
             buf = new byte[count];
-            for (int p = 0; p < buf.length; p++) {
-                buf[p] = subList.get(p);
-            }
-            /*buf = Bytes.toArray(buffer.subList(0, count));*/
-            subList.clear();
+            System.arraycopy(buffer, 0, buf, 0, count);
+            delete(0, count);
         } finally {
             lock.unlock();
         }
@@ -146,11 +141,11 @@ public class DataBuffer {
     public int lookup(byte[] bts) {
         lock.lock();
         try {
-            int end = buffer.size() - bts.length;
+            int end = getLength() - bts.length;
             boolean matched = false;
             for (int pos = 0; pos <= end; pos++) {
                 for (int cmp = 0; cmp < bts.length; cmp++) {
-                    matched = (buffer.get(pos + cmp) == bts[cmp]);
+                    matched = (buffer[pos + cmp]== bts[cmp]);
                     if (!matched) {
                         break;
                     }
@@ -203,7 +198,7 @@ public class DataBuffer {
     public byte[] readExisting() {
         lock.lock();
         try {
-            return pop(buffer.size());
+            return pop(getLength());
         } finally {
             lock.unlock();
         }
@@ -212,7 +207,7 @@ public class DataBuffer {
     public byte[] readBytes(int count) {
         lock.lock();
         try {
-            if (buffer.size() < count) {
+            if (getLength() < count) {
                 return null;
             }
             return pop(count);

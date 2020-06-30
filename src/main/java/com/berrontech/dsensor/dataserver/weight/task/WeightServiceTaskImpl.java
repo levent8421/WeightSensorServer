@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
+import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
@@ -12,6 +13,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import lombok.var;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -52,14 +54,18 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
      */
     private final DigitalSensorManager sensorManager;
 
+    private final WeightSensorService sensorService;
+
     public WeightServiceTaskImpl(WeightDataHolder weightDataHolder,
                                  ApiClient apiClient,
                                  WeightNotifier weightNotifier,
-                                 DigitalSensorManager sensorManager) {
+                                 DigitalSensorManager sensorManager,
+                                 WeightSensorService sensorService) {
         this.weightDataHolder = weightDataHolder;
         this.apiClient = apiClient;
         this.weightNotifier = weightNotifier;
         this.sensorManager = sensorManager;
+        this.sensorService = sensorService;
     }
 
     @Override
@@ -266,7 +272,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         if (sensorManager != null) {
             if (sensorManager.isOpened()) {
                 try {
-                    // I do not know what todo now
+                    // write zero offset to database in period
                     Thread.sleep(1000);
                 } catch (Exception ex) {
                     // Do nothing
