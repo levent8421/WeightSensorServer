@@ -35,8 +35,8 @@ public class DataPacket {
     public static final byte AddressELabelStart = 100;
 
 
-    public byte GetLength() {
-        return (byte) (1 + 1 + 1 + getContentLength() + 1);
+    public int GetLength() {
+        return (1 + 1 + 1 + getContentLength() + 1);
     }
 
     public byte CalcChecksum() {
@@ -57,7 +57,7 @@ public class DataPacket {
         byte[] bts = new byte[1 + 1 + 1 + GetLength()];
         bts[0] = Head1;
         bts[1] = Head2;
-        bts[2] = GetLength();
+        bts[2] = (byte)GetLength();
         bts[3] = getVersion();
         bts[4] = getAddress();
         bts[5] = getCmd();
