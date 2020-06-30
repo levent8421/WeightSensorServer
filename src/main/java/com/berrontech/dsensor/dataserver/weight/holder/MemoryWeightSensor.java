@@ -39,7 +39,7 @@ public class MemoryWeightSensor {
         mws.setSlotId(sensor.getSlotId());
         mws.setZeroReference(sensor.getZeroReference());
         mws.setConfigStr(sensor.getConfigStr());
-        mws.setHasElable(sensor.getHasElable());
+        mws.setHasElable(sensor.getHasElabel());
         return mws;
     }
 

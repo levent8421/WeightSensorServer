@@ -46,6 +46,6 @@ public class WeightSensor extends AbstractDevice485 {
     /**
      * 是否有电子标签
      */
-    @Column(name = "has_elable", nullable = false, length = 1)
-    private Boolean hasElable;
+    @Column(name = "has_elabel", nullable = false, length = 1)
+    private Boolean hasElabel;
 }

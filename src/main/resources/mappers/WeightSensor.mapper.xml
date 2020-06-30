@@ -31,10 +31,16 @@
         <result column="ws_zero_reference" property="zeroReference"/>
         <result column="ws_config_str" property="configStr"/>
         <result column="ws_slot_id" property="slotId"/>
-        <result column="ws_has_elable" property="hasElable"/>
+        <result column="ws_has_elabel" property="hasElabel"/>
         <result column="ws_create_time" property="createTime"/>
         <result column="ws_update_time" property="updateTime"/>
         <result column="ws_deleted" property="deleted"/>
+    </resultMap>
+    <resultMap id="rm_with_all"
+               type="com.berrontech.dsensor.dataserver.common.entity.WeightSensor"
+               extends="rm_base">
+        <association property="slot"
+                     resultMap="com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper.rm_base"/>
     </resultMap>
     <update id="updateState">
         update t_weight_sensor as ws
@@ -55,5 +61,17 @@
         update t_weight_sensor as ws
         set ws.has_elable=#{hasElable}
         where ws.slot_id = #{slotId}
+    </update>
+    <select id="selectAllWithSlot" resultMap="rm_with_all">
+        select
+        <include refid="columns"/>,
+        <include refid="com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper.columns"/>
+        from t_weight_sensor as ws left outer join t_slot as s on ws.slot_id=s.id where (s.deleted=false and
+        ws.deleted=false)
+    </select>
+    <update id="updateHasElable">
+        update t_weight_sensor as ws
+        set ws.has_elabel=#{hasElabel}
+        where ws.id = #{id}
     </update>
 </mapper>

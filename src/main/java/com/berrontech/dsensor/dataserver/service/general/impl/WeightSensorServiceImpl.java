@@ -97,7 +97,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         weightSensor.setAddress(sensor.getAddress485());
         weightSensor.setDeviceSn(sensor.getDeviceSn());
         weightSensor.setZeroReference(WeightSensor.DEFAULT_ZERO_REFERENCE);
-        weightSensor.setHasElable(false);
+        weightSensor.setHasElabel(false);
         return weightSensor;
     }
 
@@ -137,6 +137,19 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         final int rows = weightSensorMapper.updateHasElableBySlotId(slotId, hasElable);
         if (rows <= 0) {
             throw new BadRequestException("No Rows updated," + rows);
+        }
+    }
+
+    @Override
+    public List<WeightSensor> listWithSlot() {
+        return weightSensorMapper.selectAllWithSlot();
+    }
+
+    @Override
+    public void updateElableState(Integer id, Boolean hasElable) {
+        final int rows = weightSensorMapper.updateHasElable(id, hasElable);
+        if (rows != 1) {
+            throw new InternalServerErrorException("Error On Update Elable State, rows=" + rows);
         }
     }
 }

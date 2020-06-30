@@ -5,6 +5,8 @@ import com.berrontech.dsensor.dataserver.repository.AbstractMapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/17 10:58
@@ -52,4 +54,20 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return rows
      */
     int updateHasElableBySlotId(@Param("slotId") Integer slotId, @Param("hasElable") Boolean hasElable);
+
+    /**
+     * Select All Sensors Fetch Slot
+     *
+     * @return Sensors
+     */
+    List<WeightSensor> selectAllWithSlot();
+
+    /**
+     * Update [HasELabel] by id
+     *
+     * @param id        id
+     * @param hasElabel ELabel
+     * @return rows
+     */
+    int updateHasElable(@Param("id") Integer id, @Param("hasElabel") Boolean hasElabel);
 }

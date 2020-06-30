@@ -80,4 +80,19 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @param hasElable has E-Label
      */
     void setElabelStateBySlotId(Integer slotId, Boolean hasElable);
+
+    /**
+     * List All Sensors with slot
+     *
+     * @return Sensors
+     */
+    List<WeightSensor> listWithSlot();
+
+    /**
+     * 设置传感器是否有电子标签
+     *
+     * @param id        id
+     * @param hasElable 是否有电子标签
+     */
+    void updateElableState(Integer id, Boolean hasElable);
 }
