@@ -93,7 +93,13 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
             @Override
             public boolean onPieceCountChanged(DigitalSensorItem sensor) {
-                log.debug("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
+                if (sensor.getValues().isStable()) {
+                    log.info("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
+                }
+                else {
+                    log.debug("#{} Notify onPieceCountChanged, but not stable", sensor.getParams().getAddress());
+                    return false;
+                }
 
                 try {
                     final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
@@ -426,7 +432,18 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void setSku(String slotNo, MemorySku sku) {
-
+        if (sensorManager == null) {
+            return;
+        }
+        DigitalSensorItem sensor = sensorManager.FirstOrNull(slotNo);
+        if (sensor != null) {
+            var material = sensor.getPassenger().getMaterial();
+            material.setName(sku.getName());
+            material.setNumber(sku.getSkuNo());
+            material.setAPW(sku.getApw());
+            material.setShelfLifeDays(sku.getShelfLifeOpenDays());
+            material.setTolerancePercent(sku.getTolerance());
+        }
     }
 
     @Override
