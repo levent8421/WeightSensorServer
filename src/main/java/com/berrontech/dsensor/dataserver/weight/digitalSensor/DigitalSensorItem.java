@@ -27,8 +27,11 @@ public class DigitalSensorItem {
     public String Cluster = "";
 
     public String getShortName() {
-        //return getSubGroup() + "-" + getSubGroupPosition();
-        return getSubGroup();
+        if (TextUtils.isTrimedEmpty(getSubGroupPosition())) {
+            return getSubGroup();
+        } else {
+            return getSubGroup() + "-" + getSubGroupPosition();
+        }
     }
 
     public DigitalSensorDriver getDriver() {
@@ -437,7 +440,7 @@ public class DigitalSensorItem {
                 LastNotifyWeight = Values.getNetWeight().doubleValue();
             }
         }
-        if (LastNotifyPCS != Values.getPieceCount()) {
+        if (LastNotifyPCS != Values.getPieceCount() && Values.isStable()) {
             if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
                 LastNotifyPCS = Values.getPieceCount();
             }

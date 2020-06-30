@@ -64,6 +64,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void setup() {
+
+    }
+
+    private void startSensorManager() {
         buildDigitalSensors(sensorManager, weightDataHolder);
         sensorManager.setSensorListener(new DigitalSensorListener() {
             @Override
@@ -92,7 +96,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 log.debug("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
 
                 try {
-                    final MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
+                    final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
                     if (slot == null) {
                         log.debug("#{} Could not found slot ({})", sensor.getParams().getAddress(), sensor.getShortName());
                         return false;
@@ -122,9 +126,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
             @Override
             public boolean onWeightChanged(DigitalSensorItem sensor) {
-                log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
+                //log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
                 try {
-                    MemorySlot slot = weightDataHolder.getSlotTable().get(sensor.getShortName());
+                    final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
                     if (slot != null) {
                         if (slot.getData() == null) {
                             slot.setData(new MemoryWeightData());
@@ -142,6 +146,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         });
         sensorManager.open();
         sensorManager.startReading();
+    }
+
+    private static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
+        return weightDataHolder.getSlotTable().get(sensor.getShortName());
     }
 
     private int toState(DigitalSensorItem sensor) {
@@ -253,7 +261,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             if (sensorManager.isOpened()) {
                 try {
                     // I do not know what todo now
-                    Thread.sleep(100);
+                    Thread.sleep(1000);
                 } catch (Exception ex) {
                     // Do nothing
                 }
@@ -269,8 +277,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public void beforeStop() {
         if (sensorManager != null) {
-            sensorManager.StopReading();
-            sensorManager.close();
+            sensorManager.shutdown();
         }
     }
 
@@ -424,12 +431,14 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void onMetaDataChanged() {
-
+        startSensorManager();
     }
 
     @Override
     public void shutdown() {
-
+        if (sensorManager != null) {
+            sensorManager.shutdown();
+        }
     }
 
     @Override
