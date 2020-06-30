@@ -201,7 +201,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 }
                 DigitalSensorGroup group = sensorManager.NewGroup();
                 switch (conn.getType()) {
-                //switch (2) {
+                    //switch (2) {
                     default: {
                         log.info("Unknow connection type: {}", conn.getType());
                         break;
@@ -480,7 +480,8 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             material.setName(sku.getName());
             material.setNumber(sku.getSkuNo());
             material.setAPW(sku.getApw());
-            material.setShelfLifeDays(sku.getShelfLifeOpenDays());
+            final int shelfLifeOpenDays = sku.getShelfLifeOpenDays() == null ? 0 : sku.getShelfLifeOpenDays();
+            material.setShelfLifeDays(shelfLifeOpenDays);
             material.setTolerancePercent(sku.getTolerance());
         }
     }
@@ -524,7 +525,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             try {
                 sensor.DoZero(true);
             } catch (Exception ex) {
-                log.warn("#{} Do zero failed", sensor.getParams().getAddress(), ex.getMessage());
+                log.warn("#{} Do zero failed,{}", sensor.getParams().getAddress(), ex.getMessage());
             }
         }
     }

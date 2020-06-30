@@ -378,12 +378,12 @@ public class DigitalSensorItem {
 
     public void UpdateHighResolution2(boolean skipUnStable) throws Exception {
         try {
-            log.debug("#{} UpdateHighResolution2", Params.getAddress());
+//            log.debug("#{} UpdateHighResolution2", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetHighResolution((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
             }
-            log.debug("#{} UpdateHighResolution2 done", Params.getAddress());
+//            log.debug("#{} UpdateHighResolution2 done", Params.getAddress());
             SetCommResult(true);
             byte counter = packet.Content[0];
             if (counter == 0) {
@@ -415,9 +415,9 @@ public class DigitalSensorItem {
                     } else {
                         setCountInAccuracy(true);
                     }
-                    log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
+//                    log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
                     UpdateELabel();
-                    log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
+//                    log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
                 }
             }
             //log.debug("#{} UpdateHighResolution2 Done", Params.getAddress());

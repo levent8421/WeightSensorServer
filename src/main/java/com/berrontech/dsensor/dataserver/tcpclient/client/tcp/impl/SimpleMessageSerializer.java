@@ -41,7 +41,8 @@ public class SimpleMessageSerializer implements MessageSerializer {
         final byte end = data[data.length - 1];
         if (start == ApplicationConstants.Message.PACKAGE_START && end == ApplicationConstants.Message.PACKAGE_END) {
             try {
-                return JSON.parseObject(data, 1, data.length - 2, ApplicationConstants.Context.DEFAULT_CHARSET, Message.class);
+                return JSON.parseObject(data, 1, data.length - 2,
+                        ApplicationConstants.Context.DEFAULT_CHARSET, Message.class);
             } catch (JSONException e) {
                 throw new MessageException("Invalidate JSONMessage", e);
             }

@@ -8,6 +8,7 @@ import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import org.springframework.stereotype.Component;
@@ -84,6 +85,7 @@ public class SensorMetaDataService {
         final Map<String, MemorySlot> slotTable = slotMap
                 .values()
                 .stream()
+                .peek(slot -> slot.setData(new MemoryWeightData()))
                 .collect(Collectors.toMap(MemorySlot::getSlotNo, v -> v));
         weightDataHolder.setSlotTable(slotTable);
     }

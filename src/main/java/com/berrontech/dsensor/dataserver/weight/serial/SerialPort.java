@@ -42,29 +42,16 @@ public class SerialPort {
     private FileOutputStream mFileOutputStream;
 
     public SerialPort(File device, int baudrate, int flags) throws SecurityException, IOException {
-        /* Check access permission */
+        if (!device.exists()) {
+            throw new FileNotFoundException("File " + device.getAbsolutePath() + " not found!");
+        }
         if (!device.canRead() || !device.canWrite()) {
-            try {
-                /* Missing read/write permission, trying to chmod the file */
-                Process su;
-                su = Runtime.getRuntime().exec("/system/bin/su");
-                String cmd = "chmod 666 " + device.getAbsolutePath() + "\n"
-                        + "exit\n";
-                su.getOutputStream().write(cmd.getBytes());
-                if ((su.waitFor() != 0) || !device.canRead()
-                        || !device.canWrite()) {
-                    throw new SecurityException();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new SecurityException();
-            }
+            throw new IOException("Device file can not be read or write!");
         }
 
         mFd = open(device.getAbsolutePath(), baudrate, flags);
         if (mFd == null) {
-            log.error("native open returns null");
-            throw new IOException();
+            throw new IOException("Open Device File Descriptor failed!");
         }
         mFileInputStream = new FileInputStream(mFd);
         mFileOutputStream = new FileOutputStream(mFd);
@@ -78,7 +65,14 @@ public class SerialPort {
         return mFileOutputStream;
     }
 
-    // JNI
+    /**
+     * Native Open Serial Port
+     *
+     * @param path     device file path
+     * @param baudrate baud Rate
+     * @param flags    open file flag
+     * @return FD
+     */
     private native static FileDescriptor open(String path, int baudrate, int flags);
 
     public native void close();
@@ -87,7 +81,7 @@ public class SerialPort {
         try {
             System.loadLibrary("serial_port");
         } catch (Throwable ex) {
-            log.error("Load serial_port failed", ex);
+            log.error("Load Native Library[serial_port.so] failed", ex);
         }
     }
 }

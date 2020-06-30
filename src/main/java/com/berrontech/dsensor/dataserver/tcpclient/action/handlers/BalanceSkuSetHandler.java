@@ -13,6 +13,7 @@ import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import java.util.List;
@@ -30,6 +31,7 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
  *
  * @author Levent8421
  */
+@Slf4j
 @ActionHandlerMapping("balance.sku.set")
 public class BalanceSkuSetHandler implements ActionHandler {
     private final SlotService slotService;
@@ -57,6 +59,7 @@ public class BalanceSkuSetHandler implements ActionHandler {
             query.setSkuShelfLifeOpenDays(param.getSkuShelfLifeOpenDays());
             slotService.updateSkuInfoBySlotNo(query);
             notifySkuChanged(param.getSlotNo(), param);
+            log.debug("Set [{}] sku to [{}/{}]", param.getSlotNo(), param.getSkuNo(), param.getName());
         }
         val res = Payload.ok();
         return MessageUtils.replyMessage(message, res);
