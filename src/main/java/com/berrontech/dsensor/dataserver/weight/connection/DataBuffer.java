@@ -1,8 +1,5 @@
 package com.berrontech.dsensor.dataserver.weight.connection;
 
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -19,7 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @SuppressWarnings("unused")
 public class DataBuffer {
     private final int bufferMaxSize = 32 * 1024;
-    private Byte[] buffer = new Byte[bufferMaxSize];
+    private byte[] buffer = new byte[bufferMaxSize];
     private int bufferOffset = 0;
     private Lock lock = new ReentrantLock();
     private int workingCounter = 0;
@@ -61,12 +58,7 @@ public class DataBuffer {
     }
 
     public int getLength() {
-        lock.lock();
-        try {
-            return bufferOffset;
-        } finally {
-            lock.unlock();
-        }
+        return bufferOffset;
     }
 
     public void push(byte[] newBuf) {
@@ -125,7 +117,7 @@ public class DataBuffer {
         }
 
         int remain = getLength();
-        count = count <= remain ? count : remain;
+        count = Math.min(count, remain);
         byte[] buf;
 
         lock.lock();

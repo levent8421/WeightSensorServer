@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
@@ -12,8 +13,6 @@ import com.berrontech.dsensor.dataserver.weight.holder.*;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import lombok.var;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -101,8 +100,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             public boolean onPieceCountChanged(DigitalSensorItem sensor) {
                 if (sensor.getValues().isStable()) {
                     log.info("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
-                }
-                else {
+                } else {
                     log.debug("#{} Notify onPieceCountChanged, but not stable", sensor.getParams().getAddress());
                     return false;
                 }
@@ -203,6 +201,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 }
                 DigitalSensorGroup group = sensorManager.NewGroup();
                 switch (conn.getType()) {
+                //switch (2) {
                     default: {
                         log.info("Unknow connection type: {}", conn.getType());
                         break;
@@ -214,8 +213,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         break;
                     }
                     case DeviceConnection.TYPE_NET: {
-                        log.debug("Add group on tcp: {}", conn.getTarget());
-                        String[] parts = conn.getTarget().split(":");
+                        String target = conn.getTarget();
+                        //target = "127.0.0.1:8200";
+                        log.debug("Add group on tcp: {}", target);
+                        String[] parts = target.split(":");
                         group.setCommMode(DigitalSensorGroup.ECommMode.Net);
                         group.setCommAddress(parts[0]);
                         if (parts.length > 1) {
@@ -239,8 +240,11 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         val params = sensor.getParams();
                         params.setAddress(sen.getAddress());
                         params.setDeviceSn(sen.getDeviceSn());
+                        if (sen.getHasElabel()) {
+                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
+                        }
 
-                        var slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().get();
+                        Slot slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().get();
                         val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
                         sensor.setSubGroup(ms.getSlotNo());
                         val sku = ms.getSku();
@@ -327,12 +331,45 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             scanManager = new DigitalSensorManager();
         }
         log.debug("Try build connection");
-        buildDigitalSensors(scanManager, connections);
+        buildDigitalSensorGroups(scanManager, connections);
         scanManager.open();
         for (val g : scanManager.getGroups()) {
             log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
             g.startScan();
         }
+        processScanResult();
+    }
+
+    @Override
+    public void startScan(DeviceConnection connection, int countOfSensors) throws IOException {
+        synchronized (scanLock) {
+            if (scanning) {
+                throw new IOException("Scanning is in processing");
+            }
+            scanning = true;
+        }
+
+        log.debug("Notify scan with full addresses");
+        // shutdown connections
+        log.debug("Try shutdown connections");
+        sensorManager.shutdown();
+
+        // build scanner
+        if (scanManager == null) {
+            log.debug("Try build scan manager");
+            scanManager = new DigitalSensorManager();
+        }
+        log.debug("Try build connection");
+        buildDigitalSensorGroups(scanManager, Collections.singletonList(connection));
+        scanManager.open();
+        for (val g : scanManager.getGroups()) {
+            log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
+            g.startScan(1, countOfSensors);
+        }
+        processScanResult();
+    }
+
+    private void processScanResult() {
         createThreadPool().execute(() ->
         {
             try {
@@ -355,6 +392,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                                 sensor.setDeviceSn(s.getDeviceSn());
                                 sensor.setAddress485(s.getAddress());
                                 sensor.setState(MemoryWeightSensor.STATE_ONLINE);
+                                sensor.setHasElable(s.hasELabel());
                                 sensors.add(sensor);
                             }
                         }
@@ -377,12 +415,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         });
     }
 
-    @Override
-    public void startScan(DeviceConnection connection, int countOfSensors) throws IOException {
-
-    }
-
-    public static void buildDigitalSensors(DigitalSensorManager sensorManager, Collection<DeviceConnection> connections) {
+    public static void buildDigitalSensorGroups(DigitalSensorManager sensorManager, Collection<DeviceConnection> connections) {
         sensorManager.shutdown();
         sensorManager.getGroups().clear();
         for (DeviceConnection conn : connections) {
@@ -443,7 +476,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         }
         DigitalSensorItem sensor = sensorManager.FirstOrNull(slotNo);
         if (sensor != null) {
-            var material = sensor.getPassenger().getMaterial();
+            MaterialInfo material = sensor.getPassenger().getMaterial();
             material.setName(sku.getName());
             material.setNumber(sku.getSkuNo());
             material.setAPW(sku.getApw());
@@ -485,9 +518,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public void doZero(String slotNo) {
         val sensor = sensorManager.FirstOrNull(slotNo);
-        if (sensor == null)
+        if (sensor == null) {
             log.info("Can not found slot ({})", slotNo);
-        else {
+        } else {
             try {
                 sensor.DoZero(true);
             } catch (Exception ex) {
