@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Create By Levent8421
@@ -61,5 +62,15 @@ public class DashboardController extends AbstractController {
         res.put("appName", ApplicationConstants.Context.APP_NAME);
         res.put("pid", ProcessUtils.getProcessId());
         return GeneralResult.ok(res);
+    }
+
+    /**
+     * 系统配置
+     *
+     * @return GR
+     */
+    @GetMapping("/system-props")
+    public GeneralResult<Properties> systemProperties() {
+        return GeneralResult.ok(System.getProperties());
     }
 }

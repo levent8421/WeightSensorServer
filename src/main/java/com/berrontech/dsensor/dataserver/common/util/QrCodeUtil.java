@@ -201,9 +201,8 @@ public class QrCodeUtil {
                 for (int i = 0; i < BYTE_BITS; i++) {
                     final int ry = y + i;
                     if (bitMatrix.get(x, ry)) {
-                        b |= 0x01;
+                        b |= 0x01 << i;
                     }
-                    b <<= 1;
                 }
                 res[pos++] = b;
             }
