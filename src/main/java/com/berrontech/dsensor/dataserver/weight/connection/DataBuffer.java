@@ -81,6 +81,7 @@ public class DataBuffer {
             }
             if (count > 0) {
                 System.arraycopy(newBuf, offset, buffer, bufferOffset, count);
+                bufferOffset += count;
             }
         } finally {
             lock.unlock();
@@ -109,6 +110,7 @@ public class DataBuffer {
             int len = getLength() - offset - count;
             if (len > 0) {
                 System.arraycopy(buffer, offset + count, buffer, offset, len);
+                bufferOffset -= count;
             } else {
                 bufferOffset = offset;
             }
