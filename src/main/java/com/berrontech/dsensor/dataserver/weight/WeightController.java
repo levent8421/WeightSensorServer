@@ -43,13 +43,6 @@ public interface WeightController {
     void setSku(String slotNo, MemorySku sku);
 
     /**
-     * 连接数据变化时调用
-     *
-     * @param connections 连接
-     */
-    void onConnectionChanged(Collection<DeviceConnection> connections);
-
-    /**
      * 元数据改变通知
      */
     void onMetaDataChanged();

@@ -1,13 +1,19 @@
 package com.berrontech.dsensor.dataserver.web.controller.api;
 
+import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
+import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
+import com.berrontech.dsensor.dataserver.common.util.ProcessUtils;
+import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
+import lombok.val;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -24,9 +30,11 @@ import java.util.Map;
 @RequestMapping("/api/dashboard")
 public class DashboardController extends AbstractController {
     private final WeightDataHolder weightDataHolder;
+    private final ApplicationConfigService applicationConfigService;
 
-    public DashboardController(WeightDataHolder weightDataHolder) {
+    public DashboardController(WeightDataHolder weightDataHolder, ApplicationConfigService applicationConfigService) {
         this.weightDataHolder = weightDataHolder;
+        this.applicationConfigService = applicationConfigService;
     }
 
     /**
@@ -37,5 +45,21 @@ public class DashboardController extends AbstractController {
     @GetMapping("/slot-data")
     public GeneralResult<Map<String, MemorySlot>> slotData() {
         return GeneralResult.ok(weightDataHolder.getSlotTable());
+    }
+
+    /**
+     * 系统信息
+     *
+     * @return GR
+     */
+    @GetMapping("/system-infos")
+    public GeneralResult<Map<String, Object>> systemInfos() {
+        val res = new HashMap<String, Object>(16);
+        val dbVersion = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
+        res.put("dbVersion", dbVersion.getValue());
+        res.put("appVersion", ApplicationConstants.Context.APP_VERSION);
+        res.put("appName", ApplicationConstants.Context.APP_NAME);
+        res.put("pid", ProcessUtils.getProcessId());
+        return GeneralResult.ok(res);
     }
 }

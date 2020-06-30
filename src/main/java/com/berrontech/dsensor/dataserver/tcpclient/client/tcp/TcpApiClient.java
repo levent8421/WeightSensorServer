@@ -233,7 +233,9 @@ public class TcpApiClient implements ApiClient, DisposableBean,
 
     @Override
     public void onReadError(Throwable error) {
-        log.error("Error On Read Message!", error);
+        log.error("Error On Read Message! Stop the TCP Connection [{}:{}]",
+                error.getClass().getSimpleName(),
+                error.getMessage());
         if (error instanceof IOException) {
             connected = false;
         }
@@ -249,7 +251,9 @@ public class TcpApiClient implements ApiClient, DisposableBean,
 
     @Override
     public void onSendError(MessageInfo messageInfo, Throwable error) {
-        log.error("Error On Send Message!", error);
+        log.error("Error On Send Message! Stop The TCP Connection,[{}:{}]",
+                error.getClass().getSimpleName(),
+                error.getMessage());
         if (error instanceof IOException) {
             connected = false;
         }

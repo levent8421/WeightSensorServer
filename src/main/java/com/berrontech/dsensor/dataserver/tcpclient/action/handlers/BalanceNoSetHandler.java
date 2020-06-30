@@ -45,13 +45,14 @@ public class BalanceNoSetHandler implements ActionHandler {
     @Override
     @SuppressWarnings("unchecked")
     public Message onMessage(Message message) throws Exception {
-        final Map<Integer, String> data = (Map<Integer, String>) MessageUtils.asObject(message.getData(), Map.class);
+        final Map<String, String> data = (Map<String, String>) MessageUtils.asObject(message.getData(), Map.class);
         if (data == null) {
             throw new BadRequestException("Empty Param Data!");
         }
-        final Set<Integer> idList = data.keySet();
-        for (Integer id : idList) {
-            val slotNo = data.get(id);
+        final Set<String> idList = data.keySet();
+        for (String idStr : idList) {
+            val id = Integer.parseInt(idStr);
+            val slotNo = data.get(idStr);
             slotService.updateSlotNo(id, slotNo);
             notifySlotNoChanged(id, slotNo);
         }

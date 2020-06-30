@@ -423,11 +423,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void onConnectionChanged(Collection<DeviceConnection> connections) {
-
-    }
-
-    @Override
     public void onMetaDataChanged() {
 
     }

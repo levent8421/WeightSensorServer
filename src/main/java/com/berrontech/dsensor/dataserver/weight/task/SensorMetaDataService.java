@@ -6,6 +6,7 @@ import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
@@ -33,15 +34,18 @@ public class SensorMetaDataService {
     private final DeviceConnectionService deviceConnectionService;
     private final WeightSensorService weightSensorService;
     private final SlotService slotService;
+    private final WeightController weightController;
 
     public SensorMetaDataService(WeightDataHolder weightDataHolder,
                                  DeviceConnectionService deviceConnectionService,
                                  WeightSensorService weightSensorService,
-                                 SlotService slotService) {
+                                 SlotService slotService,
+                                 WeightController weightController) {
         this.weightDataHolder = weightDataHolder;
         this.deviceConnectionService = deviceConnectionService;
         this.weightSensorService = weightSensorService;
         this.slotService = slotService;
+        this.weightController = weightController;
     }
 
     public void refreshSlotTable() {
@@ -54,6 +58,7 @@ public class SensorMetaDataService {
         final List<Slot> slots = slotService.all();
         weightDataHolder.setSlots(slots);
         this.buildMemorySlotTable();
+        weightController.onMetaDataChanged();
     }
 
     private void buildMemorySlotTable() {

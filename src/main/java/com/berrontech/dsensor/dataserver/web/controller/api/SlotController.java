@@ -119,6 +119,7 @@ public class SlotController extends AbstractEntityController<Slot> {
         slot.setSkuName(param.getSkuName());
         slot.setSkuApw(param.getSkuApw());
         slot.setSkuTolerance(param.getSkuTolerance());
+        slot.setSkuShelfLifeOpenDays(param.getSkuShelfLifeOpenDays());
     }
 
     /**

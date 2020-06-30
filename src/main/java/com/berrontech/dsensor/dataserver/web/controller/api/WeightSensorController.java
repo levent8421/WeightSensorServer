@@ -4,11 +4,10 @@ import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.val;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,10 +25,16 @@ import java.util.List;
 @RequestMapping("/api/sensor")
 public class WeightSensorController extends AbstractEntityController<WeightSensor> {
     private final WeightSensorService weightSensorService;
+    private final SensorMetaDataService sensorMetaDataService;
+    private final WeightController weightController;
 
-    protected WeightSensorController(WeightSensorService weightSensorService) {
+    protected WeightSensorController(WeightSensorService weightSensorService,
+                                     SensorMetaDataService sensorMetaDataService,
+                                     WeightController weightController) {
         super(weightSensorService);
         this.weightSensorService = weightSensorService;
+        this.sensorMetaDataService = sensorMetaDataService;
+        this.weightController = weightController;
     }
 
     /**
@@ -53,5 +58,16 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
     public GeneralResult<List<WeightSensor>> findSensorByConnection(@RequestParam("connectionId") Integer connectionId) {
         final List<WeightSensor> weightSensors = weightSensorService.findByConnection(connectionId);
         return GeneralResult.ok(weightSensors);
+    }
+
+    /**
+     * 刷新内存传感器结构
+     *
+     * @return GR
+     */
+    @PostMapping("/reload")
+    public GeneralResult<Void> reloadSensorMetaData() {
+        sensorMetaDataService.refreshSlotTable();
+        return GeneralResult.ok();
     }
 }

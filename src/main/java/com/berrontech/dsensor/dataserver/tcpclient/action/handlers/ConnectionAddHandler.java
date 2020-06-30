@@ -9,10 +9,9 @@ import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.DeviceConnectionAddParams;
-import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.val;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -32,11 +31,12 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
 @ActionHandlerMapping("connection.add")
 public class ConnectionAddHandler implements ActionHandler {
     private final DeviceConnectionService deviceConnectionService;
-    private final WeightController weightController;
+    private final SensorMetaDataService sensorMetaDataService;
 
-    public ConnectionAddHandler(DeviceConnectionService deviceConnectionService, WeightController weightController) {
+    public ConnectionAddHandler(DeviceConnectionService deviceConnectionService,
+                                SensorMetaDataService sensorMetaDataService) {
         this.deviceConnectionService = deviceConnectionService;
-        this.weightController = weightController;
+        this.sensorMetaDataService = sensorMetaDataService;
     }
 
     @Override
@@ -50,14 +50,9 @@ public class ConnectionAddHandler implements ActionHandler {
         connection.setTarget(target);
         connection.setType(type);
         val saved = deviceConnectionService.save(connection);
-        notifyConnectionChanged();
         val data = Payload.ok(saved.getId());
+        sensorMetaDataService.refreshSlotTable();
         return MessageUtils.replyMessage(message, data);
-    }
-
-    private void notifyConnectionChanged() {
-        final List<DeviceConnection> connections = deviceConnectionService.all();
-        weightController.onConnectionChanged(connections);
     }
 
     private void checkParams(DeviceConnectionAddParams params) {
