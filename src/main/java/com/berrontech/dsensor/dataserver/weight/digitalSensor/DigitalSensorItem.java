@@ -1,5 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
+import com.berrontech.dsensor.dataserver.common.util.ByteUtils;
+import com.berrontech.dsensor.dataserver.common.util.QrCodeUtil;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
 import lombok.Data;
@@ -8,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
@@ -378,12 +381,12 @@ public class DigitalSensorItem {
 
     public void UpdateHighResolution2(boolean skipUnStable) throws Exception {
         try {
-//            log.debug("#{} UpdateHighResolution2", Params.getAddress());
+            //log.debug("#{} UpdateHighResolution2", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetHighResolution((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
             }
-//            log.debug("#{} UpdateHighResolution2 done", Params.getAddress());
+            //log.debug("#{} UpdateHighResolution2 done", Params.getAddress());
             SetCommResult(true);
             byte counter = packet.Content[0];
             if (counter == 0) {
@@ -415,9 +418,9 @@ public class DigitalSensorItem {
                     } else {
                         setCountInAccuracy(true);
                     }
-//                    log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
+                    //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
                     UpdateELabel();
-//                    log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
+                    //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
                 }
             }
             //log.debug("#{} UpdateHighResolution2 Done", Params.getAddress());
@@ -982,10 +985,11 @@ public class DigitalSensorItem {
 
     public void SetELabelBinNo(String value) throws Exception {
         WriteELabelBinNo(value);
-//        if (TextUtils.isTrimedEmpty(value))
-//            writeELabelDefaultLogo();
-//        else
-//            writeELabelBarcode(value);
+        if (TextUtils.isTrimedEmpty(value)) {
+            WriteELabelDefaultLogo();
+        } else {
+            WriteELabelBarcode(value);
+        }
     }
 
     public void SetELabelStatus(int value) throws Exception {
@@ -1008,9 +1012,8 @@ public class DigitalSensorItem {
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
-            Driver.Write(packet);
             do {
-                packet = Driver.Read(packet.getAddress(), DataPacket.ERecvCmd.ELabel, getReadTimeout());
+                packet = Driver.WriteRead(packet, getReadTimeout(), 1);
                 if (packet.Content[1] == (byte) cmd) {
                     SetCommResult(true);
                     return packet;
@@ -1095,6 +1098,90 @@ public class DigitalSensorItem {
     public void WriteELabelBinNo(String value) throws Exception {
         WriteELabelString((byte) DataPacket.EELabelCmdID.WriteBinNo, (byte) 0, (byte) 1, DataPacket.EELabelColor.Black, value);
     }
+
+
+    int _defaultLogoWidth = 48;
+    int _defaultLogoHeight = 48;
+    int[] _defaultLogo = new int[]{
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0xC0, 0xC0,
+            0xE0, 0xE0, 0xF0, 0xF0, 0x70, 0x78, 0x78, 0x38, 0x38, 0x78, 0x78, 0x70, 0xF0, 0xF0, 0xE0, 0xE0,
+            0xC0, 0xC0, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0xF0, 0x38, 0x7C, 0xFE, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xCF, 0x0B, 0x93, 0x83, 0x47, 0xCE, 0x50, 0x48, 0x48, 0x50, 0xCC, 0x47, 0x83, 0x93, 0x0B, 0xCF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFE, 0x7C, 0x38, 0xF0, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0xDF, 0x47, 0x61, 0x20, 0x20, 0xE1, 0xF1, 0xF9, 0xFD, 0x07,
+            0xCF, 0x39, 0xC2, 0x3C, 0xC9, 0x0A, 0x0C, 0x80, 0x80, 0x0C, 0x0A, 0xC9, 0x3C, 0xC6, 0x3B, 0xFF,
+            0x07, 0xFD, 0xF9, 0xF1, 0xE1, 0x20, 0x20, 0x41, 0x47, 0xDF, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x24, 0x26, 0xB2, 0x9B, 0xDB, 0xFF, 0xFF, 0xFF, 0x3F, 0xDF, 0x26,
+            0xDF, 0x60, 0x1F, 0xC6, 0x30, 0x0F, 0x06, 0x04, 0x04, 0x06, 0x1F, 0x30, 0xCE, 0x19, 0x64, 0x9B,
+            0x26, 0xDF, 0x3F, 0xFF, 0xFF, 0xFF, 0xDB, 0x9B, 0xB2, 0x24, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x05, 0x0C, 0x36, 0x91, 0xE1, 0x70, 0xF0, 0x7B, 0xBC,
+            0xF3, 0x06, 0xF8, 0x63, 0x0C, 0xF0, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x0C, 0x63, 0xF8, 0x06, 0xF9,
+            0x3C, 0xFB, 0xF0, 0x71, 0xE1, 0x11, 0x36, 0x0C, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x06, 0x03,
+            0x08, 0x0F, 0x01, 0x1C, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01, 0x07, 0x1C, 0x01, 0x0E, 0x08,
+            0x03, 0x04, 0x03, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    };
+
+    public void WriteELabelLogo(int color, int width, int height, int[] data) throws Exception {
+        if (data.length > 1024) {
+            data = Arrays.copyOfRange(data, 0, 1024);
+        }
+        int pageSize = 128;
+        int pages = (data.length + pageSize - 1) / pageSize;
+        for (int p = 0; p < pages; p++) {
+            byte[] buf;
+            int size = Math.min(pageSize, data.length - pageSize * p);
+            if (p == 0) {
+                buf = new byte[9 + size];
+                buf[0] = (byte) DataPacket.EELabelPalette.Bpp16;
+                ByteHelper.intToBytes(color, buf, 1);
+                ByteHelper.intToBytes(width, buf, 5, 2);
+                ByteHelper.intToBytes(height, buf, 7, 2);
+                for (int pos = 0; pos < size; pos++) {
+                    buf[9 + pos] = (byte) data[pageSize * p + pos];
+                }
+            } else {
+                buf = new byte[size];
+                for (int pos = 0; pos < size; pos++) {
+                    buf[pos] = (byte) data[pageSize * p + pos];
+                }
+            }
+            OperateELabel((byte) DataPacket.EELabelCmdID.WriteLogo, (byte) p, (byte) pages, buf);
+            if (p + 1 < pages) {
+                Thread.sleep(Group.getCommInterval());
+            }
+        }
+    }
+
+    public void WriteELabelDefaultLogo() throws Exception {
+        WriteELabelLogo((0x006040), _defaultLogoWidth, _defaultLogoHeight, _defaultLogo);
+    }
+
+    public void WriteELabelBarcode(String value) throws Exception {
+        int width = 48;
+        int height = 48;
+        int[] data = QrCodeUtil.encodeToBits(value, width, height, 0);
+        WriteELabelLogo(DataPacket.EELabelColor.Black, width, height, data);
+//        var img = CreateQRCodeImage(value);
+//        var data = ImageHelper.ToColRowScanBytes(img, 0.5);
+//        WriteELabelLogo(Color.Black, img.Width, img.Height, data.ToArray());
+    }
+
+//    public Bitmap CreateQRCodeImage(string value) {
+//        // measure size
+//        BarcodeWriter writer = new BarcodeWriter();
+//        writer.Format = BarcodeFormat.QR_CODE;
+//        writer.Options = new QrCodeEncodingOptions() {
+//            Width =48,
+//            Height =48,
+//            ErrorCorrection =ZXing.QrCode.Internal.ErrorCorrectionLevel.M,
+//            Margin =0,
+//        };
+//        Bitmap b = writer.Write(value);
+//        return b;
+//    }
+
 
     public void UpdateParams() throws Exception {
         try {
