@@ -247,13 +247,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         Slot slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().get();
                         val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
                         sensor.setSubGroup(ms.getSlotNo());
-                        val sku = ms.getSku();
-                        if (sku != null) {
-                            sensor.getPassenger().getMaterial().setNumber(sku.getSkuNo());
-                            sensor.getPassenger().getMaterial().setName(sku.getName());
-                            sensor.getPassenger().getMaterial().setAPW(sku.getApw() / 1000.0);
-                            sensor.getPassenger().getMaterial().setTolerancePercent(sku.getTolerance());
-                        }
+                        setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
                         if (slot.getHasElabel()) {
                             params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
                         }
@@ -263,6 +257,17 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             } catch (Exception ex) {
                 log.error("buildDigitalSensors error: connId={}, target={}", conn.getId(), conn.getTarget(), ex);
             }
+        }
+    }
+
+    private static void setSkuToSensor(MemorySku sku, MaterialInfo mat)
+    {
+        if (sku != null) {
+            mat.setNumber(sku.getSkuNo());
+            mat.setName(sku.getName());
+            mat.setAPW(sku.getApw() == null ? 0 : sku.getApw() / 1000.0);
+            mat.setTolerancePercent(sku.getTolerance() == null ? 0 : sku.getTolerance());
+            mat.setShelfLifeDays(sku.getShelfLifeOpenDays() == null ? 0 : sku.getShelfLifeOpenDays());
         }
     }
 
@@ -451,15 +456,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             return;
         }
         DigitalSensorItem sensor = sensorManager.FirstOrNull(slotNo);
-        if (sensor != null) {
-            MaterialInfo material = sensor.getPassenger().getMaterial();
-            material.setName(sku.getName());
-            material.setNumber(sku.getSkuNo());
-            material.setAPW(sku.getApw());
-            final int shelfLifeOpenDays = sku.getShelfLifeOpenDays() == null ? 0 : sku.getShelfLifeOpenDays();
-            material.setShelfLifeDays(shelfLifeOpenDays);
-            material.setTolerancePercent(sku.getTolerance());
-        }
+        setSkuToSensor(sku, sensor.getPassenger().getMaterial());
     }
 
     @Override
