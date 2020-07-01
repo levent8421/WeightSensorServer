@@ -29,6 +29,7 @@ public class SerialConnection extends BasicConnection {
     private OutputStream serialOutput;
     private InputStream serialInput;
     private ExecutorService threadPool;
+    private Thread thread;
 
     public SerialConnection() {
     }
@@ -49,7 +50,8 @@ public class SerialConnection extends BasicConnection {
                     serialInput = serialPort.getInputStream();
                     setConnected(true);
                     threadPool = ThreadUtils.createSingleThreadPool(TAG);
-                    threadPool.execute(() -> {
+                    thread = new Thread(() ->
+                    {
                         try {
                             while (isConnected() && serialPort != null) {
                                 int cnt = serialInput.available();
@@ -59,12 +61,29 @@ public class SerialConnection extends BasicConnection {
                                     getRecvBuffer().push(buf, 0, cnt);
                                     notifyReceived();
                                 }
-                                Thread.sleep(10);
+                                Thread.sleep(1);
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     });
+                    thread.start();
+//                    threadPool.execute(() -> {
+//                        try {
+//                            while (isConnected() && serialPort != null) {
+//                                int cnt = serialInput.available();
+//                                if (cnt > 0) {
+//                                    byte[] buf = new byte[cnt];
+//                                    cnt = serialInput.read(buf);
+//                                    getRecvBuffer().push(buf, 0, cnt);
+//                                    notifyReceived();
+//                                }
+//                                Thread.sleep(10);
+//                            }
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    });
                 }
             } catch (Exception ex) {
                 serialOutput = null;
