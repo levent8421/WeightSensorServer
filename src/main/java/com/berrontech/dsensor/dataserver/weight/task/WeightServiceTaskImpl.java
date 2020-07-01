@@ -341,32 +341,8 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void startScan(DeviceConnection connection, int countOfSensors) throws IOException {
-        synchronized (scanLock) {
-            if (scanning) {
-                throw new IOException("Scanning is in processing");
-            }
-            scanning = true;
-        }
-
-        log.debug("Notify scan with full addresses");
-        // shutdown connections
-        log.debug("Try shutdown connections");
-        sensorManager.shutdown();
-
-        // build scanner
-        if (scanManager == null) {
-            log.debug("Try build scan manager");
-            scanManager = new DigitalSensorManager();
-        }
-        log.debug("Try build connection");
-        buildDigitalSensorGroups(scanManager, Collections.singletonList(connection));
-        scanManager.open();
-        for (val g : scanManager.getGroups()) {
-            log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
-            g.startScan(1, countOfSensors);
-        }
-        processScanResult();
+    public void startScan(DeviceConnection connection) throws IOException {
+        startScan(Collections.singletonList(connection));
     }
 
     private void processScanResult() {
@@ -398,7 +374,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         }
                         log.debug("Build done, count={}", sensors.size());
 
-                        weightNotifier.notifySensorList(sensors);
+                        weightNotifier.notifyScanDone(sensors);
                         break;
                     } else {
                         Thread.sleep(300);
@@ -529,4 +505,14 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             }
         }
     }
+
+    @Override
+    public boolean isScanning()
+    {
+        if (scanManager == null) {
+            return false;
+        }
+        return scanManager.isOpened();
+    }
+
 }
