@@ -1,22 +1,22 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
-import com.berrontech.dsensor.dataserver.common.entity.Slot;
-import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
-import com.berrontech.dsensor.dataserver.weight.holder.*;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
+import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
+import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -73,202 +73,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     private void startSensorManager() {
-        buildDigitalSensors(sensorManager, weightDataHolder);
-        sensorManager.setSensorListener(new DigitalSensorListener() {
-            @Override
-            public boolean onSensorStateChanged(DigitalSensorItem sensor) {
-                log.debug("#{} Notify onSensorStateChanged", sensor.getParams().getAddress());
-                try {
-                    WeightSensor s1 = weightDataHolder.getWeightSensors().stream()
-                            .filter(s -> s.getDeviceSn().equals(sensor.getParams().getDeviceSn()))
-                            .findFirst()
-                            .orElse(null);
-                    if (s1 != null) {
-                        MemoryWeightSensor s2 = MemoryWeightSensor.of(s1);
-                        s2.setState(toState(sensor));
-                        Collection<MemoryWeightSensor> sensors = Collections.singleton(s2);
-                        weightNotifier.sensorStateChanged(sensors);
-                    }
-                    return true;
-                } catch (Exception ex) {
-                    log.warn("notify onSensorStateChanged error: {}", ex.getMessage());
-                    return false;
-                }
-            }
-
-            @Override
-            public boolean onPieceCountChanged(DigitalSensorItem sensor) {
-                if (sensor.getValues().isStable()) {
-                    log.info("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
-                } else {
-                    log.debug("#{} Notify onPieceCountChanged, but not stable", sensor.getParams().getAddress());
-                    return false;
-                }
-
-                try {
-                    final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
-                    if (slot == null) {
-                        log.debug("#{} Could not found slot ({})", sensor.getParams().getAddress(), sensor.getShortName());
-                        return false;
-                    }
-                    if (slot.getData() == null) {
-                        slot.setData(new MemoryWeightData());
-                    }
-                    val slotData = slot.getData();
-                    slotData.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
-                    slotData.setCount(sensor.getValues().getPieceCount());
-                    slotData.setTolerance((int) (sensor.getValues().getPieceCountAccuracy() * 100));
-                    slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
-                    final Collection<MemorySlot> slots = Collections.singleton(slot);
-                    weightNotifier.countChange(slots);
-                    return true;
-                } catch (Exception ex) {
-                    log.warn("notify onPieceCountChanged error: {}", ex.getMessage());
-                    return false;
-                }
-            }
-
-            @Override
-            public boolean onSlotStateChanged(DigitalSensorItem sensor) {
-                log.debug("#{} Notify onSlotStateChanged", sensor.getParams().getAddress());
-                return true;
-            }
-
-            @Override
-            public boolean onWeightChanged(DigitalSensorItem sensor) {
-                //log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
-                try {
-                    final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
-                    if (slot != null) {
-                        if (slot.getData() == null) {
-                            slot.setData(new MemoryWeightData());
-                        }
-                        slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
-                        slot.getData().setWeightState(toState(sensor));
-                        slot.setState(toState(sensor));
-                    }
-                    return true;
-                } catch (Exception ex) {
-                    log.warn("notify onPieceCountChanged error: {}", ex.getMessage());
-                    return false;
-                }
-            }
-        });
+        DigitalSensorUtils.buildDigitalSensors(sensorManager, weightDataHolder);
+        if (sensorManager.getSensorListener() == null) {
+            sensorManager.setSensorListener(new DigitalSensorListenerImpl(weightDataHolder, weightNotifier));
+        }
         sensorManager.open();
         sensorManager.startReading();
-    }
-
-    private static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
-        return weightDataHolder.getSlotTable().get(sensor.getShortName());
-    }
-
-    private int toState(DigitalSensorItem sensor) {
-        int state;
-        if (!sensor.IsOnline()) {
-            state = WeightSensor.STATE_OFFLINE;
-        } else {
-            switch (sensor.getValues().getStatus()) {
-                case Dynamic:
-                case Stable: {
-                    state = WeightSensor.STATE_ONLINE;
-                    break;
-                }
-                case UnderLoad: {
-                    state = WeightSensor.STATE_UNDER_LOAD;
-                    break;
-                }
-                case OverLoad: {
-                    state = WeightSensor.STATE_OVERLOAD;
-                    break;
-                }
-                default: {
-                    state = MemoryWeightSensor.STATE_OFFLINE;
-                    break;
-                }
-            }
-        }
-        return state;
-    }
-
-    public static void buildDigitalSensors(DigitalSensorManager sensorManager, WeightDataHolder weightDataHolder) {
-        sensorManager.shutdown();
-        sensorManager.getGroups().clear();
-        for (DeviceConnection conn : weightDataHolder.getConnections()) {
-            try {
-                int count = (int) weightDataHolder.getWeightSensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
-                if (count <= 0) {
-                    continue;
-                }
-                DigitalSensorGroup group = sensorManager.NewGroup();
-                switch (conn.getType()) {
-                    //switch (2) {
-                    default: {
-                        log.info("Unknow connection type: {}", conn.getType());
-                        break;
-                    }
-                    case DeviceConnection.TYPE_SERIAL: {
-                        log.debug("Add group on serial: {}", conn.getTarget());
-                        group.setCommMode(DigitalSensorGroup.ECommMode.Com);
-                        group.setCommSerial(conn.getTarget());
-                        break;
-                    }
-                    case DeviceConnection.TYPE_NET: {
-                        String target = conn.getTarget();
-                        //target = "127.0.0.1:8200";
-                        log.debug("Add group on tcp: {}", target);
-                        String[] parts = target.split(":");
-                        group.setCommMode(DigitalSensorGroup.ECommMode.Net);
-                        group.setCommAddress(parts[0]);
-                        if (parts.length > 1) {
-                            group.setCommPort(Integer.parseInt(parts[1]));
-                        } else {
-                            final int defaultPort = 10086;
-                            log.info("Use default net port: {}", defaultPort);
-                            group.setCommPort(defaultPort);
-                        }
-                        break;
-                    }
-                }
-                log.debug("Build sensors: {}", count);
-                group.BuildSensors(count);
-
-                int pos = 0;
-                for (WeightSensor sen : weightDataHolder.getWeightSensors()) {
-                    if (sen.getConnectionId().equals(conn.getId())) {
-                        log.debug("Config sensor: conn={}, sen={}", conn, sen);
-                        val sensor = group.getSensors().get(pos++);
-                        val params = sensor.getParams();
-                        params.setAddress(sen.getAddress());
-                        params.setDeviceSn(sen.getDeviceSn());
-                        if (sen.getHasElabel()) {
-                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
-                        }
-
-                        Slot slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().get();
-                        val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
-                        sensor.setSubGroup(ms.getSlotNo());
-                        setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
-                        if (slot.getHasElabel()) {
-                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
-                        }
-
-                    }
-                }
-            } catch (Exception ex) {
-                log.error("buildDigitalSensors error: connId={}, target={}", conn.getId(), conn.getTarget(), ex);
-            }
-        }
-    }
-
-    private static void setSkuToSensor(MemorySku sku, MaterialInfo mat)
-    {
-        if (sku != null) {
-            mat.setNumber(sku.getSkuNo());
-            mat.setName(sku.getName());
-            mat.setAPW(sku.getApw() == null ? 0 : sku.getApw() / 1000.0);
-            mat.setTolerancePercent(sku.getTolerance() == null ? 0 : sku.getTolerance());
-            mat.setShelfLifeDays(sku.getShelfLifeOpenDays() == null ? 0 : sku.getShelfLifeOpenDays());
-        }
     }
 
     /**
@@ -336,7 +146,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             scanManager = new DigitalSensorManager();
         }
         log.debug("Try build connection");
-        buildDigitalSensorGroups(scanManager, connections);
+        DigitalSensorUtils.buildDigitalSensorGroups(scanManager, connections);
         scanManager.open();
         for (val g : scanManager.getGroups()) {
             log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
@@ -396,47 +206,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         });
     }
 
-    public static void buildDigitalSensorGroups(DigitalSensorManager sensorManager, Collection<DeviceConnection> connections) {
-        sensorManager.shutdown();
-        sensorManager.getGroups().clear();
-        for (DeviceConnection conn : connections) {
-            try {
-                DigitalSensorGroup group = sensorManager.NewGroup();
-                switch (conn.getType()) {
-                    default: {
-                        log.info("Unknow connection type: {}", conn.getType());
-                        break;
-                    }
-                    case DeviceConnection.TYPE_SERIAL: {
-                        log.debug("Add group on serial: {}", conn.getTarget());
-                        group.setConnectionId(conn.getId());
-                        group.setCommMode(DigitalSensorGroup.ECommMode.Com);
-                        group.setCommSerial(conn.getTarget());
-                        break;
-                    }
-                    case DeviceConnection.TYPE_NET: {
-                        log.debug("Add group on tcp: {}", conn.getTarget());
-                        String[] parts = conn.getTarget().split(":");
-                        group.setConnectionId(conn.getId());
-                        group.setCommMode(DigitalSensorGroup.ECommMode.Net);
-                        group.setCommAddress(parts[0]);
-                        if (parts.length > 1) {
-                            group.setCommPort(Integer.parseInt(parts[1]));
-                        } else {
-                            final int defaultPort = 10086;
-                            log.info("Use default net port: {}", defaultPort);
-                            group.setCommPort(defaultPort);
-                        }
-                        break;
-                    }
-                }
-                log.debug("Build single default sensor");
-                group.BuildSingleDefaultSensors();
-            } catch (Exception ex) {
-                log.error("buildDigitalSensors error: connId={}, target={}", conn.getId(), conn.getTarget(), ex);
-            }
-        }
-    }
 
     private ExecutorService ThreadPool = null;
 
@@ -456,7 +225,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             return;
         }
         DigitalSensorItem sensor = sensorManager.FirstOrNull(slotNo);
-        setSkuToSensor(sku, sensor.getPassenger().getMaterial());
+        DigitalSensorUtils.setSkuToSensor(sku, sensor.getPassenger().getMaterial());
     }
 
     @Override
@@ -504,8 +273,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public boolean isScanning()
-    {
+    public boolean isScanning() {
         if (scanManager == null) {
             return false;
         }

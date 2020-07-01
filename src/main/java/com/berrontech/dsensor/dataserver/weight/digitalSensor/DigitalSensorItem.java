@@ -381,12 +381,14 @@ public class DigitalSensorItem {
 
     public void UpdateHighResolution2(boolean skipUnStable) throws Exception {
         try {
-            //log.debug("#{} UpdateHighResolution2", Params.getAddress());
+            log.debug("#{} UpdateHighResolution2", Params.getAddress());
+            long ticks = System.currentTimeMillis();
             DataPacket packet = DataPacket.BuildGetHighResolution((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
             }
-            //log.debug("#{} UpdateHighResolution2 done", Params.getAddress());
+            ticks = System.currentTimeMillis() - ticks;
+            log.debug("#{} UpdateHighResolution2 done, usedMs={}", Params.getAddress(), ticks);
             SetCommResult(true);
             byte counter = packet.Content[0];
             if (counter == 0) {
