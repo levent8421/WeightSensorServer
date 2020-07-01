@@ -13,10 +13,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -82,11 +79,11 @@ public class SensorMetaDataService {
             sensors.add(sensor);
             slot.setSensors(sensors);
         });
-        final Map<String, MemorySlot> slotTable = slotMap
-                .values()
+        final Map<String, MemorySlot> slotTable = new HashMap<>(16);
+        slotMap.values()
                 .stream()
                 .peek(slot -> slot.setData(new MemoryWeightData()))
-                .collect(Collectors.toMap(MemorySlot::getSlotNo, v -> v));
+                .forEach(slot -> slotTable.put(slot.getSlotNo(), slot));
         weightDataHolder.setSlotTable(slotTable);
     }
 }
