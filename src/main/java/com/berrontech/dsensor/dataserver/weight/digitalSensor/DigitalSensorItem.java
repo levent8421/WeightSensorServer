@@ -414,7 +414,7 @@ public class DigitalSensorItem {
                     if (Passenger.getMaterial().getAPW() > 0) {
                         // apw from passenger will replace local apw
                         Values.setAPW(Passenger.getMaterial().getAPW());
-                        setCountInAccuracy(Math.abs(1 - Values.getPieceCountAccuracy()) <= Passenger.getMaterial().getTolerance());
+                        setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 || Math.abs(1 - Values.getPieceCountAccuracy()) <= Passenger.getMaterial().getTolerance());
                         TryNotifyListener();
                     } else {
                         setCountInAccuracy(true);

@@ -3,10 +3,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorGroup;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorParams;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.MaterialInfo;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -139,5 +136,6 @@ public class DigitalSensorUtils {
             mat.setShelfLifeDays(sku.getShelfLifeOpenDays() == null ? 0 : sku.getShelfLifeOpenDays());
         }
     }
+
 
 }

@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
@@ -225,7 +226,11 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             return;
         }
         DigitalSensorItem sensor = sensorManager.FirstOrNull(slotNo);
-        DigitalSensorUtils.setSkuToSensor(sku, sensor.getPassenger().getMaterial());
+        if (sensor == null) {
+            log.warn("Slot({}) is not found", slotNo);
+        } else {
+            DigitalSensorUtils.setSkuToSensor(sku, sensor.getPassenger().getMaterial());
+        }
     }
 
     @Override
@@ -242,7 +247,25 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     
     @Override
     public void onSlotStateChanged(String slotNo, int state) {
-
+        DigitalSensorItem sensor = sensorManager.FirstOrNull(slotNo);
+        if (sensor == null) {
+            log.warn("Slot({}) is not found", slotNo);
+        } else {
+            switch (state) {
+                case WeightSensor.STATE_ONLINE: {
+                    sensor.getParams().setEnabled(true);
+                    break;
+                }
+                case WeightSensor.STATE_DISABLE: {
+                    sensor.getParams().setEnabled(false);
+                    break;
+                }
+                default: {
+                    log.warn("#{} try set slot({}) to an unaccepted state: {}", sensor.getParams().getAddress(), slotNo, state);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -257,12 +280,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public void doZero(String slotNo) {
         val sensor = sensorManager.FirstOrNull(slotNo);
         if (sensor == null) {
-            log.info("Can not found slot ({})", slotNo);
+            log.info("Can not found slot({})", slotNo);
         } else {
             try {
                 sensor.DoZero(true);
             } catch (Exception ex) {
-                log.warn("#{} Do zero failed,{}", sensor.getParams().getAddress(), ex.getMessage());
+                log.warn("#{} Slot({}) Do zero failed,{}", sensor.getParams().getAddress(), slotNo, ex.getMessage());
             }
         }
     }
