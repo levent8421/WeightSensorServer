@@ -301,6 +301,15 @@ public class DigitalSensorGroup {
                         log.debug("#{} Packet Lost", sensor.getParams().getAddress());
                     } catch (IOException ex) {
                         // port closed
+                        try {
+                            Close();    // try release port
+                        } catch (Exception ex2) {
+                        }
+                        for (DigitalSensorItem s : Sensors)
+                        {
+                            s.setOnline(false);
+                            s.TryNotifyListener();
+                        }
                         log.info("Port is closed");
                         break;
                     } catch (Exception ex) {

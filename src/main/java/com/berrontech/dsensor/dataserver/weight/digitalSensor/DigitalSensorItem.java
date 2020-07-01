@@ -458,7 +458,7 @@ public class DigitalSensorItem {
     int LastNotifyPCS = -999999;
     double LastNotifyWeight = -999999;
 
-    private void TryNotifyListener() {
+    public void TryNotifyListener() {
         if (LatsNotifyStatus != getFlatStatus()) {
             switch (getFlatStatus()) {
                 case Offline:
