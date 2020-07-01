@@ -52,7 +52,7 @@ public class DigitalSensorGroup {
     }
 
     public DigitalSensorDriver Driver = new DigitalSensorDriver();
-    private int CommInterval = 0;
+    private int CommInterval = 10;
     private int CommLongInterval = 50;
 
     private int ReadTimeout = 100;

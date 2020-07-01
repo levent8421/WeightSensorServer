@@ -20,7 +20,7 @@ public class DataBuffer {
     private int bufferOffset = 0;
     private Lock lock = new ReentrantLock();
     private int workingCounter = 0;
-    private int readInterval = 10;
+    private int readInterval = 5;
 
     public boolean isWorking() {
         lock.lock();
