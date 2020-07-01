@@ -153,7 +153,7 @@ public abstract class BasicConnection {
                         }
                     }
                 }
-                Thread.sleep(100);
+                Thread.sleep(20);
             }
             return null;
         } catch (Exception ex) {

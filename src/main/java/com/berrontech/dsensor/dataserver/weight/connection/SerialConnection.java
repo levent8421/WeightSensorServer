@@ -59,7 +59,7 @@ public class SerialConnection extends BasicConnection {
                                     getRecvBuffer().push(buf, 0, cnt);
                                     notifyReceived();
                                 }
-                                Thread.sleep(10);
+                                Thread.sleep(5);
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
