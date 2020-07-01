@@ -239,12 +239,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             sensorManager.shutdown();
         }
     }
-
-    @Override
-    public void updateSlotNo(Integer slotId, String slotNo) {
-
-    }
-
+    
     @Override
     public void onSlotStateChanged(String slotNo, int state) {
 

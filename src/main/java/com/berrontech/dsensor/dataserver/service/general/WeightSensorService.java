@@ -95,4 +95,12 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @param hasElable 是否有电子标签
      */
     void updateElableState(Integer id, Boolean hasElable);
+
+    /**
+     * Find Weight Sensor By 485 Address
+     *
+     * @param address address
+     * @return Sensor List
+     */
+    List<WeightSensor> findByAddress(int address);
 }

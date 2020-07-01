@@ -152,4 +152,9 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
             throw new InternalServerErrorException("Error On Update Elable State, rows=" + rows);
         }
     }
+
+    @Override
+    public List<WeightSensor> findByAddress(int address) {
+        return weightSensorMapper.selectByAddress(address);
+    }
 }

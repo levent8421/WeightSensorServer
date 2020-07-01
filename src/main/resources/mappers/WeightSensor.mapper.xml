@@ -10,7 +10,7 @@
         ws.zero_reference as ws_zero_reference,
         ws.config_str     as ws_config_str,
         ws.slot_id       as ws_slot_id,
-        ws.has_elable as ws_has_elable ,
+        ws.has_elabel as ws_has_elabel,
         ws.create_time   as ws_create_time,
         ws.update_time   as ws_update_time,
         ws.deleted       as ws_deleted
@@ -59,7 +59,7 @@
     </update>
     <update id="updateHasElableBySlotId">
         update t_weight_sensor as ws
-        set ws.has_elable=#{hasElable}
+        set ws.has_elabel=#{hasElable}
         where ws.slot_id = #{slotId}
     </update>
     <select id="selectAllWithSlot" resultMap="rm_with_all">
@@ -74,4 +74,8 @@
         set ws.has_elabel=#{hasElabel}
         where ws.id = #{id}
     </update>
+    <select id="selectByAddress" resultMap="rm_base">
+        <include refid="select"/>
+        and ws.address=#{address}
+    </select>
 </mapper>

@@ -70,4 +70,12 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return rows
      */
     int updateHasElable(@Param("id") Integer id, @Param("hasElabel") Boolean hasElabel);
+
+    /**
+     * Select Sensors By 485 Address
+     *
+     * @param address address
+     * @return Sensor List
+     */
+    List<WeightSensor> selectByAddress(@Param("address") int address);
 }

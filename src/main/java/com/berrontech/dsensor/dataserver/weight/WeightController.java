@@ -52,14 +52,6 @@ public interface WeightController {
     void shutdown();
 
     /**
-     * 设置逻辑货道号
-     *
-     * @param slotId 货道ID
-     * @param slotNo 货道号
-     */
-    void updateSlotNo(Integer slotId, String slotNo);
-
-    /**
      * 货道状态被改变时调用
      *
      * @param slotNo 货道号

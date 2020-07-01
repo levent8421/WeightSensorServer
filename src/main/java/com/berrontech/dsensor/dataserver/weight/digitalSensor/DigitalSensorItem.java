@@ -1,6 +1,5 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
-import com.berrontech.dsensor.dataserver.common.util.ByteUtils;
 import com.berrontech.dsensor.dataserver.common.util.QrCodeUtil;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
@@ -381,14 +380,14 @@ public class DigitalSensorItem {
 
     public void UpdateHighResolution2(boolean skipUnStable) throws Exception {
         try {
-            log.debug("#{} UpdateHighResolution2", Params.getAddress());
-            long ticks = System.currentTimeMillis();
+//            log.debug("#{} UpdateHighResolution2", Params.getAddress());
+//            long ticks = System.currentTimeMillis();
             DataPacket packet = DataPacket.BuildGetHighResolution((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
             }
-            ticks = System.currentTimeMillis() - ticks;
-            log.debug("#{} UpdateHighResolution2 done, usedMs={}", Params.getAddress(), ticks);
+//            ticks = System.currentTimeMillis() - ticks;
+//            log.debug("#{} UpdateHighResolution2 done, usedMs={}", Params.getAddress(), ticks);
             SetCommResult(true);
             byte counter = packet.Content[0];
             if (counter == 0) {
