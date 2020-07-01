@@ -73,15 +73,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     }
 
-    private void startSensorManager() {
-        DigitalSensorUtils.buildDigitalSensors(sensorManager, weightDataHolder);
-        if (sensorManager.getSensorListener() == null) {
-            sensorManager.setSensorListener(new DigitalSensorListenerImpl(weightDataHolder, weightNotifier));
-        }
-        sensorManager.open();
-        sensorManager.startReading();
-    }
-
     /**
      * 主循环
      *
@@ -122,11 +113,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     ////////////////////////////////////////////////////////////////////////////
     // WeightControllerImpl
 
-    DigitalSensorManager scanManager;
-    boolean scanning = false;
-    final Object scanLock = new Object();
-
-
     @Override
     public void startScan(Collection<DeviceConnection> connections) throws IOException {
         synchronized (scanLock) {
@@ -161,65 +147,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         startScan(Collections.singletonList(connection));
     }
 
-    private void processScanResult() {
-        createThreadPool().execute(() ->
-        {
-            try {
-                while (scanManager.isOpened()) {
-                    boolean done = true;
-                    for (val g : scanManager.getGroups()) {
-                        if (g.isAddressPrograming()) {
-                            done = false;
-                            break;
-                        }
-                    }
-                    log.debug("Scan done, try build weight sensors");
-                    if (done) {
-                        List<MemoryWeightSensor> sensors = new ArrayList<>();
-                        // convert to MemoryWeightSensor objects
-                        for (val g : scanManager.getGroups()) {
-                            for (val s : g.getScanResult()) {
-                                MemoryWeightSensor sensor = new MemoryWeightSensor();
-                                sensor.setConnectionId(g.getConnectionId());
-                                sensor.setDeviceSn(s.getDeviceSn());
-                                sensor.setAddress485(s.getAddress());
-                                sensor.setState(MemoryWeightSensor.STATE_ONLINE);
-                                sensor.setHasElable(s.hasELabel());
-                                sensors.add(sensor);
-                            }
-                        }
-                        log.debug("Build done, count={}", sensors.size());
-
-                        weightNotifier.notifyScanDone(sensors);
-                        break;
-                    } else {
-                        Thread.sleep(300);
-                    }
-                }
-            } catch (Exception ex) {
-                log.warn("Scan failed", ex);
-            } finally {
-                scanManager.shutdown();
-                synchronized (scanLock) {
-                    scanning = false;
-                }
-            }
-        });
-    }
-
-
-    private ExecutorService ThreadPool = null;
-
-    private ExecutorService createThreadPool() {
-        if (ThreadPool == null) {
-            ThreadPool = ThreadUtils.createThreadPoolExecutorService(2, 2, "WeightControllerThread");
-        }
-        return ThreadPool;
-    }
-
-
-    ///////////////////////////////////////////////////////////////
-
     @Override
     public void setSku(String slotNo, MemorySku sku) {
         if (sensorManager == null) {
@@ -244,7 +171,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             sensorManager.shutdown();
         }
     }
-    
+
     @Override
     public void onSlotStateChanged(String slotNo, int state) {
         DigitalSensorItem sensor = sensorManager.FirstOrNull(slotNo);
@@ -297,5 +224,82 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         }
         return scanManager.isOpened();
     }
+
+
+
+
+
+
+    //////////////////////////////////////////////////////////
+    // local functions
+
+    DigitalSensorManager scanManager;
+    boolean scanning = false;
+    final Object scanLock = new Object();
+    private ExecutorService threadPool = null;
+
+    private ExecutorService createThreadPool() {
+        if (threadPool == null) {
+            threadPool = ThreadUtils.createThreadPoolExecutorService(2, 2, "WeightControllerThread");
+        }
+        return threadPool;
+    }
+
+    private void startSensorManager() {
+        DigitalSensorUtils.buildDigitalSensors(sensorManager, weightDataHolder);
+        if (sensorManager.getSensorListener() == null) {
+            sensorManager.setSensorListener(new DigitalSensorListenerImpl(weightDataHolder, weightNotifier));
+        }
+        sensorManager.open();
+        sensorManager.startReading();
+    }
+
+    private void processScanResult() {
+        createThreadPool().execute(() ->
+        {
+            try {
+                while (scanManager.isOpened()) {
+                    boolean done = true;
+                    for (val g : scanManager.getGroups()) {
+                        if (g.isAddressPrograming()) {
+                            done = false;
+                            break;
+                        }
+                    }
+                    log.debug("Scan done, try build weight sensors");
+                    if (done) {
+                        List<MemoryWeightSensor> sensors = new ArrayList<>();
+                        // convert to MemoryWeightSensor objects
+                        for (val g : scanManager.getGroups()) {
+                            for (val s : g.getScanResult()) {
+                                MemoryWeightSensor sensor = new MemoryWeightSensor();
+                                sensor.setConnectionId(g.getConnectionId());
+                                sensor.setDeviceSn(s.getDeviceSn());
+                                sensor.setAddress485(s.getAddress());
+                                sensor.setState(MemoryWeightSensor.STATE_ONLINE);
+                                sensor.setHasElable(s.hasELabel());
+                                sensors.add(sensor);
+                            }
+                        }
+                        log.debug("Build done, count={}", sensors.size());
+
+                        weightNotifier.notifyScanDone(sensors);
+                        break;
+                    } else {
+                        Thread.sleep(300);
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Scan failed", ex);
+            } finally {
+                scanManager.shutdown();
+                synchronized (scanLock) {
+                    scanning = false;
+                }
+            }
+        });
+    }
+
+
 
 }

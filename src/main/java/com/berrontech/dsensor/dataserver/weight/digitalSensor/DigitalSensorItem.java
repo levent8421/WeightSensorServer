@@ -125,12 +125,34 @@ public class DigitalSensorItem {
     public int HighResCounter;
     public boolean CountInAccuracy = true;
 
-    public boolean IsOnline() {
+    public boolean isOnline() {
         return Online && (getTotalSuccess() > 0 && getContinueErrors() < 2);
     }
 
     public boolean IsCountOutOfAccuracy() {
         return !isCountInAccuracy();
+    }
+
+    public enum EFlatStatus {
+        Offline,
+        Disabled,
+        Normal,
+        Underload,
+        Overload,
+    }
+
+    public EFlatStatus getFlatStatus() {
+        if (!isOnline()) {
+            return EFlatStatus.Offline;
+        } else if (Params.isDisabled()) {
+            return EFlatStatus.Disabled;
+        } else if (Values.isUnderLoad()) {
+            return EFlatStatus.Underload;
+        } else if (Values.isOverLoad()) {
+            return EFlatStatus.Overload;
+        } else {
+            return EFlatStatus.Normal;
+        }
     }
 
     private void SetCommResult(boolean ok) {
@@ -432,14 +454,25 @@ public class DigitalSensorItem {
     }
 
 
-    DigitalSensorValues.EStatus LatsNotifyState = DigitalSensorValues.EStatus.Unknow;
+    EFlatStatus LatsNotifyStatus = null;
     int LastNotifyPCS = -999999;
     double LastNotifyWeight = -999999;
 
     private void TryNotifyListener() {
-        if (LatsNotifyState != Values.getStatus()) {
-            if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
-                LatsNotifyState = Values.getStatus();
+        if (LatsNotifyStatus != getFlatStatus()) {
+            switch (getFlatStatus()) {
+                case Offline:
+                case Disabled:
+                case Normal: {
+                    if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
+                        LatsNotifyStatus = getFlatStatus();
+                    }
+                    break;
+                }
+                default: {
+                    // do not notify these status
+                    break;
+                }
             }
         }
         if (LastNotifyWeight != Values.getNetWeight().doubleValue()) {

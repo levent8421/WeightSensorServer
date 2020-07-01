@@ -111,27 +111,27 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     private static int toState(DigitalSensorItem sensor) {
         int state;
-        if (!sensor.IsOnline()) {
-            state = WeightSensor.STATE_OFFLINE;
-        } else {
-            switch (sensor.getValues().getStatus()) {
-                case Dynamic:
-                case Stable: {
-                    state = WeightSensor.STATE_ONLINE;
-                    break;
-                }
-                case UnderLoad: {
-                    state = WeightSensor.STATE_UNDER_LOAD;
-                    break;
-                }
-                case OverLoad: {
-                    state = WeightSensor.STATE_OVERLOAD;
-                    break;
-                }
-                default: {
-                    state = MemoryWeightSensor.STATE_OFFLINE;
-                    break;
-                }
+        switch (sensor.getFlatStatus()) {
+            case Offline: {
+                state = WeightSensor.STATE_OFFLINE;
+                break;
+            }
+            case Disabled: {
+                state = WeightSensor.STATE_DISABLE;
+                break;
+            }
+            case Underload: {
+                state = WeightSensor.STATE_UNDER_LOAD;
+                break;
+            }
+            case Overload: {
+                state = WeightSensor.STATE_OVERLOAD;
+                break;
+            }
+            case Normal:
+            default: {
+                state = WeightSensor.STATE_ONLINE;
+                break;
             }
         }
         return state;
