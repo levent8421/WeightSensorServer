@@ -28,11 +28,10 @@ public interface WeightController {
     /**
      * 扫描指定连接下指定数量的传感器
      *
-     * @param connection     连接
-     * @param countOfSensors 传感器数量
+     * @param connection 连接
      * @throws IOException 开启扫描失败时抛出
      */
-    void startScan(DeviceConnection connection, int countOfSensors) throws IOException;
+    void startScan(DeviceConnection connection) throws IOException;
 
     /**
      * 更新货道SKU
@@ -79,4 +78,11 @@ public interface WeightController {
      * @param slotNo 货道号
      */
     void doZero(String slotNo);
+
+    /**
+     * 查看是否正在扫描
+     *
+     * @return scanning?
+     */
+    boolean isScanning();
 }

@@ -22,6 +22,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SlotVo;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.WeightDataVo;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
+import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.stereotype.Component;
@@ -68,15 +69,18 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
     private final WeightSensorService weightSensorService;
     private final SlotService slotService;
     private final ApplicationConfigService applicationConfigService;
+    private final SensorMetaDataService sensorMetaDataService;
 
     public SimpleWeightNotifier(ApiClient apiClient,
                                 WeightSensorService weightSensorService,
                                 SlotService slotService,
-                                ApplicationConfigService applicationConfigService) {
+                                ApplicationConfigService applicationConfigService,
+                                SensorMetaDataService sensorMetaDataService) {
         this.apiClient = apiClient;
         this.weightSensorService = weightSensorService;
         this.slotService = slotService;
         this.applicationConfigService = applicationConfigService;
+        this.sensorMetaDataService = sensorMetaDataService;
     }
 
     @Override
@@ -195,7 +199,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
 
     @Override
     public void countChange(Collection<MemorySlot> slots) {
-        val dataList = asSlotVo(slots);
+        val dataList = memoryObject2SlotVo(slots);
         val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_COUNT_CHANGED, dataList);
         sendMessage(message);
     }
@@ -203,7 +207,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
     @Override
     public void deviceStateChanged(Collection<MemorySlot> slots, int state) {
         log.info("Slot State Changed: state=[{}]", state);
-        val dataList = asSlotVo(slots);
+        val dataList = memoryObject2SlotVo(slots);
         val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_STATE_CHANGED, dataList);
         for (MemorySlot slot : slots) {
             slotService.updateState(slot.getId(), state);
@@ -212,12 +216,18 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void notifySensorList(Collection<MemoryWeightSensor> sensors) {
-        final List<Slot> slots = createOrUpdateSlot(sensors);
-        final List<SlotVo> resList = asSlotVo(slots);
+    public void notifySlotList(Collection<Slot> slots) {
+        val resList = entity2SlotVo(slots);
         val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_BALANCE_LIST, resList);
         sendMessage(message);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void notifyScanDone(Collection<MemoryWeightSensor> sensors) {
+        final List<Slot> slots = createOrUpdateSlot(sensors);
+        notifySlotList(slots);
+        sensorMetaDataService.refreshSlotTable();
     }
 
     @Override
@@ -247,18 +257,18 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
         return MessageUtils.nextSeqNo();
     }
 
-    private List<SlotVo> asSlotVo(List<Slot> slots) {
+    private List<SlotVo> entity2SlotVo(Collection<Slot> slots) {
         return slots.stream()
                 .map(MemorySlot::of)
                 .map(SlotVo::of)
                 .collect(Collectors.toList());
     }
 
-    private List<SlotVo> asSlotVo(Collection<MemorySlot> slots) {
-        return slots.stream().map(this::asSlotVo).collect(Collectors.toList());
+    private List<SlotVo> memoryObject2SlotVo(Collection<MemorySlot> slots) {
+        return slots.stream().map(this::memoryObject2SlotVo).collect(Collectors.toList());
     }
 
-    private SlotVo asSlotVo(MemorySlot slot) {
+    private SlotVo memoryObject2SlotVo(MemorySlot slot) {
         val slotVo = SlotVo.of(slot);
         val weightData = slot.getData();
         slotVo.setData(WeightDataVo.of(weightData));

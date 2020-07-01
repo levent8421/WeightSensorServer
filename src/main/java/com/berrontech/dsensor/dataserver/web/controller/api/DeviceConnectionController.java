@@ -2,13 +2,16 @@ package com.berrontech.dsensor.dataserver.web.controller.api;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
 import lombok.val;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notEmpty;
@@ -29,11 +32,15 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
 public class DeviceConnectionController extends AbstractEntityController<DeviceConnection> {
     private final DeviceConnectionService deviceConnectionService;
     private final WeightSensorService weightSensorService;
+    private final WeightController weightController;
 
-    protected DeviceConnectionController(DeviceConnectionService deviceConnectionService, WeightSensorService weightSensorService) {
+    protected DeviceConnectionController(DeviceConnectionService deviceConnectionService,
+                                         WeightSensorService weightSensorService,
+                                         WeightController weightController) {
         super(deviceConnectionService);
         this.deviceConnectionService = deviceConnectionService;
         this.weightSensorService = weightSensorService;
+        this.weightController = weightController;
     }
 
     /**
@@ -78,5 +85,32 @@ public class DeviceConnectionController extends AbstractEntityController<DeviceC
         deviceConnectionService.deleteById(id);
         weightSensorService.deleteByConnection(id);
         return GeneralResult.ok();
+    }
+
+    /**
+     * 开始扫描货道
+     *
+     * @param id 连接ID
+     * @return GR
+     */
+    @PostMapping("/{id}/_scan")
+    public GeneralResult<Void> startScan(@PathVariable("id") Integer id) {
+        final DeviceConnection connection = deviceConnectionService.require(id);
+        try {
+            weightController.startScan(connection);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error On Scan!", e);
+        }
+        return GeneralResult.ok();
+    }
+
+    /**
+     * 是否正在扫描
+     *
+     * @return GR
+     */
+    @GetMapping("/_scanning")
+    public GeneralResult<Boolean> isScanning() {
+        return GeneralResult.ok(weightController.isScanning());
     }
 }

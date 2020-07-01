@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.tcpclient.notify;
 
+import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 
@@ -37,11 +38,18 @@ public interface WeightNotifier {
     void deviceStateChanged(Collection<MemorySlot> slots, int state);
 
     /**
-     * 通知扫描到的所有重力传感器
+     * 通知货道列表数据
      *
-     * @param sensors 传感器 readonly
+     * @param slots 货道列表 readonly
      */
-    void notifySensorList(Collection<MemoryWeightSensor> sensors);
+    void notifySlotList(Collection<Slot> slots);
+
+    /**
+     * 通知传感器扫描结束
+     *
+     * @param sensors sensors
+     */
+    void notifyScanDone(Collection<MemoryWeightSensor> sensors);
 
     /**
      * 传感器状态发生改变时调用
