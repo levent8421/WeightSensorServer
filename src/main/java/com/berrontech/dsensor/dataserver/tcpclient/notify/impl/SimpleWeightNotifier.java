@@ -25,6 +25,9 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +46,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @Slf4j
-public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
+public class SimpleWeightNotifier implements WeightNotifier, MessageListener, ApplicationContextAware {
     /**
      * Action 通知货道数据改变
      */
@@ -69,18 +72,17 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
     private final WeightSensorService weightSensorService;
     private final SlotService slotService;
     private final ApplicationConfigService applicationConfigService;
-    private final SensorMetaDataService sensorMetaDataService;
+    private SensorMetaDataService sensorMetaDataService;
+    private ApplicationContext applicationContext;
 
     public SimpleWeightNotifier(ApiClient apiClient,
                                 WeightSensorService weightSensorService,
                                 SlotService slotService,
-                                ApplicationConfigService applicationConfigService,
-                                SensorMetaDataService sensorMetaDataService) {
+                                ApplicationConfigService applicationConfigService) {
         this.apiClient = apiClient;
         this.weightSensorService = weightSensorService;
         this.slotService = slotService;
         this.applicationConfigService = applicationConfigService;
-        this.sensorMetaDataService = sensorMetaDataService;
     }
 
     @Override
@@ -227,7 +229,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
     public void notifyScanDone(Collection<MemoryWeightSensor> sensors) {
         final List<Slot> slots = createOrUpdateSlot(sensors);
         notifySlotList(slots);
-        sensorMetaDataService.refreshSlotTable();
+        obtainSensorMetaDataService().refreshSlotTable();
     }
 
     @Override
@@ -283,5 +285,22 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener {
         } catch (MessageException e) {
             log.error("Error On Send Notify Message:{}", message, e);
         }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    /**
+     * 懒加载SensorMetaDataService Component 避免Spring循环依赖出现
+     *
+     * @return SensorMateDataService
+     */
+    private SensorMetaDataService obtainSensorMetaDataService() {
+        if (this.sensorMetaDataService == null) {
+            this.sensorMetaDataService = this.applicationContext.getBean(SensorMetaDataService.class);
+        }
+        return this.sensorMetaDataService;
     }
 }
