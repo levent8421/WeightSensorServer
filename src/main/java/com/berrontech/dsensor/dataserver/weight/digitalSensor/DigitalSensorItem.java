@@ -563,7 +563,11 @@ public class DigitalSensorItem {
             SetELabelStatus(status);
         }
         if (!Objects.equals(LastPartNumber, number)) {
-            SetELabelPartNumber("SKU: " + number);  // add prefix: SKU
+            if (TextUtils.isTrimedEmpty(number)) {
+                SetELabelPartNumber(number);  // add prefix: SKU
+            } else {
+                SetELabelPartNumber("SKU: " + number);  // add prefix: SKU
+            }
             LastPartNumber = number;
         }
         if (!Objects.equals(LastPartName, name)) {
