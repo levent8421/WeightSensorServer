@@ -90,7 +90,9 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         //log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
         try {
             final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
-            if (slot != null) {
+            if (slot == null) {
+                log.debug("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getShortName());
+            } else {
                 if (slot.getData() == null) {
                     slot.setData(new MemoryWeightData());
                 }

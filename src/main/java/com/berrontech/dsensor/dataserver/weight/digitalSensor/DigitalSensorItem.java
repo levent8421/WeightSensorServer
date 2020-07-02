@@ -564,7 +564,7 @@ public class DigitalSensorItem {
         }
         if (!Objects.equals(LastPartNumber, number)) {
             if (TextUtils.isTrimedEmpty(number)) {
-                SetELabelPartNumber(number);  // add prefix: SKU
+                SetELabelPartNumber(number);
             } else {
                 SetELabelPartNumber("SKU: " + number);  // add prefix: SKU
             }
