@@ -14,9 +14,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * Create By Lastnika
+ * Create Time: 2020/7/2 14:59
+ * Class Name: DigitalSensorItem
+ * Author: Lastnika
+ * Description:
+ * DigitalSensorItem
+ *
+ * @author Levent8421
+ */
 @Slf4j
 @Data
 public class DigitalSensorItem {
+    private static final double MIN_WEIGHT_NOTIFY_DELTA = 0.001;
     public DigitalSensorDriver Driver;
     public DigitalSensorGroup Group;
 
@@ -475,14 +486,28 @@ public class DigitalSensorItem {
                 }
             }
         }
-        if (LastNotifyWeight != Values.getNetWeight().doubleValue()) {
-            if (getGroup().getManager().getSensorListener().onWeightChanged(this)) {
-                LastNotifyWeight = Values.getNetWeight().doubleValue();
-            }
-        }
+        tryNotifyWeightChanged(Values);
         if (LastNotifyPCS != Values.getPieceCount()) {
             if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
                 LastNotifyPCS = Values.getPieceCount();
+            }
+        }
+    }
+
+    /**
+     * 尝试通知重量数据改变
+     *
+     * @param values Sensor Values
+     */
+    private void tryNotifyWeightChanged(DigitalSensorValues values) {
+        final double currentNetWeight = values.getNetWeight().doubleValue();
+        if (Math.abs(LastNotifyWeight - currentNetWeight) >= MIN_WEIGHT_NOTIFY_DELTA) {
+            log.debug("#{}:  Try Notify WeightChanged! LastNotifyWeight=[{}], currentValue=[{}]",
+                    this.getParams().getAddress(),
+                    LastNotifyWeight,
+                    currentNetWeight);
+            if (getGroup().getManager().getSensorListener().onWeightChanged(this)) {
+                LastNotifyWeight = currentNetWeight;
             }
         }
     }

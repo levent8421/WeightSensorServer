@@ -23,7 +23,7 @@ public class AccessTokenInterceptor implements HandlerInterceptor {
         val url = request.getRequestURI();
         val method = request.getMethod();
         val ip = request.getRemoteAddr();
-        log.debug("Http Request: [{}]/[{}]/{}", ip, method, url);
+        log.debug("HTTP [{}] from [{}]: {}", method, ip, url);
         return true;
     }
 

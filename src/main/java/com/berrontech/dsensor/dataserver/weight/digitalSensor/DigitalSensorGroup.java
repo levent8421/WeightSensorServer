@@ -302,11 +302,12 @@ public class DigitalSensorGroup {
                     } catch (IOException ex) {
                         // port closed
                         try {
-                            Close();    // try release port
+                            // try release port
+                            Close();
                         } catch (Exception ex2) {
+                            // Ignore
                         }
-                        for (DigitalSensorItem s : Sensors)
-                        {
+                        for (DigitalSensorItem s : Sensors) {
                             s.setOnline(false);
                             s.TryNotifyListener();
                         }

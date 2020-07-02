@@ -87,17 +87,20 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     @Override
     public boolean onWeightChanged(DigitalSensorItem sensor) {
-        //log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
+        /*
+        log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
+        */
         try {
             final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
             if (slot == null) {
-                log.debug("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getShortName());
+                log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getShortName());
             } else {
                 if (slot.getData() == null) {
                     slot.setData(new MemoryWeightData());
                 }
-                slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
-                slot.getData().setWeightState(toState(sensor));
+                val data = slot.getData();
+                data.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+                data.setWeightState(toState(sensor));
                 slot.setState(toState(sensor));
             }
             return true;
