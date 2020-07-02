@@ -3,7 +3,6 @@ package com.berrontech.dsensor.dataserver.web.controller;
 import lombok.val;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.validation.constraints.NotNull;
 
 /**
  * Create by 郭文梁 2019/5/18 0018 12:38
@@ -30,7 +29,6 @@ public abstract class AbstractController {
      * @param page 页码
      * @return 页码
      */
-    @NotNull
     protected int defaultPage(Integer page) {
         return (page == null || page < 1) ? DEFAULT_PAGE : page;
     }
@@ -41,7 +39,6 @@ public abstract class AbstractController {
      * @param rows 每页大小
      * @return 每页大小
      */
-    @NotNull
     protected int defaultRows(Integer rows) {
         return (rows == null || rows < 1) ? DEFAULT_ROWS : rows;
     }
