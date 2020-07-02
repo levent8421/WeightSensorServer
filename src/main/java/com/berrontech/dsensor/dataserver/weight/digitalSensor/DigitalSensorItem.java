@@ -539,10 +539,23 @@ public class DigitalSensorItem {
             wgt = Values.getNetWeight() + " " + Values.getUnit();
             pcs = String.valueOf(Values.getPieceCount());
         } else {
-            number = " ";
-            name = " ";
+            number = null;
+            name = null;
             bin = getShortName();
             wgt = Values.getNetWeight() + " " + Values.getUnit();
+            pcs = null;
+        }
+        // use single space replace null value
+        if (number == null) {
+            number = " ";
+        }
+        if (name == null) {
+            name = " ";
+        }
+        if (bin == null) {
+            bin = " ";
+        }
+        if (pcs == null) {
             pcs = " ";
         }
 
@@ -550,7 +563,7 @@ public class DigitalSensorItem {
             SetELabelStatus(status);
         }
         if (!Objects.equals(LastPartNumber, number)) {
-            SetELabelPartNumber(number);
+            SetELabelPartNumber("SKU: " + number);  // add prefix: SKU
             LastPartNumber = number;
         }
         if (!Objects.equals(LastPartName, name)) {
