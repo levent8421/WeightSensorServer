@@ -61,13 +61,15 @@ public class HandlerAutoMapping implements ApplicationContextAware {
                 return handler.onMessage(message);
             } catch (BadRequestException e) {
                 val res = Payload.badRequest(e.getMessage(), null);
+                log.warn("Error On Handle Message, BadRequest[{}]", message.getSeqNo(), e);
                 return MessageUtils.replyMessage(message, res);
             } catch (InternalServerErrorException e) {
                 val res = Payload.error(e.getMessage(), null);
+                log.warn("Error On Handle Message, InternalServerError[{}]", message.getSeqNo(), e);
                 return MessageUtils.replyMessage(message, res);
             } catch (Exception e) {
                 val res = Payload.error("Error:" + e.getClass().getSimpleName() + "[" + e.getMessage() + "]");
-                log.warn("Error On Handle Message[{}]", message.getSeqNo(), e);
+                log.warn("Error On Handle Message, Unknown Exception[{}]", message.getSeqNo(), e);
                 return MessageUtils.replyMessage(message, res);
             }
         }

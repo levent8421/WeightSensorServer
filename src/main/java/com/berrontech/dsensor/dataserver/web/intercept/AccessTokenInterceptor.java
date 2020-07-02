@@ -22,7 +22,8 @@ public class AccessTokenInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         val url = request.getRequestURI();
         val method = request.getMethod();
-        log.debug("Http Request: [{}]:{}", method, url);
+        val ip = request.getRemoteAddr();
+        log.debug("Http Request: [{}]/[{}]/{}", ip, method, url);
         return true;
     }
 
