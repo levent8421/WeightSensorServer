@@ -436,11 +436,12 @@ public class DigitalSensorItem {
                     if (Passenger.getMaterial().getAPW() > 0) {
                         // apw from passenger will replace local apw
                         Values.setAPW(Passenger.getMaterial().getAPW());
-                        setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 || Math.abs(1 - Values.getPieceCountAccuracy()) <= Passenger.getMaterial().getTolerance());
-                        TryNotifyListener();
+                        // here SF set tolerance as gram not percent
+                        setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 || Math.abs(1 - Values.getPieceCountAccuracy()) * Passenger.getMaterial().getAPW()  <= Passenger.getMaterial().getTolerance() / 1000);
                     } else {
                         setCountInAccuracy(true);
                     }
+                    TryNotifyListener();
                     //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
                     UpdateELabel();
                     //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
@@ -456,6 +457,7 @@ public class DigitalSensorItem {
 
     EFlatStatus LatsNotifyStatus = null;
     int LastNotifyPCS = -999999;
+    boolean LastNotifyAccuracy = false;
     double LastNotifyWeight = -999999;
 
     public void TryNotifyListener() {
@@ -480,9 +482,10 @@ public class DigitalSensorItem {
                 LastNotifyWeight = Values.getNetWeight().doubleValue();
             }
         }
-        if (LastNotifyPCS != Values.getPieceCount()) {
+        if (LastNotifyPCS != Values.getPieceCount() || LastNotifyAccuracy != isCountInAccuracy()) {
             if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
                 LastNotifyPCS = Values.getPieceCount();
+                LastNotifyAccuracy = isCountInAccuracy();
             }
         }
     }
@@ -492,6 +495,7 @@ public class DigitalSensorItem {
     private String LastBinNo;
     private String LastWeight;
     private String LastPCS;
+    private boolean LastAccuracy;
 
     public void UpdateELabel() throws Exception {
         if (!Params.hasELabel()) {
@@ -582,9 +586,10 @@ public class DigitalSensorItem {
             SetELabelWeight(wgt);
             LastWeight = wgt;
         }
-        if (!Objects.equals(LastPCS, pcs)) {
+        if (!Objects.equals(LastPCS, pcs) || LastAccuracy != isCountInAccuracy()) {
             SetELabelPieceCount(pcs);
             LastPCS = pcs;
+            LastAccuracy = isCountInAccuracy();
         }
     }
 
