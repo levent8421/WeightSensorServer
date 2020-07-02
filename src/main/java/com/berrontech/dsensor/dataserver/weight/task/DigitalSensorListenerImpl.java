@@ -15,13 +15,24 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * Create By Lastnika
+ * Create Time: 2020/7/2 15:33
+ * Class Name: DigitalSensorListenerImpl
+ * Author: Lastnika
+ * Description:
+ * DigitalSensorListenerImpl
+ * 传感器监听器实现
+ *
+ * @author Lastnika
+ */
 @Slf4j
 public class DigitalSensorListenerImpl implements DigitalSensorListener {
     private final WeightDataHolder weightDataHolder;
     private final WeightNotifier weightNotifier;
 
-    public DigitalSensorListenerImpl(WeightDataHolder weightDataHolder,
-                                     WeightNotifier weightNotifier) {
+    DigitalSensorListenerImpl(WeightDataHolder weightDataHolder,
+                              WeightNotifier weightNotifier) {
         this.weightDataHolder = weightDataHolder;
         this.weightNotifier = weightNotifier;
     }
@@ -87,17 +98,17 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     @Override
     public boolean onWeightChanged(DigitalSensorItem sensor) {
-        //log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
         try {
             final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
             if (slot == null) {
-                log.debug("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getShortName());
+                log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getShortName());
             } else {
                 if (slot.getData() == null) {
                     slot.setData(new MemoryWeightData());
                 }
-                slot.getData().setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
-                slot.getData().setWeightState(toState(sensor));
+                val data = slot.getData();
+                data.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+                data.setWeightState(toState(sensor));
                 slot.setState(toState(sensor));
             }
             return true;
