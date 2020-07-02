@@ -7,6 +7,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Create by 郭文梁 2019/5/24 0024 11:12
@@ -18,12 +20,26 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Slf4j
 public class AccessTokenInterceptor implements HandlerInterceptor {
+    private final Map<String, Boolean> ignoreLogPathTable;
+
+    public AccessTokenInterceptor() {
+        ignoreLogPathTable = new HashMap<>(16);
+        initIgnorePathTable();
+    }
+
+    private void initIgnorePathTable() {
+        // 忽略Dashboard 轮询刷新日志
+        ignoreLogPathTable.put("/api/dashboard/slot-data", Boolean.TRUE);
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         val url = request.getRequestURI();
         val method = request.getMethod();
         val ip = request.getRemoteAddr();
-        log.debug("HTTP [{}] from [{}]: {}", method, ip, url);
+        if (!ignoreLogPathTable.containsKey(url)) {
+            log.debug("HTTP [{}] from [{}]: {}", method, ip, url);
+        }
         return true;
     }
 
