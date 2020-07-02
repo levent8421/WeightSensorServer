@@ -22,7 +22,7 @@ import java.util.concurrent.TimeoutException;
  * Description:
  * DigitalSensorItem
  *
- * @author Levent8421
+ * @author Lastnika
  */
 @Slf4j
 @Data
@@ -448,10 +448,10 @@ public class DigitalSensorItem {
                         // apw from passenger will replace local apw
                         Values.setAPW(Passenger.getMaterial().getAPW());
                         setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 || Math.abs(1 - Values.getPieceCountAccuracy()) <= Passenger.getMaterial().getTolerance());
-                        TryNotifyListener();
                     } else {
                         setCountInAccuracy(true);
                     }
+                    TryNotifyListener();
                     //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
                     UpdateELabel();
                     //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
@@ -971,7 +971,7 @@ public class DigitalSensorItem {
                 driver.Write(packet);
             }
         } catch (Exception ex) {
-            log.warn("#{} SetAllCreepCorrect failed", ex);
+            log.warn("SetAllCreepCorrect failed", ex);
         }
     }
 
@@ -1079,10 +1079,10 @@ public class DigitalSensorItem {
 
     public DataPacket OperateELabel(byte cmd, byte page, byte totalPage, byte[] data) throws Exception {
         int address = Params.getAddress() + DataPacket.AddressELabelStart;
-        int dataLen = 0;
+        /*int dataLen = 0;
         if (data != null) {
             dataLen = data.length;
-        }
+        }*/
         DataPacket packet = DataPacket.BuildELabelCmd((byte) address, cmd, page, totalPage, data);
         //log.debug("#{} OperateELabel: cmd={}, page={}, totalPage={}, dataLen={}", packet.getAddress(), cmd, page, totalPage, dataLen);
 
@@ -1090,7 +1090,7 @@ public class DigitalSensorItem {
         synchronized (Driver.getLock()) {
             do {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
-                if (packet.Content[1] == (byte) cmd) {
+                if (packet.Content[1] == cmd) {
                     SetCommResult(true);
                     return packet;
                 }
@@ -1100,58 +1100,40 @@ public class DigitalSensorItem {
     }
 
     private int ReadELabelAsInt(byte cmd, byte page, byte totalPage) throws Exception {
-        try {
-            DataPacket packet = OperateELabel(cmd, page, totalPage, null);
-            //log.debug("#{} ReadELabelAsInt: cmd={}, counts={}", Params.getAddress(), cmd, (packet.getContentLength() - 1));
-            return ByteHelper.bytesToInt(packet.Content, 3, 4);
-        } catch (IOException ex) {
-            // port is closed
-            throw ex;
-        } catch (Exception ex) {
-            // read error used default
-            throw ex;
-        }
+        DataPacket packet = OperateELabel(cmd, page, totalPage, null);
+        return ByteHelper.bytesToInt(packet.Content, 3, 4);
     }
 
     public int ReadELabelStatus() throws Exception {
         return ReadELabelAsInt((byte) DataPacket.EELabelCmdID.ReadStatus, (byte) 0, (byte) 1);
     }
 
-    public void WriteELabelStatus(int status) throws Exception {
+    public void WriteELabelStatus(int status) throws IOException {
         try {
-            DataPacket packet = OperateELabel((byte) DataPacket.EELabelCmdID.WriteStatus, (byte) 0, (byte) 1, ByteHelper.intToBytes(status));
-            byte result = packet.Content[0];
-            //log.debug("#{} WriteELabelStatus: status={}, result={}", Params.getAddress(), String.format("%x", status), result);
+            OperateELabel((byte) DataPacket.EELabelCmdID.WriteStatus, (byte) 0, (byte) 1, ByteHelper.intToBytes(status));
         } catch (IOException ex) {
             // port is closed
             throw ex;
         } catch (Exception ex) {
             // read error used defaultthrow ex;
+            // Ignore
         }
     }
 
     void WriteELabelString(byte cmd, byte page, byte totalPage, int color, String str) throws Exception {
-        try {
-            if (str == null) {
-                str = "";
-            }
-            byte[] bts = Charset.forName(DataPacket.DefaultCharsetName).encode(str).array();
-            byte[] content = new byte[1 + 4 + bts.length];
-            content[0] = (byte) DataPacket.EELabelPalette.Bpp16;
-            ByteHelper.intToBytes(color, content, 1);
-            System.arraycopy(bts, 0, content, 5, bts.length);
-            DataPacket packet = OperateELabel(cmd, page, totalPage, content);
-            byte result = packet.Content[0];
-            log.info("#{} WriteELabelString: str={}, result={}", Params.getAddress(), str, result);
-            if (result != DataPacket.EResult.OK) {
-                throw new Exception("WriteELabelString Failed");
-            }
-        } catch (IOException ex) {
-            // port is closed
-            throw ex;
-        } catch (Exception ex) {
-            // read error used default
-            throw ex;
+        if (str == null) {
+            str = "";
+        }
+        byte[] bts = Charset.forName(DataPacket.DefaultCharsetName).encode(str).array();
+        byte[] content = new byte[1 + 4 + bts.length];
+        content[0] = (byte) DataPacket.EELabelPalette.Bpp16;
+        ByteHelper.intToBytes(color, content, 1);
+        System.arraycopy(bts, 0, content, 5, bts.length);
+        DataPacket packet = OperateELabel(cmd, page, totalPage, content);
+        byte result = packet.Content[0];
+        log.info("#{} WriteELabelString: str={}, result={}", Params.getAddress(), str, result);
+        if (result != DataPacket.EResult.OK) {
+            throw new Exception("WriteELabelString Failed");
         }
     }
 
@@ -1239,25 +1221,7 @@ public class DigitalSensorItem {
         int height = 48;
         int[] data = QrCodeUtil.encodeToBits(value, width, height, 0);
         WriteELabelLogo(DataPacket.EELabelColor.Black, width, height, data);
-//        var img = CreateQRCodeImage(value);
-//        var data = ImageHelper.ToColRowScanBytes(img, 0.5);
-//        WriteELabelLogo(Color.Black, img.Width, img.Height, data.ToArray());
     }
-
-//    public Bitmap CreateQRCodeImage(string value) {
-//        // measure size
-//        BarcodeWriter writer = new BarcodeWriter();
-//        writer.Format = BarcodeFormat.QR_CODE;
-//        writer.Options = new QrCodeEncodingOptions() {
-//            Width =48,
-//            Height =48,
-//            ErrorCorrection =ZXing.QrCode.Internal.ErrorCorrectionLevel.M,
-//            Margin =0,
-//        };
-//        Bitmap b = writer.Write(value);
-//        return b;
-//    }
-
 
     public void UpdateParams() throws Exception {
         try {

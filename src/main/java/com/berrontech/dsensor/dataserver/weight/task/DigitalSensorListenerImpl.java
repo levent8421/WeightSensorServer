@@ -15,13 +15,24 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * Create By Lastnika
+ * Create Time: 2020/7/2 15:33
+ * Class Name: DigitalSensorListenerImpl
+ * Author: Lastnika
+ * Description:
+ * DigitalSensorListenerImpl
+ * 传感器监听器实现
+ *
+ * @author Lastnika
+ */
 @Slf4j
 public class DigitalSensorListenerImpl implements DigitalSensorListener {
     private final WeightDataHolder weightDataHolder;
     private final WeightNotifier weightNotifier;
 
-    public DigitalSensorListenerImpl(WeightDataHolder weightDataHolder,
-                                     WeightNotifier weightNotifier) {
+    DigitalSensorListenerImpl(WeightDataHolder weightDataHolder,
+                              WeightNotifier weightNotifier) {
         this.weightDataHolder = weightDataHolder;
         this.weightNotifier = weightNotifier;
     }
@@ -87,9 +98,6 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     @Override
     public boolean onWeightChanged(DigitalSensorItem sensor) {
-        /*
-        log.debug("#{} Notify onWeightChanged", sensor.getParams().getAddress());
-        */
         try {
             final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
             if (slot == null) {
