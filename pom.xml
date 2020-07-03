@@ -105,7 +105,7 @@
     </dependencies>
 
     <build>
-        <finalName>DigitalSensor-Driver_Server</finalName>
+        <finalName>digital_weight_sensor</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

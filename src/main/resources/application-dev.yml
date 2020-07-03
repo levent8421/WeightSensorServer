@@ -9,5 +9,5 @@ tcp-api:
   ip: 127.0.0.1
   port: 8100
 logging:
-  level:
-    com.berrontech.dsensor: debug
+  config: classpath:logback-spring-dev.xml
+

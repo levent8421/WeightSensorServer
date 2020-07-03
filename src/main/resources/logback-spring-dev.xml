@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<configuration>
+    <property name="DEFAULT_LOG_PATTERN"
+              value="[%white(%d{yyyy-MM-dd HH:mm:ss.SSS})] %blue(%-5level{5}) %blue([%-20thread{20}])-%yellow([%-40logger{40}]):%msg%n"/>
+    <appender name="consoleLog" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>${DEFAULT_LOG_PATTERN}</pattern>
+        </layout>
+    </appender>
+    <root level="info">
+        <appender-ref ref="consoleLog"/>
+    </root>
+</configuration>
