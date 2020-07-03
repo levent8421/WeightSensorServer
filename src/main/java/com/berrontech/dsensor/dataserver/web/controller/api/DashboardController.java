@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.web.controller.api;
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
 import com.berrontech.dsensor.dataserver.common.util.ProcessUtils;
+import com.berrontech.dsensor.dataserver.conf.SerialConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
@@ -32,10 +33,14 @@ import java.util.Properties;
 public class DashboardController extends AbstractController {
     private final WeightDataHolder weightDataHolder;
     private final ApplicationConfigService applicationConfigService;
+    private final SerialConfiguration serialConfiguration;
 
-    public DashboardController(WeightDataHolder weightDataHolder, ApplicationConfigService applicationConfigService) {
+    public DashboardController(WeightDataHolder weightDataHolder,
+                               ApplicationConfigService applicationConfigService,
+                               SerialConfiguration serialConfiguration) {
         this.weightDataHolder = weightDataHolder;
         this.applicationConfigService = applicationConfigService;
+        this.serialConfiguration = serialConfiguration;
     }
 
     /**
@@ -61,6 +66,7 @@ public class DashboardController extends AbstractController {
         res.put("appVersion", ApplicationConstants.Context.APP_VERSION);
         res.put("appName", ApplicationConstants.Context.APP_NAME);
         res.put("pid", ProcessUtils.getProcessId());
+        res.put("libPath", serialConfiguration.getLibPath());
         return GeneralResult.ok(res);
     }
 

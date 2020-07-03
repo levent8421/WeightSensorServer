@@ -8,6 +8,7 @@ server:
 tcp-api:
   ip: 127.0.0.1
   port: 8100
+serial:
+  lib-path: /sdcard/scada_wsa/so/libserial_port.so
 logging:
   config: classpath:logback-spring-dev.xml
-

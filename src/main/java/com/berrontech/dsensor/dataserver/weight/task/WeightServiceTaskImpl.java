@@ -2,9 +2,10 @@ package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.util.NativeUtils;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
+import com.berrontech.dsensor.dataserver.conf.SerialConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
-import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
@@ -15,8 +16,10 @@ import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,10 +46,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
      * 称重数据临时保存于此
      */
     private final WeightDataHolder weightDataHolder;
-    /**
-     * TCP API Client
-     */
-    private final ApiClient apiClient;
 
     private final WeightNotifier weightNotifier;
     /**
@@ -55,17 +54,35 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     private final DigitalSensorManager sensorManager;
 
     private final WeightSensorService sensorService;
+    private SerialConfiguration serialConfiguration;
 
+    @Autowired
     public WeightServiceTaskImpl(WeightDataHolder weightDataHolder,
-                                 ApiClient apiClient,
                                  WeightNotifier weightNotifier,
                                  DigitalSensorManager sensorManager,
-                                 WeightSensorService sensorService) {
+                                 WeightSensorService sensorService,
+                                 SerialConfiguration serialConfiguration) {
         this.weightDataHolder = weightDataHolder;
-        this.apiClient = apiClient;
         this.weightNotifier = weightNotifier;
         this.sensorManager = sensorManager;
         this.sensorService = sensorService;
+        this.serialConfiguration = serialConfiguration;
+    }
+
+    /**
+     * 组件初始换完成之后加载本地SO库
+     */
+    @PostConstruct
+    public void loadLibrary() {
+        final String libPath = serialConfiguration.getLibPath();
+        try {
+            log.info("Loading Library [{}]", libPath);
+            NativeUtils.loadLibrary(libPath);
+            log.info("Load Library [{}] Success!", libPath);
+        } catch (Throwable e) {
+            log.warn("Can not load library [{}],error=[{}:{}]", libPath,
+                    e.getClass().getName(), e.getMessage());
+        }
     }
 
     @Override
@@ -226,10 +243,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
 
-
-
-
-
     //////////////////////////////////////////////////////////
     // local functions
 
@@ -299,7 +312,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             }
         });
     }
-
 
 
 }

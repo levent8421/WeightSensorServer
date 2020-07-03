@@ -22,7 +22,6 @@
             <pattern>${DEFAULT_LOG_PATTERN}</pattern>
         </encoder>
     </appender>
-    <!--myibatis log configure-->
     <logger name="com.berrontech.dsensor" level="debug"/>
     <root level="info">
         <appender-ref ref="consoleLog"/>

@@ -33,6 +33,7 @@ import java.io.*;
  */
 @Slf4j
 public class SerialPort {
+    private static final String SERIAL_PORT_LIB_NAME = "serial_port";
     /**
      * Do not remove or rename the field mFd: it is used by native method close();
      */
@@ -76,12 +77,4 @@ public class SerialPort {
     private native static FileDescriptor open(String path, int baudrate, int flags);
 
     public native void close();
-
-    static {
-        try {
-            System.loadLibrary("serial_port");
-        } catch (Throwable ex) {
-            log.error("Load Native Library[serial_port.so] failed", ex);
-        }
-    }
 }

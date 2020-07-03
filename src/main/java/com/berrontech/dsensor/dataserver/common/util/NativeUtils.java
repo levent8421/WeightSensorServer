@@ -31,4 +31,22 @@ public class NativeUtils {
         val newPath = CollectionUtils.join(pathList.stream(), PATH_ITEM_DELIMITER);
         System.setProperty(LIB_PATH_PROP_NAME, newPath);
     }
+
+    /**
+     * 加载本地库
+     *
+     * @param path .dll .so位置
+     */
+    public static void loadLibrary(String path) {
+        System.load(path);
+    }
+
+    /**
+     * 通过库名称加载本地库
+     *
+     * @param name lib name
+     */
+    public static void loadLibraryByName(String name) {
+        System.loadLibrary(name);
+    }
 }
