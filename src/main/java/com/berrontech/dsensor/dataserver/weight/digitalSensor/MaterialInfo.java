@@ -30,7 +30,7 @@ public class MaterialInfo {
         if (APW <= 0 || toleranceInGram <= 0) {
             Tolerance = 1;
         } else {
-            Tolerance = toleranceInGram / APW;
+            Tolerance = toleranceInGram / 1000 / APW;
         }
         return this;
     }
