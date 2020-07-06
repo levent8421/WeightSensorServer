@@ -199,7 +199,7 @@ public class DigitalSensorItem {
             log.info("#{} SetAddress", Params.getAddress());
             DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressDefault, (byte) Params.getAddress());
             synchronized (getDriver().getLock()) {
-                packet = getDriver().WriteRead(packet, getWriteParamTimeout());
+                getDriver().WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
             log.info("#{} SetAddress Done", Params.getAddress());
@@ -215,7 +215,7 @@ public class DigitalSensorItem {
             log.info("#{} SetELabelAddress: {}", Params.getAddress(), labelAddr);
             DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressDefault, (byte) (labelAddr));
             synchronized (getDriver().getLock()) {
-                packet = Driver.WriteRead(packet, getWriteParamTimeout());
+                Driver.WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
             log.info("#{} SetAddress Done", Params.getAddress());
@@ -230,7 +230,7 @@ public class DigitalSensorItem {
             log.info("#{} ModifyAddress: {}", Params.getAddress(), newAddress);
             DataPacket packet = DataPacket.BuildSetAddress((byte) Params.getAddress(), newAddress);
             synchronized (Driver.getLock()) {
-                packet = Driver.WriteRead(packet, getWriteParamTimeout());
+                Driver.WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
             log.info("#{} ModifyAddress Done", Params.getAddress());
@@ -245,7 +245,7 @@ public class DigitalSensorItem {
             log.info("#{} ClearAddress", Params.getAddress());
             DataPacket packet = DataPacket.BuildSetAddress((byte) Params.getAddress(), DataPacket.AddressDefault);
             synchronized (Driver.getLock()) {
-                packet = Driver.WriteRead(packet, getWriteParamTimeout());
+                Driver.WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
             log.info("#{} ClearAddress Done", Params.getAddress());
@@ -279,16 +279,16 @@ public class DigitalSensorItem {
         }
     }
 
-    public static boolean TryReadDeviceSnBroadcast(DigitalSensorDriver driver, Map<String, Object> devInfo, int timeout) throws Exception {
+    public static boolean TryReadDeviceSnBroadcast(DigitalSensorDriver driver, Map<String, Object> devInfo, int timeout) {
         log.debug("#{} TryReadDeviceSnBroadcast", DataPacket.AddressConditionalBroadcast);
-        int type = DataPacket.EDeviceType.Unknow;
-        String sn = null;
+        int type;
+        String sn;
         synchronized (driver.getLock()) {
             long endTime = System.currentTimeMillis() + timeout;
             do {
                 try {
-                    Long t = endTime - System.currentTimeMillis();
-                    DataPacket packet = driver.Read(t.intValue());
+                    long t = endTime - System.currentTimeMillis();
+                    DataPacket packet = driver.Read((int) t);
                     if (packet.getCmd() == DataPacket.ERecvCmd.IdBroadcast && packet.getContentLength() > 3) {
                         int tp = packet.Content[0];
                         int pm = packet.Content[1];
@@ -312,19 +312,14 @@ public class DigitalSensorItem {
         try {
             log.info("#{} SetAddressByDeviceSn", DataPacket.AddressConditionalBroadcast);
             byte newAddress;
-            switch (type) {
-                default: {
-                    newAddress = (byte) Params.getAddress();
-                    break;
-                }
-                case DataPacket.EDeviceType.ELabel: {
-                    newAddress = (byte) (DataPacket.AddressELabelStart + Params.getAddress());
-                    break;
-                }
+            if (type == DataPacket.EDeviceType.ELabel) {
+                newAddress = (byte) (DataPacket.AddressELabelStart + Params.getAddress());
+            } else {
+                newAddress = (byte) Params.getAddress();
             }
             DataPacket packet = DataPacket.BuildSetAddressByDeviceSn(newAddress, sn);
             synchronized (Driver.getLock()) {
-                packet = Driver.WriteRead(packet, getWriteParamTimeout());
+                Driver.WriteRead(packet, getWriteParamTimeout());
             }
             SetCommResult(true);
             log.info("#{} SetAddressByDeviceSn: {} -> {}", DataPacket.AddressConditionalBroadcast, sn, Params.getAddress());
@@ -336,7 +331,6 @@ public class DigitalSensorItem {
 
     public void UpdateRawCount() throws Exception {
         try {
-            //log.debug("#{} UpdateRawCount", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetRawCount((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
@@ -345,7 +339,6 @@ public class DigitalSensorItem {
             Values.setDynamicRawCount(ByteHelper.bytesToInt(packet.Content, 0, 4));
             Values.setRawCount(ByteHelper.bytesToInt(packet.Content, 4, 4));
             Values.setRamp(Params.calcRamp(Values.getRawCount()));
-            //log.debug("#{} UpdateRawCount Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -354,7 +347,6 @@ public class DigitalSensorItem {
 
     public void UpdateWeight() throws Exception {
         try {
-            //log.debug("#{} UpdateWeight", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetWeight((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout());
@@ -362,7 +354,6 @@ public class DigitalSensorItem {
             SetCommResult(true);
             Values.setGrossWeightStr(new String(packet.Content, 1, packet.Content.length - 1));
             Values.CheckStatus(packet.Content[0], Params.getCapacity(), Params.getIncrement());
-            //log.debug("#{} UpdateWeight Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -371,7 +362,6 @@ public class DigitalSensorItem {
 
     public void UpdateHighResolution(boolean skipUnStable) throws Exception {
         try {
-            //log.debug("#{} UpdateHighResolution", Params.getAddress());
             DataPacket packet = DataPacket.BuildGetHighResolution((byte) Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
@@ -449,6 +439,11 @@ public class DigitalSensorItem {
                         // here SF set tolerance as gram not percent
                         setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 ||
                                 Math.abs(1 - Values.getPieceCountAccuracy()) * Passenger.getMaterial().getAPW() <= Passenger.getMaterial().getTolerance() / 1000);
+                        final double tol = Passenger.getMaterial().getTolerance() / 1000.0;
+                        final double apw = Passenger.getMaterial().getAPW();
+                        final double pieceCountAccuracy = Values.getPieceCountAccuracy();
+                        final boolean countInAccuracy = calcCountInAccuracy(pieceCountAccuracy, apw, tol);
+//                        setCountInAccuracy(countInAccuracy);
                     } else {
                         setCountInAccuracy(true);
                     }
@@ -463,6 +458,19 @@ public class DigitalSensorItem {
             SetCommResult(false);
             throw ex;
         }
+    }
+
+    /**
+     * 计算误差值是否在允差范围内
+     *
+     * @param pieceCountAccuracy 计件精度
+     * @param apw                单重
+     * @param tolerance          误差值
+     * @return 是否在误差范围内
+     */
+    private boolean calcCountInAccuracy(double pieceCountAccuracy, double apw, double tolerance) {
+//        log.debug("CALC Count Accuracy, accuracy=[{}], apw=[{}], tolerance=[{}]", pieceCountAccuracy, apw, tolerance);
+        return false;
     }
 
     EFlatStatus LatsNotifyStatus = null;

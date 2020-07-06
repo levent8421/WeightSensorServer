@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:mysql://10.29.239.11:3306/scada_wsa?userSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=GMT%2B8
+    username: usernameforU
+    password: MyPassword*123
+server:
+  port: 5601
+tcp-api:
+  ip: 127.0.0.1
+  port: 8888
+serial:
+  lib-path: /sdcard/scada_wsa/so/libserial_port.so
+db-upgrade:
+  db-version-file-path: /sdcard/scada_wsa/db/db_version.json
+logging:
+  config: classpath:logback-spring-test.xml
