@@ -132,7 +132,7 @@ public class DigitalSensorUtils {
             mat.setNumber(sku.getSkuNo());
             mat.setName(sku.getName());
             mat.setAPW(sku.getApw() == null ? 0 : sku.getApw() / 1000.0);
-            mat.setTolerance(sku.getTolerance() == null || mat.getAPW() == 0 ? 0 : sku.getTolerance() / mat.getAPW());
+            mat.setToleranceInGram(sku.getTolerance() == null ? 0 : sku.getTolerance());
             mat.setShelfLifeDays(sku.getShelfLifeOpenDays() == null ? 0 : sku.getShelfLifeOpenDays());
         }
     }
