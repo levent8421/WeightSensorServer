@@ -438,12 +438,7 @@ public class DigitalSensorItem {
                         Values.setAPW(Passenger.getMaterial().getAPW());
                         // here SF set tolerance as gram not percent
                         setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 ||
-                                Math.abs(1 - Values.getPieceCountAccuracy()) * Passenger.getMaterial().getAPW() <= Passenger.getMaterial().getTolerance() / 1000);
-                        final double tol = Passenger.getMaterial().getTolerance() / 1000.0;
-                        final double apw = Passenger.getMaterial().getAPW();
-                        final double pieceCountAccuracy = Values.getPieceCountAccuracy();
-                        final boolean countInAccuracy = calcCountInAccuracy(pieceCountAccuracy, apw, tol);
-//                        setCountInAccuracy(countInAccuracy);
+                                Math.abs(1 - Values.getPieceCountAccuracy()) <= Passenger.getMaterial().getTolerance());
                     } else {
                         setCountInAccuracy(true);
                     }
@@ -458,19 +453,6 @@ public class DigitalSensorItem {
             SetCommResult(false);
             throw ex;
         }
-    }
-
-    /**
-     * 计算误差值是否在允差范围内
-     *
-     * @param pieceCountAccuracy 计件精度
-     * @param apw                单重
-     * @param tolerance          误差值
-     * @return 是否在误差范围内
-     */
-    private boolean calcCountInAccuracy(double pieceCountAccuracy, double apw, double tolerance) {
-//        log.debug("CALC Count Accuracy, accuracy=[{}], apw=[{}], tolerance=[{}]", pieceCountAccuracy, apw, tolerance);
-        return false;
     }
 
     EFlatStatus LatsNotifyStatus = null;
