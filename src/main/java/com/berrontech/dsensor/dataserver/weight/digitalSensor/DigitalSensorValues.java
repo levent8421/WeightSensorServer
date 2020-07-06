@@ -1,14 +1,12 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
-import java.math.BigDecimal;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 @Data
 public class DigitalSensorValues {
-    private static Object lock = new Object();
+    private static final Object lock = new Object();
     private int RawCount;
     private int DynamicRawCount;
     private int Ramp;
@@ -188,9 +186,24 @@ public class DigitalSensorValues {
         if (apw > 0) {
             synchronized (lock) {
                 PieceCount = (int) Math.round(HighGross / APW);
-                PieceCountAccuracy = 1 - Math.abs((getHighNet() - apw * PieceCount) / apw);
+                PieceCountAccuracy = calcPieceCountAccuracy(PieceCount, apw, getHighNet());
             }
         }
+    }
+
+    /**
+     * 计算计件精度
+     * 计检精度 = 1 - { abs[ 实重 -（件数 * 单重)] / 单重 }
+     *
+     * @param count  件数
+     * @param apw    单重
+     * @param weight 实重
+     * @return 几件精度
+     */
+    private double calcPieceCountAccuracy(int count, double apw, double weight) {
+        final double expectWeight = apw * count;
+        final double tolerance = Math.abs(expectWeight - weight);
+        return 1 - (tolerance / apw);
     }
 
     private boolean Highlight;
@@ -198,149 +211,4 @@ public class DigitalSensorValues {
     public boolean isNotHighlight() {
         return !Highlight;
     }
-
-//
-//    public static Double toGram(double src, int srcUnit) {
-//        Double val = src;
-//        switch (srcUnit) {
-//            case WeightConstInfo.Unit_kg: {
-//                val *= 1000;
-//                break;
-//            }
-//            case WeightConstInfo.Unit_t: {
-//                val *= 1000 * 1000;
-//                break;
-//            }
-//            case WeightConstInfo.Unit_jin: {
-//                val *= 1000 * 0.5;
-//                break;
-//            }
-//            case WeightConstInfo.Unit_oz: {
-//                val *= 28.349523125;
-//                break;
-//            }
-//            case WeightConstInfo.Unit_lb: {
-//                val *= 16 * 28.349523125;
-//                break;
-//            }
-//        }
-//        return val;
-//    }
-//
-//    public static Double toKiloGram(double src, int srcUnit) {
-//        Double val = src;
-//        switch (srcUnit) {
-//            case WeightConstInfo.Unit_g: {
-//                val *= 0.001;
-//                break;
-//            }
-//            default:
-//                val = toKiloGram(toGram(src, srcUnit), WeightConstInfo.Unit_g);
-//                break;
-//        }
-//        return val;
-//    }
-//
-//    public static Double toJin(double src, int srcUnit) {
-//        Double val = src;
-//        switch (srcUnit) {
-//            case WeightConstInfo.Unit_g: {
-//                val *= 2 * 0.001;
-//                break;
-//            }
-//            default:
-//                val = toJin(toGram(src, srcUnit), WeightConstInfo.Unit_g);
-//                break;
-//        }
-//        return val;
-//    }
-//
-//    public static Double toTon(double src, int srcUnit) {
-//        Double val = src;
-//        switch (srcUnit) {
-//            case WeightConstInfo.Unit_g: {
-//                val *= 0.000001;
-//                break;
-//            }
-//            default:
-//                val = toTon(toGram(src, srcUnit), WeightConstInfo.Unit_g);
-//                break;
-//        }
-//        return val;
-//    }
-//
-//    public static Double toOunce(double src, int srcUnit) {
-//        Double val = src;
-//        switch (srcUnit) {
-//            case WeightConstInfo.Unit_g: {
-//                val *= 0.0352739619496;
-//                break;
-//            }
-//            case WeightConstInfo.Unit_lb: {
-//                val *= 16;
-//                break;
-//            }
-//            default:
-//                val = toOunce(toGram(src, srcUnit), WeightConstInfo.Unit_g);
-//                break;
-//        }
-//        return val;
-//    }
-//
-//    public static Double toPound(double src, int srcUnit) {
-//        Double val = src;
-//        switch (srcUnit) {
-//            case WeightConstInfo.Unit_oz: {
-//                val *= 0.0625;
-//                break;
-//            }
-//            default:
-//                val = toPound(toOunce(src, srcUnit), WeightConstInfo.Unit_oz);
-//                break;
-//        }
-//        return val;
-//    }
-//
-//    public double toUnit(double src, int srcUnit) {
-//        switch (srcUnit) {
-//            case WeightConstInfo.Unit_g:
-//                return toGram(src, WeightConstInfo.Unit_kg);
-//            case WeightConstInfo.Unit_kg:
-//                return toKiloGram(src, WeightConstInfo.Unit_kg);
-//            case WeightConstInfo.Unit_t:
-//                return toTon(src, WeightConstInfo.Unit_kg);
-//            case WeightConstInfo.Unit_jin:
-//                return toJin(src, WeightConstInfo.Unit_kg);
-//            case WeightConstInfo.Unit_lb:
-//                return toPound(src, WeightConstInfo.Unit_kg);
-//            case WeightConstInfo.Unit_oz:
-//                return toOunce(src, WeightConstInfo.Unit_kg);
-//            default:
-//                return src;
-//        }
-//
-//    }
-//
-//    public static Double fromGram(double src, int srcUnit) {
-//        Double val = src;
-//        switch (srcUnit) {
-//            case WeightConstInfo.Unit_kg: {
-//                val /= 1000;
-//                break;
-//            }
-//            case WeightConstInfo.Unit_t: {
-//                val /= 1000 * 1000;
-//                break;
-//            }
-//            case WeightConstInfo.Unit_oz: {
-//                val /= 28.349523125;
-//                break;
-//            }
-//            case WeightConstInfo.Unit_lb: {
-//                val /= 16 * 28.349523125;
-//                break;
-//            }
-//        }
-//        return val;
-//    }
 }

@@ -1,10 +1,13 @@
-package com.berrontech.dsensor.dataserver.weight.task;
+package com.berrontech.dsensor.dataserver.runner;
 
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
+import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
+import com.berrontech.dsensor.dataserver.weight.task.WeightServiceTask;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ExecutorService;
@@ -21,6 +24,7 @@ import java.util.concurrent.ExecutorService;
  */
 @Slf4j
 @Component
+@Order(2)
 public class WeightApplicationRunner implements ApplicationRunner, Runnable, DisposableBean {
     private static final String THREAD_NAME = "Weight-Service";
     private static final ExecutorService EXECUTOR = ThreadUtils.createSingleThreadPool(THREAD_NAME);
@@ -35,6 +39,7 @@ public class WeightApplicationRunner implements ApplicationRunner, Runnable, Dis
 
     @Override
     public void run(ApplicationArguments args) {
+        log.debug("Weight Service Application Runner!");
         EXECUTOR.execute(this);
     }
 

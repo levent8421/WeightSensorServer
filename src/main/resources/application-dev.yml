@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://192.168.0.187:3306/db_weight_slot?userSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=GMT%2B8
+    url: jdbc:mysql://192.168.1.130:3306/db_weight_slot?userSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=GMT%2B8
     username: usernameforU
     password: MyPassword*123
 server:
@@ -12,3 +12,5 @@ serial:
   lib-path: /sdcard/scada_wsa/so/libserial_port.so
 logging:
   config: classpath:logback-spring-dev.xml
+db-upgrade:
+  db-version-file-path: D:\monolith\workspace\java\digital-sensor-data-server\db-upgrade\db_version.json

@@ -447,7 +447,8 @@ public class DigitalSensorItem {
                         // apw from passenger will replace local apw
                         Values.setAPW(Passenger.getMaterial().getAPW());
                         // here SF set tolerance as gram not percent
-                        setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 || Math.abs(1 - Values.getPieceCountAccuracy()) * Passenger.getMaterial().getAPW()  <= Passenger.getMaterial().getTolerance() / 1000);
+                        setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 ||
+                                Math.abs(1 - Values.getPieceCountAccuracy()) * Passenger.getMaterial().getAPW() <= Passenger.getMaterial().getTolerance() / 1000);
                     } else {
                         setCountInAccuracy(true);
                     }
@@ -463,7 +464,6 @@ public class DigitalSensorItem {
             throw ex;
         }
     }
-
 
     EFlatStatus LatsNotifyStatus = null;
     int LastNotifyPCS = -999999;

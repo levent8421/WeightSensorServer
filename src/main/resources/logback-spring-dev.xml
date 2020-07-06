@@ -8,6 +8,7 @@
             <pattern>${DEFAULT_LOG_PATTERN}</pattern>
         </layout>
     </appender>
+    <logger name="com.berrontech.dsensor" level="debug"/>
     <root level="info">
         <appender-ref ref="consoleLog"/>
     </root>

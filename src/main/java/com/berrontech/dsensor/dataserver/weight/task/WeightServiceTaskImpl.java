@@ -80,8 +80,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             NativeUtils.loadLibrary(libPath);
             log.info("Load Library [{}] Success!", libPath);
         } catch (Throwable e) {
-            log.warn("Can not load library [{}],error=[{}:{}]", libPath,
-                    e.getClass().getName(), e.getMessage());
+            log.error("Can not load library [{}]", libPath, e);
         }
     }
 
