@@ -21,10 +21,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -55,6 +52,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     private final WeightSensorService sensorService;
     private SerialConfiguration serialConfiguration;
+    Long HighlightDeadTime;
 
     @Autowired
     public WeightServiceTaskImpl(WeightDataHolder weightDataHolder,
@@ -99,6 +97,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         if (sensorManager != null) {
             if (sensorManager.isOpened()) {
                 try {
+                    if (HighlightDeadTime != null) {
+                        if (HighlightDeadTime < System.currentTimeMillis()) {
+                            HighlightDeadTime = null;
+                            sensorManager.DeHighlightAll();
+                        }
+                    }
                     // write zero offset to database in period
                     Thread.sleep(1000);
                 } catch (Exception ex) {
@@ -243,7 +247,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void highlight(String slotNo) {
-        
+        sensorManager.HighlightSlot(slotNo);
+    }
+
+    public void highlight(String slotNo, int mSeconds) {
+        HighlightDeadTime = System.currentTimeMillis() + mSeconds;
+        sensorManager.HighlightSlot(slotNo);
     }
 //////////////////////////////////////////////////////////
     // local functions
