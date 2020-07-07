@@ -77,4 +77,11 @@ public interface WeightController {
      * @return scanning?
      */
     boolean isScanning();
+
+    /**
+     * 货道高亮（闪烁）提示
+     *
+     * @param slotNo 货道号
+     */
+    void highlight(String slotNo);
 }

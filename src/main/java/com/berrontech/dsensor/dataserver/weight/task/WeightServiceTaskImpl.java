@@ -241,8 +241,11 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         return scanManager.isOpened();
     }
 
-
-    //////////////////////////////////////////////////////////
+    @Override
+    public void highlight(String slotNo) {
+        
+    }
+//////////////////////////////////////////////////////////
     // local functions
 
     DigitalSensorManager scanManager;
