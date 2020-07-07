@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.web.controller.api;
 
+import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
@@ -12,6 +13,8 @@ import lombok.val;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notEmpty;
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull;
@@ -29,6 +32,8 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
 @RestController
 @RequestMapping("/api/slot")
 public class SlotController extends AbstractEntityController<Slot> {
+    private static final int MAX_SKU_NO_LENGTH = 9;
+    private static final String COMPOSE_SKU_NO_FEATURES = "#";
     private final SlotService slotService;
     private final WeightController weightController;
     private final WeightSensorService weightSensorService;
@@ -136,5 +141,41 @@ public class SlotController extends AbstractEntityController<Slot> {
         slotService.setElabelState(id, param.getHasElabel());
         weightSensorService.setElabelStateBySlotId(id, param.getHasElabel());
         return GeneralResult.ok();
+    }
+
+    /**
+     * 电子标签高亮
+     *
+     * @param param params
+     * @return GR
+     */
+    @PostMapping("/highlight")
+    public GeneralResult<Void> highlightBySku(@RequestBody Slot param) {
+        notNull(param, BadRequestException.class, "No available Params!");
+        notEmpty(param.getSkuNo(), BadRequestException.class, "No sku param!");
+        final String skuNo = normalizeSkuNo(param.getSkuNo());
+
+        final List<Slot> slots = slotService.findBySku(skuNo);
+        if (slots.isEmpty()) {
+            return GeneralResult.badRequest("Can not find sku[" + skuNo + "]");
+        }
+        final Set<String> slotNoSet = slots.stream()
+                .map(Slot::getSlotNo)
+                .collect(Collectors.toSet());
+        weightController.highlight(slotNoSet, ApplicationConstants.ELabel.ELABEL_HIGHLIGHT_DURATION);
+        return GeneralResult.ok();
+    }
+
+    /**
+     * 预处理SkuNo
+     *
+     * @param skuNo sku no
+     * @return sku no
+     */
+    private String normalizeSkuNo(String skuNo) {
+        if (skuNo.length() > MAX_SKU_NO_LENGTH && skuNo.contains(COMPOSE_SKU_NO_FEATURES)) {
+            return skuNo.substring(0, MAX_SKU_NO_LENGTH);
+        }
+        return skuNo;
     }
 }
