@@ -251,6 +251,23 @@ public class DigitalSensorManager {
         return found;
     }
 
+    public boolean HighlightSlots(Collection<String> slots) {
+        boolean found = false;
+        if (Groups.size() > 0 && slots != null) {
+            for (DigitalSensorGroup g : Groups) {
+                for (DigitalSensorItem s : g.getSensors()) {
+                    if (slots.contains(s.getShortName())) {
+                        found = true;
+                        s.getValues().setHighlight(true);
+                    } else {
+                        s.getValues().setHighlight(false);
+                    }
+                }
+            }
+        }
+        return found;
+    }
+
     public void DeHighlightAll() {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
