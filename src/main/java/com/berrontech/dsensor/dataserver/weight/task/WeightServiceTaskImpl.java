@@ -246,15 +246,17 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void highlight(String slotNo) {
+    public void highlight(String slotNo, long duration) {
         sensorManager.HighlightSlot(slotNo);
+        HighlightDeadTime = System.currentTimeMillis() + duration;
     }
 
-    public void highlight(String slotNo, int mSeconds) {
-        HighlightDeadTime = System.currentTimeMillis() + mSeconds;
-        sensorManager.HighlightSlot(slotNo);
+    @Override
+    public void highlight(Collection<String> slots, long duration) {
+        slots.forEach(sensorManager::HighlightSlot);
+        HighlightDeadTime = System.currentTimeMillis() + duration;
     }
-//////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////
     // local functions
 
     DigitalSensorManager scanManager;
