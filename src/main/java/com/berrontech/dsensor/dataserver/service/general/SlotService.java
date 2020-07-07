@@ -66,4 +66,12 @@ public interface SlotService extends AbstractService<Slot> {
      * @param hasElabel 电子标签
      */
     void setElabelState(Integer id, Boolean hasElabel);
+
+    /**
+     * Find Slots By SkuNo
+     *
+     * @param skuNo skuNo
+     * @return slot list
+     */
+    List<Slot> findBySku(String skuNo);
 }

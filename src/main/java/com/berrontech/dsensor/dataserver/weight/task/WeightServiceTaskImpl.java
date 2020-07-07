@@ -242,10 +242,15 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void highlight(String slotNo) {
-        
+    public void highlight(String slotNo, long duration) {
+
     }
-//////////////////////////////////////////////////////////
+
+    @Override
+    public void highlight(Collection<String> slots, long duration) {
+
+    }
+    //////////////////////////////////////////////////////////
     // local functions
 
     DigitalSensorManager scanManager;

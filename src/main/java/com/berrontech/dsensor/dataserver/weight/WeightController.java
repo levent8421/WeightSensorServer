@@ -81,7 +81,16 @@ public interface WeightController {
     /**
      * 货道高亮（闪烁）提示
      *
-     * @param slotNo 货道号
+     * @param duration 高亮时间
+     * @param slotNo   货道号
      */
-    void highlight(String slotNo);
+    void highlight(String slotNo, long duration);
+
+    /**
+     * 批量提示
+     *
+     * @param duration 高亮时间
+     * @param slots    slot number list
+     */
+    void highlight(Collection<String> slots, long duration);
 }

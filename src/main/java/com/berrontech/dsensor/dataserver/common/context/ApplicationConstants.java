@@ -117,4 +117,14 @@ public class ApplicationConstants {
          */
         public static final String ORDER_ASC = "asc";
     }
+
+    /**
+     * 电子标签相关常量
+     */
+    public static class ELabel {
+        /**
+         * ELabel 高亮时间
+         */
+        public static final long ELABEL_HIGHLIGHT_DURATION = 5 * 1000;
+    }
 }

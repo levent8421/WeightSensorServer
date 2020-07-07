@@ -115,4 +115,11 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
             throw new InternalServerErrorException("Error On Update ELabel State! rows=" + rows);
         }
     }
+
+    @Override
+    public List<Slot> findBySku(String skuNo) {
+        final Slot query = new Slot();
+        query.setSkuNo(skuNo);
+        return findByQuery(query);
+    }
 }
