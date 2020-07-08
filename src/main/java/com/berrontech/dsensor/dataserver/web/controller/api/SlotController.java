@@ -150,7 +150,7 @@ public class SlotController extends AbstractEntityController<Slot> {
      * @return GR
      */
     @PostMapping("/highlight")
-    public GeneralResult<Void> highlightBySku(@RequestBody Slot param) {
+    public GeneralResult<List<Slot>> highlightBySku(@RequestBody Slot param) {
         notNull(param, BadRequestException.class, "No available Params!");
         notEmpty(param.getSkuNo(), BadRequestException.class, "No sku param!");
         final String skuNo = normalizeSkuNo(param.getSkuNo());
@@ -163,7 +163,7 @@ public class SlotController extends AbstractEntityController<Slot> {
                 .map(Slot::getSlotNo)
                 .collect(Collectors.toSet());
         weightController.highlight(slotNoSet, ApplicationConstants.ELabel.ELABEL_HIGHLIGHT_DURATION);
-        return GeneralResult.ok();
+        return GeneralResult.ok(slots);
     }
 
     /**

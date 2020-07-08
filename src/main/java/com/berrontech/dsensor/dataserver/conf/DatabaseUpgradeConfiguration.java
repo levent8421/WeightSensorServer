@@ -22,4 +22,8 @@ public class DatabaseUpgradeConfiguration {
      * 数据库版本配置文件位置
      */
     private String dbVersionFilePath = "/sdcard/scada_wsa/db/db_version.json";
+    /**
+     * 数据库更新脚本位置
+     */
+    private String scriptPath = "/sdcard/scada_wsa/db";
 }

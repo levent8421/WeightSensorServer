@@ -1,5 +1,7 @@
 package com.berrontech.dsensor.dataserver.common.util;
 
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/7/6 10:48
@@ -48,5 +50,23 @@ public class VersionUtils {
             }
         }
         return 0;
+    }
+
+    /**
+     * 比较两个数据库版本
+     *
+     * @param versionA va
+     * @param versionB vb
+     * @return result
+     */
+    public static int compareDatabaseVersion(String versionA, String versionB) {
+        final int va, vb;
+        try {
+            va = Integer.parseInt(versionA);
+            vb = Integer.parseInt(versionB);
+        } catch (NumberFormatException e) {
+            throw new InternalServerErrorException("Invalidate database version!", e);
+        }
+        return va - vb;
     }
 }
