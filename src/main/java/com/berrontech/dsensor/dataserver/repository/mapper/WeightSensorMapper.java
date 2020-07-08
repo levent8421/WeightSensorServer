@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Create By Levent8421
@@ -78,4 +79,13 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return Sensor List
      */
     List<WeightSensor> selectByAddress(@Param("address") int address);
+
+    /**
+     * Update slotId by ids
+     *
+     * @param ids    sensorIds
+     * @param slotId slotsId
+     * @return rows
+     */
+    int updateSlotIdByIds(@Param("ids") Set<Integer> ids, @Param("slotId") Integer slotId);
 }

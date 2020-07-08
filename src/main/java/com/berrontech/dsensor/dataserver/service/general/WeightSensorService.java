@@ -6,6 +6,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Create By Levent8421
@@ -103,4 +104,12 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @return Sensor List
      */
     List<WeightSensor> findByAddress(int address);
+
+    /**
+     * 设置传感器货道为指定货道
+     *
+     * @param sensorIds sensor ids
+     * @param slotId    slot id
+     */
+    void setSensorsSlotTo(Set<Integer> sensorIds, Integer slotId);
 }

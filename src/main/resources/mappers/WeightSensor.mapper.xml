@@ -78,4 +78,8 @@
         <include refid="select"/>
         and ws.address=#{address}
     </select>
+    <update id="updateSlotIdByIds">
+        update t_weight_sensor as ws set ws.slot_id=#{slotId} where ws.id in
+        <foreach collection="ids" open="(" close=")" separator="," item="id">#{id}</foreach>
+    </update>
 </mapper>

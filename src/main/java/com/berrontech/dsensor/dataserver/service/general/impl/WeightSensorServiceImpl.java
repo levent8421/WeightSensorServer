@@ -10,10 +10,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import lombok.val;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -156,5 +153,16 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     @Override
     public List<WeightSensor> findByAddress(int address) {
         return weightSensorMapper.selectByAddress(address);
+    }
+
+    @Override
+    public void setSensorsSlotTo(Set<Integer> sensorIds, Integer slotId) {
+        if (sensorIds.size() <= 0) {
+            throw new BadRequestException("Negative Or Zero SensorIdSet size!");
+        }
+        final int rows = weightSensorMapper.updateSlotIdByIds(sensorIds, slotId);
+        if (rows != sensorIds.size()) {
+            throw new InternalServerErrorException("Update rows=[" + rows + "], accept rows=" + sensorIds.size());
+        }
     }
 }

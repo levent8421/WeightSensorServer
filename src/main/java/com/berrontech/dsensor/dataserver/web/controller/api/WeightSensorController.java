@@ -5,7 +5,7 @@ import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
-import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.web.vo.MergeSensorsParam;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.val;
 import org.springframework.web.bind.annotation.*;
@@ -29,15 +29,12 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
 public class WeightSensorController extends AbstractEntityController<WeightSensor> {
     private final WeightSensorService weightSensorService;
     private final SensorMetaDataService sensorMetaDataService;
-    private final WeightController weightController;
 
     protected WeightSensorController(WeightSensorService weightSensorService,
-                                     SensorMetaDataService sensorMetaDataService,
-                                     WeightController weightController) {
+                                     SensorMetaDataService sensorMetaDataService) {
         super(weightSensorService);
         this.weightSensorService = weightSensorService;
         this.sensorMetaDataService = sensorMetaDataService;
-        this.weightController = weightController;
     }
 
     /**
@@ -98,6 +95,25 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         notNull(param, BadRequestException.class, "No Params");
         notNull(param.getHasElabel(), BadRequestException.class, "No HasELabel Set!");
         weightSensorService.updateElableState(id, param.getHasElabel());
+        return GeneralResult.ok();
+    }
+
+    /**
+     * 合并多个传感器到货道
+     *
+     * @param param param
+     * @return GR
+     */
+    @PostMapping("/_merge")
+    public GeneralResult<?> mergeSensors(@RequestBody MergeSensorsParam param) {
+        final Class<? extends RuntimeException> e = BadRequestException.class;
+        notNull(param, e, "No available param!");
+        notNull(param.getSlotId(), e, "SlotId is required!");
+        notNull(param.getSensorIds(), e, "SensorIds is required!");
+        for (Integer id : param.getSensorIds()) {
+            notNull(id, e, "Receive a null sensorId!");
+        }
+        weightSensorService.setSensorsSlotTo(param.getSensorIds(), param.getSlotId());
         return GeneralResult.ok();
     }
 }
