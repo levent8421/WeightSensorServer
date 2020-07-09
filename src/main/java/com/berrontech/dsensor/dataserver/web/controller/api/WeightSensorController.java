@@ -104,7 +104,7 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
      * @param param param
      * @return GR
      */
-    @PostMapping("/_merge")
+    @PostMapping("/_set-slot-id-by-ids")
     public GeneralResult<?> mergeSensors(@RequestBody MergeSensorsParam param) {
         final Class<? extends RuntimeException> e = BadRequestException.class;
         notNull(param, e, "No available param!");
@@ -115,5 +115,19 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         }
         weightSensorService.setSensorsSlotTo(param.getSensorIds(), param.getSlotId());
         return GeneralResult.ok();
+    }
+
+    /**
+     * 移除传感器绑定的货道
+     *
+     * @param id sensor id
+     * @return GR
+     */
+    @PostMapping("/{id}/_remove-slot")
+    public GeneralResult<WeightSensor> removeSensorSlot(@PathVariable("id") Integer id) {
+        final WeightSensor sensor = weightSensorService.require(id);
+        sensor.setSlotId(-1);
+        weightSensorService.updateById(sensor);
+        return GeneralResult.ok(sensor);
     }
 }

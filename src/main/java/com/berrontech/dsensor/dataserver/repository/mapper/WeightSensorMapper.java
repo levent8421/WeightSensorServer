@@ -88,4 +88,13 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return rows
      */
     int updateSlotIdByIds(@Param("ids") Set<Integer> ids, @Param("slotId") Integer slotId);
+
+    /**
+     * Update sensor slot id by slot id
+     *
+     * @param slotId    slot id
+     * @param newSlotId target slot id
+     * @return rows
+     */
+    int updateSlotIdBySlotId(@Param("slotId") Integer slotId, @Param("newSlotId") int newSlotId);
 }

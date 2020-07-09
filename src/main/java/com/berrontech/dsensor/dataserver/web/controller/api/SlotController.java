@@ -208,6 +208,7 @@ public class SlotController extends AbstractEntityController<Slot> {
                 defaultSlot.getSensors().add(sensor);
             }
         }
+        slots.add(defaultSlot);
         return GeneralResult.ok(slots);
     }
 }

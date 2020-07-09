@@ -157,8 +157,9 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
 
     @Override
     public void setSensorsSlotTo(Set<Integer> sensorIds, Integer slotId) {
+        weightSensorMapper.updateSlotIdBySlotId(slotId, -1);
         if (sensorIds.size() <= 0) {
-            throw new BadRequestException("Negative Or Zero SensorIdSet size!");
+            return;
         }
         final int rows = weightSensorMapper.updateSlotIdByIds(sensorIds, slotId);
         if (rows != sensorIds.size()) {

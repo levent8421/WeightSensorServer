@@ -82,4 +82,9 @@
         update t_weight_sensor as ws set ws.slot_id=#{slotId} where ws.id in
         <foreach collection="ids" open="(" close=")" separator="," item="id">#{id}</foreach>
     </update>
+    <update id="updateSlotIdBySlotId">
+        update t_weight_sensor as ws
+        set ws.slot_id=#{newSlotId}
+        where ws.slot_id = #{slotId};
+    </update>
 </mapper>
