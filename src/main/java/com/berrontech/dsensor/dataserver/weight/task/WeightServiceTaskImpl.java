@@ -278,6 +278,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         if (sensorManager.getSensorListener() == null) {
             sensorManager.setSensorListener(new DigitalSensorListenerImpl(weightDataHolder, weightNotifier));
         }
+        sensorManager.Init();
         sensorManager.open();
         sensorManager.startReading();
     }

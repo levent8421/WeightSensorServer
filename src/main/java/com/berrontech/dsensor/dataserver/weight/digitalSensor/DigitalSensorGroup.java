@@ -5,11 +5,13 @@ import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Data
@@ -66,7 +68,57 @@ public class DigitalSensorGroup {
 
     private DigitalSensorItem CurrentSensor;
 
-    private List<DigitalSensorSubGroup> SubGroups = new ArrayList<>();
+//    private List<DigitalSensorSubGroup> SubGroups = new ArrayList<>();
+
+    public void BuildSubGroups() {
+        BuildClusterSensors();
+        BuildMergedSensors();
+
+//        List<DigitalSensorSubGroup> sgs = new List<DigitalSensorSubGroup>();
+//        var lst = (from n in MergedSensors select n.SubGroup)?.Distinct().OrderByDescending(a => a).ToList();
+//        foreach (var n in lst)
+//        {
+//            var sg = new DigitalSensorSubGroup()
+//            {
+//                Name = n,
+//                Sensors = (from s in MergedSensors where s.SubGroup == n select s)?.OrderBy(a => a.SubGroupPosition).ToList() ?? new List<DigitalSensorItem>(),
+//            };
+//            sgs.Add(sg);
+//        }
+//        SubGroups = sgs;
+    }
+
+
+    private List<DigitalSensorCluster> ClusterSensors;
+
+    private List<DigitalSensorItem> MergedSensors;
+
+    private void BuildClusterSensors() {
+        List<DigitalSensorCluster> clusters = new ArrayList<>();
+        val clus = Sensors.stream().filter(s -> s.getSubGroupPosition() > 0).collect(Collectors.groupingBy(DigitalSensorItem::getSubGroup));
+        val it = clus.entrySet().iterator();
+        while (it.hasNext()) {
+            val itItem = it.next();
+            val group = itItem.getKey();
+            val item = new DigitalSensorCluster();
+            item.setChildren(itItem.getValue());
+            val first = item.getFirstChild();
+            item.setGroup(first.getGroup());
+            item.setSubGroup(first.getSubGroup());
+            item.setPassenger(first.getPassenger());
+            item.Calc();
+            clusters.add(item);
+        }
+        ClusterSensors = clusters;
+    }
+
+    private void BuildMergedSensors() {
+        List<DigitalSensorItem> sensors = new ArrayList<DigitalSensorItem>();
+        val lst1 = Sensors.stream().filter(s -> s.getSubGroupPosition() == 0).collect(Collectors.toList());
+        sensors.addAll(lst1);
+        sensors.addAll(ClusterSensors);
+        MergedSensors = sensors;
+    }
 
 
     private boolean Opened = false;
@@ -192,29 +244,29 @@ public class DigitalSensorGroup {
         return list;
     }
 
-    public void BuildSubGroups() {
-        try {
-            List<DigitalSensorSubGroup> sgs = new ArrayList<>();
-            List<String> lst = new ArrayList<>();
-            for (DigitalSensorItem n : Sensors) {
-                lst.add(n.getSubGroup());
-            }
-            Collections.sort(removeDuplicate(lst));
-            for (String n : lst) {
-                DigitalSensorSubGroup sg = new DigitalSensorSubGroup();
-                sg.Name = n;
-                for (DigitalSensorItem s : Sensors) {
-                    if (s.getSubGroup().equals(n)) {
-                        sg.getSensors().add(s);
-                    }
-                }
-                sgs.add(sg);
-            }
-            SubGroups = sgs;
-        } catch (Exception ex) {
-            log.warn("BuildSubGroups failed", ex);
-        }
-    }
+//    public void BuildSubGroups() {
+//        try {
+//            List<DigitalSensorSubGroup> sgs = new ArrayList<>();
+//            List<String> lst = new ArrayList<>();
+//            for (DigitalSensorItem n : Sensors) {
+//                lst.add(n.getSubGroup());
+//            }
+//            Collections.sort(removeDuplicate(lst));
+//            for (String n : lst) {
+//                DigitalSensorSubGroup sg = new DigitalSensorSubGroup();
+//                sg.Name = n;
+//                for (DigitalSensorItem s : Sensors) {
+//                    if (s.getSubGroup().equals(n)) {
+//                        sg.getSensors().add(s);
+//                    }
+//                }
+//                sgs.add(sg);
+//            }
+//            SubGroups = sgs;
+//        } catch (Exception ex) {
+//            log.warn("BuildSubGroups failed", ex);
+//        }
+//    }
 
     public static DigitalSensorGroup NewGroup(int id, DigitalSensorManager manager) {
         DigitalSensorGroup group = new DigitalSensorGroup();
@@ -261,6 +313,11 @@ public class DigitalSensorGroup {
                         if (sensor != null) {
                             sensor.UpdateRawCount();
                             sensor.UpdateHighResolution(OnlyShowStable);
+
+                            val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
+                            if (s2 != null) {
+                                s2.Calc();
+                            }
                         }
                         Thread.sleep(CommInterval);
                     } catch (TimeoutException ex) {
@@ -295,7 +352,17 @@ public class DigitalSensorGroup {
                     DigitalSensorItem sensor = Sensors.get(idx);
                     try {
                         if (sensor != null) {
-                            sensor.UpdateHighResolution2(OnlyShowStable);
+                            if (sensor.UpdateHighResolution2(OnlyShowStable)) {
+                                //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
+                                sensor.UpdateELabel();
+                                //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
+                                val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
+                                if (s2 != null) {
+                                    s2.Calc();
+                                    s2.UpdateELabel();
+                                    s2.TryNotifyListener();
+                                }
+                            }
                         }
                     } catch (TimeoutException ex) {
                         log.debug("#{} Packet Lost", sensor.getParams().getAddress());

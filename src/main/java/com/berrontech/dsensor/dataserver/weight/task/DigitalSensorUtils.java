@@ -5,11 +5,14 @@ import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class DigitalSensorUtils {
@@ -55,6 +58,7 @@ public class DigitalSensorUtils {
                 log.debug("Build sensors: {}", count);
                 group.BuildSensors(count);
 
+                // reg slot info
                 int pos = 0;
                 for (WeightSensor sen : weightDataHolder.getWeightSensors()) {
                     if (sen.getConnectionId().equals(conn.getId())) {
@@ -65,18 +69,30 @@ public class DigitalSensorUtils {
                         params.setDeviceSn(sen.getDeviceSn());
                         if (sen.getHasElabel()) {
                             params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
+                            //params.setELabelModel(DigitalSensorParams.EELabelModel.V4);
                         }
 
                         Slot slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().get();
                         val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
-                        sensor.setSubGroup(ms.getSlotNo());
-                        setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
-                        if (slot.getHasElabel()) {
-                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
+                        if (ms != null) {
+                            sensor.setSubGroup(ms.getSlotNo());
+                            if (ms.getSensors().size() > 1) {
+                                // reg combine slot info
+                                val ss = ms.getSensors().stream().sorted(Comparator.comparing(MemoryWeightSensor::getAddress485)).collect(Collectors.toList());
+                                for (int idx = 0; pos < ss.size(); pos++) {
+                                    if (ss.get(pos).getAddress485() == sensor.getParams().getAddress()) {
+                                        // sub group position of a combined slot always start from 1
+                                        sensor.setSubGroupPosition(pos + 1);
+                                        break;
+                                    }
+                                }
+                            }
+                            setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
                         }
-
                     }
                 }
+
+
             } catch (Exception ex) {
                 log.error("buildDigitalSensors error: connId={}, target={}", conn.getId(), conn.getTarget(), ex);
             }
@@ -126,8 +142,7 @@ public class DigitalSensorUtils {
     }
 
 
-    public static void setSkuToSensor(MemorySku sku, MaterialInfo mat)
-    {
+    public static void setSkuToSensor(MemorySku sku, MaterialInfo mat) {
         if (sku != null) {
             mat.setNumber(sku.getSkuNo());
             mat.setName(sku.getName());

@@ -55,6 +55,7 @@ public class DigitalSensorParams {
         int V1 = 1;
         int V2 = 2;
         int V3 = 3;
+        int V4 = 4;
     }
 
     public KeyValueList<Integer, String> ELabelModels = new KeyValueList<>(

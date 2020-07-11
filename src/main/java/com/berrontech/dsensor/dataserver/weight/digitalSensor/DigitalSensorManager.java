@@ -204,7 +204,7 @@ public class DigitalSensorManager {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 for (DigitalSensorItem s : g.getSensors()) {
-                    if (Objects.equals(s.getShortName(), slotNo)) {
+                    if (Objects.equals(s.getSubGroup(), slotNo)) {
                         return s;
                     }
                 }
@@ -239,11 +239,13 @@ public class DigitalSensorManager {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 for (DigitalSensorItem s : g.getSensors()) {
-                    if (Objects.equals(s.getShortName(), slotNo)) {
-                        found = true;
-                        s.getValues().setHighlight(true);
-                    } else {
-                        s.getValues().setHighlight(false);
+                    synchronized (s.getDriver().getLock()) {
+                        if (Objects.equals(s.getSubGroup(), slotNo)) {
+                            found = true;
+                            s.SetELabelHighlight(true);
+                        } else {
+                            s.SetELabelHighlight(false);
+                        }
                     }
                 }
             }
@@ -255,12 +257,14 @@ public class DigitalSensorManager {
         boolean found = false;
         if (Groups.size() > 0 && slots != null) {
             for (DigitalSensorGroup g : Groups) {
-                for (DigitalSensorItem s : g.getSensors()) {
-                    if (slots.contains(s.getShortName())) {
-                        found = true;
-                        s.getValues().setHighlight(true);
-                    } else {
-                        s.getValues().setHighlight(false);
+                synchronized (g.getDriver().getLock()) {
+                    for (DigitalSensorItem s : g.getSensors()) {
+                        if (slots.contains(s.getSubGroup())) {
+                            found = true;
+                            s.SetELabelHighlight(true);
+                        } else {
+                            s.SetELabelHighlight(false);
+                        }
                     }
                 }
             }
@@ -271,10 +275,33 @@ public class DigitalSensorManager {
     public void DeHighlightAll() {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
-                for (DigitalSensorItem s : g.getSensors()) {
-                    s.getValues().setHighlight(false);
+                synchronized (g.getDriver().getLock()) {
+                    for (DigitalSensorItem s : g.getSensors()) {
+                        s.SetELabelHighlight(false);
+                    }
                 }
             }
         }
     }
+
+
+    public boolean EnableSlot(Collection<String> slotNo, boolean enable) {
+        boolean found = false;
+        if (Groups.size() > 0) {
+            for (DigitalSensorGroup g : Groups) {
+                for (DigitalSensorItem s : g.getSensors()) {
+                    synchronized (s.getDriver().getLock()) {
+                        if (Objects.equals(s.getSubGroup(), slotNo)) {
+                            found = true;
+                            s.SetELabelEnabled(true);
+                        } else {
+                            s.SetELabelEnabled(false);
+                        }
+                    }
+                }
+            }
+        }
+        return found;
+    }
+
 }

@@ -35,15 +35,15 @@ public class DigitalSensorItem {
     }
 
     public String SubGroup = "";
-    public String SubGroupPosition = "";
+    public int SubGroupPosition = 0;
     public String Cluster = "";
 
-    public String getShortName() {
-        if (TextUtils.isTrimedEmpty(getSubGroupPosition())) {
-            return getSubGroup();
-        } else {
-            return getSubGroup() + "-" + getSubGroupPosition();
-        }
+    public boolean isSlotChild() {
+        return SubGroupPosition > 0;
+    }
+
+    public boolean isSlotZombieChild() {
+        return SubGroupPosition > 1;
     }
 
     public DigitalSensorDriver getDriver() {
@@ -400,7 +400,7 @@ public class DigitalSensorItem {
         }
     }
 
-    public void UpdateHighResolution2(boolean skipUnStable) throws Exception {
+    public boolean UpdateHighResolution2(boolean skipUnStable) throws Exception {
         try {
 //            log.debug("#{} UpdateHighResolution2", Params.getAddress());
 //            long ticks = System.currentTimeMillis();
@@ -423,10 +423,12 @@ public class DigitalSensorItem {
                         SetZeroOffset(false, Values.getZeroOffset());
                     }
                 }
+                return false;
             } else {
                 boolean stable = DigitalSensorValues.isStableMark(packet.Content[1]);
                 if (!stable && skipUnStable) {
                     // skip unstable values
+                    return false;
                 } else {
                     HighResCounter = counter;
                     Values.setGrossWeightStr(new String(packet.Content, 2, 8));
@@ -443,9 +445,7 @@ public class DigitalSensorItem {
                         setCountInAccuracy(true);
                     }
                     TryNotifyListener();
-                    //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
-                    UpdateELabel();
-                    //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
+                    return true;
                 }
             }
             //log.debug("#{} UpdateHighResolution2 Done", Params.getAddress());
@@ -461,6 +461,14 @@ public class DigitalSensorItem {
     double LastNotifyWeight = -999999;
 
     public void TryNotifyListener() {
+        if (isSlotChild()) {
+            // does not notify if it is a child slot
+            return;
+        }
+        if (TextUtils.isTrimedNotEmpty(getSubGroup())) {
+            // does not notify is slot is empty
+            return;
+        }
         if (LatsNotifyStatus != getFlatStatus()) {
             switch (getFlatStatus()) {
                 case Offline:
@@ -497,13 +505,12 @@ public class DigitalSensorItem {
     private String LastPCS;
     private boolean LastAccuracy;
 
-    public void UpdateELabel() throws Exception {
+    public void UpdateELabel(String number, String name, String bin, String wgt, String pcs) throws Exception {
         if (!Params.hasELabel()) {
             return;
         }
 
-        int oldStatus = GetELabelStatus();
-        int status = oldStatus;
+        int status = GetELabelStatus();
         if (status == -1) {
             // not online
             return;
@@ -520,52 +527,16 @@ public class DigitalSensorItem {
             if (Params.isEnabled()) {
                 status |= DataPacket.EELabelStatusBits.Enabled;
             }
+            if (Values.isHighlight()) {
+                status |= DataPacket.EELabelStatusBits.Highlight;
+            }
+            SetELabelStatus(status);
         } else {
             // inited
             // get enable mark
             Params.setEnabled((status & DataPacket.EELabelStatusBits.Enabled) != 0);
         }
-        // update highlight mark
-        if (Values.isHighlight()) {
-            status |= DataPacket.EELabelStatusBits.Highlight;
-        } else {
-            status &= ~DataPacket.EELabelStatusBits.Highlight;
-        }
-        String number;
-        String name;
-        String bin;
-        String wgt;
-        String pcs;
-        if (Params.isEnabled()) {
-            number = Passenger.getMaterial().getNumber();
-            name = Passenger.getMaterial().getName();
-            bin = getShortName();
-            wgt = Values.getNetWeight() + " " + Values.getUnit();
-            pcs = String.valueOf(Values.getPieceCount());
-        } else {
-            number = null;
-            name = null;
-            bin = getShortName();
-            wgt = Values.getNetWeight() + " " + Values.getUnit();
-            pcs = null;
-        }
-        // use single space replace null value
-        if (number == null) {
-            number = " ";
-        }
-        if (name == null) {
-            name = " ";
-        }
-        if (bin == null) {
-            bin = " ";
-        }
-        if (pcs == null) {
-            pcs = " ";
-        }
 
-        if (status != oldStatus) {
-            SetELabelStatus(status);
-        }
         if (!Objects.equals(LastPartNumber, number)) {
             if (TextUtils.isTrimedEmpty(number)) {
                 SetELabelPartNumber(number);
@@ -590,6 +561,31 @@ public class DigitalSensorItem {
             SetELabelPieceCount(pcs);
             LastPCS = pcs;
             LastAccuracy = isCountInAccuracy();
+        }
+    }
+
+    public void UpdateELabel() throws Exception {
+        String number;
+        String name;
+        String bin;
+        String wgt;
+        String pcs;
+        if (Params.isEnabled()) {
+            number = Passenger.getMaterial().getNumber();
+            name = Passenger.getMaterial().getName();
+            bin = getSubGroup();
+            wgt = Values.getNetWeight() + " " + Values.getUnit();
+            pcs = String.valueOf(Values.getPieceCount());
+        } else {
+            number = null;
+            name = null;
+            bin = getSubGroup();
+            wgt = Values.getNetWeight() + " " + Values.getUnit();
+            pcs = null;
+        }
+
+        if (!isSlotChild()) {
+            UpdateELabel(number, name, bin, wgt, pcs);
         }
     }
 
@@ -1040,11 +1036,26 @@ public class DigitalSensorItem {
     }
 
     public void SetELabelBinNo(String value) throws Exception {
-        WriteELabelBinNo(value);
-        if (TextUtils.isTrimedEmpty(value)) {
-            WriteELabelDefaultLogo();
-        } else {
-            WriteELabelBarcode(value);
+        switch (Params.getELabelModel()) {
+            case DigitalSensorParams.EELabelModel.V3:
+            default: {
+                WriteELabelBinNo(value);
+                if (TextUtils.isTrimedEmpty(value)) {
+                    WriteELabelDefaultLogo();
+                } else {
+                    WriteELabelBarcode(value, 48);
+                }
+                break;
+            }
+            case DigitalSensorParams.EELabelModel.V4: {
+                WriteELabelBinNo(value);
+                if (TextUtils.isTrimedEmpty(value)) {
+                    WriteELabelDefaultLogo();
+                } else {
+                    WriteELabelBarcode(value, 64);
+                }
+                break;
+            }
         }
     }
 
@@ -1056,6 +1067,49 @@ public class DigitalSensorItem {
         return ReadELabelStatus();
     }
 
+    public void SetELabelHighlight(boolean highlight) {
+        if (getParams().hasELabel()) {
+            try {
+                int status = GetELabelStatus();
+                if (status == -1) {
+                    return;
+                }
+                int newStatus = status;
+                if (highlight) {
+                    newStatus |= (int) DataPacket.EELabelStatusBits.Highlight;
+                } else
+                    newStatus &= (~(int) DataPacket.EELabelStatusBits.Highlight);
+                if (status != newStatus) {
+                    SetELabelStatus(newStatus);
+                }
+            } catch (Exception ex) {
+                log.warn("WriteELabelHighlight failed:{}", ex.getMessage());
+            }
+        }
+        Values.setHighlight(highlight);
+    }
+
+    public void SetELabelEnabled(boolean enable) {
+        if (getParams().hasELabel()) {
+            try {
+                int status = GetELabelStatus();
+                if (status == -1) {
+                    return;
+                }
+                int newStatus = status;
+                if (enable) {
+                    newStatus |= (int) DataPacket.EELabelStatusBits.Enabled;
+                } else
+                    newStatus &= (~(int) DataPacket.EELabelStatusBits.Enabled);
+                if (status != newStatus) {
+                    SetELabelStatus(newStatus);
+                }
+            } catch (Exception ex) {
+                log.warn("WriteELabelEnable failed:{}", ex.getMessage());
+            }
+        }
+        Params.setEnabled(enable);
+    }
 
     public DataPacket OperateELabel(byte cmd, byte page, byte totalPage, byte[] data) throws Exception {
         int address = Params.getAddress() + DataPacket.AddressELabelStart;
@@ -1086,6 +1140,7 @@ public class DigitalSensorItem {
     public void WriteELabelStatus(int status) throws Exception {
         OperateELabel((byte) DataPacket.EELabelCmdID.WriteStatus, (byte) 0, (byte) 1, ByteHelper.intToBytes(status));
     }
+
 
     void WriteELabelString(byte cmd, byte page, byte totalPage, int color, String str) throws Exception {
         if (str == null) {
@@ -1183,9 +1238,9 @@ public class DigitalSensorItem {
         WriteELabelLogo((0x006040), _defaultLogoWidth, _defaultLogoHeight, _defaultLogo);
     }
 
-    public void WriteELabelBarcode(String value) throws Exception {
-        int width = 48;
-        int height = 48;
+    public void WriteELabelBarcode(String value, int size) throws Exception {
+        int width = size;
+        int height = size;
         int[] data = QrCodeUtil.encodeToBits(value, width, height, 0);
         WriteELabelLogo(DataPacket.EELabelColor.Black, width, height, data);
     }

@@ -70,7 +70,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         try {
             final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
             if (slot == null) {
-                log.debug("#{} Could not found slot ({})", sensor.getParams().getAddress(), sensor.getShortName());
+                log.debug("#{} Could not found slot ({})", sensor.getParams().getAddress(), sensor.getSubGroup());
                 return false;
             }
             if (slot.getData() == null) {
@@ -101,7 +101,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         try {
             final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
             if (slot == null) {
-                log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getShortName());
+                log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getSubGroup());
             } else {
                 if (slot.getData() == null) {
                     slot.setData(new MemoryWeightData());
@@ -119,7 +119,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     }
 
     private static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
-        return weightDataHolder.getSlotTable().get(sensor.getShortName());
+        return weightDataHolder.getSlotTable().get(sensor.getSubGroup());
     }
 
     private static int toState(DigitalSensorItem sensor) {
