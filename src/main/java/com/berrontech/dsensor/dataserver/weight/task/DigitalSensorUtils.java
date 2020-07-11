@@ -27,7 +27,7 @@ public class DigitalSensorUtils {
                 }
                 DigitalSensorGroup group = sensorManager.NewGroup();
                 switch (conn.getType()) {
-                //    switch (2) {
+                //switch (2) {
                     default: {
                         log.info("Unknow connection type: {}", conn.getType());
                         break;
