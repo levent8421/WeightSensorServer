@@ -27,7 +27,7 @@ public class DigitalSensorUtils {
                 }
                 DigitalSensorGroup group = sensorManager.NewGroup();
                 switch (conn.getType()) {
-                    //switch (2) {
+                //    switch (2) {
                     default: {
                         log.info("Unknow connection type: {}", conn.getType());
                         break;
@@ -40,7 +40,7 @@ public class DigitalSensorUtils {
                     }
                     case DeviceConnection.TYPE_NET: {
                         String target = conn.getTarget();
-                        //target = "127.0.0.1:8200";
+                        //String target = "127.0.0.1:8200";
                         log.debug("Add group on tcp: {}", target);
                         String[] parts = target.split(":");
                         group.setCommMode(DigitalSensorGroup.ECommMode.Net);
@@ -52,6 +52,7 @@ public class DigitalSensorUtils {
                             log.info("Use default net port: {}", defaultPort);
                             group.setCommPort(defaultPort);
                         }
+                        group.setReadTimeout(200);
                         break;
                     }
                 }
@@ -79,10 +80,10 @@ public class DigitalSensorUtils {
                             if (ms.getSensors().size() > 1) {
                                 // reg combine slot info
                                 val ss = ms.getSensors().stream().sorted(Comparator.comparing(MemoryWeightSensor::getAddress485)).collect(Collectors.toList());
-                                for (int idx = 0; pos < ss.size(); pos++) {
-                                    if (ss.get(pos).getAddress485() == sensor.getParams().getAddress()) {
+                                for (int idx = 0; idx < ss.size(); idx++) {
+                                    if (ss.get(idx).getAddress485() == sensor.getParams().getAddress()) {
                                         // sub group position of a combined slot always start from 1
-                                        sensor.setSubGroupPosition(pos + 1);
+                                        sensor.setSubGroupPosition(idx + 1);
                                         break;
                                     }
                                 }
