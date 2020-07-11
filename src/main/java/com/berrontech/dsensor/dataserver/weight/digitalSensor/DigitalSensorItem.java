@@ -465,7 +465,7 @@ public class DigitalSensorItem {
             // does not notify if it is a child slot
             return;
         }
-        if (TextUtils.isTrimedNotEmpty(getSubGroup())) {
+        if (TextUtils.isTrimedEmpty(getSubGroup())) {
             // does not notify is slot is empty
             return;
         }
@@ -541,7 +541,7 @@ public class DigitalSensorItem {
             if (TextUtils.isTrimedEmpty(number)) {
                 SetELabelPartNumber(number);
             } else {
-                SetELabelPartNumber("SKU: " + number);  // add prefix: SKU
+                SetELabelPartNumber("SKU:" + number);  // add prefix: SKU
             }
             LastPartNumber = number;
         }

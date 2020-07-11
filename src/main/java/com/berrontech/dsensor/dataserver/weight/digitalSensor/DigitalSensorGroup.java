@@ -339,7 +339,7 @@ public class DigitalSensorGroup {
         }
         Reading = true;
 
-        log.info("Start reading2");
+        log.info("Start reading2, sensors={}", Sensors.size());
 
         createThreadPool().execute(() ->
         {
