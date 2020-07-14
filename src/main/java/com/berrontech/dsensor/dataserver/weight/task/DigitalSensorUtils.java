@@ -69,26 +69,29 @@ public class DigitalSensorUtils {
                         params.setAddress(sen.getAddress());
                         params.setDeviceSn(sen.getDeviceSn());
                         if (sen.getHasElabel()) {
-                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
-                            //params.setELabelModel(DigitalSensorParams.EELabelModel.V4);
+                            //params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
+                            params.setELabelModel(DigitalSensorParams.EELabelModel.V4);
                         }
 
-                        Slot slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().get();
-                        val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
-                        if (ms != null) {
-                            sensor.setSubGroup(ms.getSlotNo());
-                            if (ms.getSensors().size() > 1) {
-                                // reg combine slot info
-                                val ss = ms.getSensors().stream().sorted(Comparator.comparing(MemoryWeightSensor::getAddress485)).collect(Collectors.toList());
-                                for (int idx = 0; idx < ss.size(); idx++) {
-                                    if (ss.get(idx).getAddress485() == sensor.getParams().getAddress()) {
-                                        // sub group position of a combined slot always start from 1
-                                        sensor.setSubGroupPosition(idx + 1);
-                                        break;
+                        val rst = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst();
+                        if (rst.isPresent()) {
+                            Slot slot = rst.get();
+                            val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
+                            if (ms != null) {
+                                sensor.setSubGroup(ms.getSlotNo());
+                                if (ms.getSensors().size() > 1) {
+                                    // reg combine slot info
+                                    val ss = ms.getSensors().stream().sorted(Comparator.comparing(MemoryWeightSensor::getAddress485)).collect(Collectors.toList());
+                                    for (int idx = 0; idx < ss.size(); idx++) {
+                                        if (ss.get(idx).getAddress485() == sensor.getParams().getAddress()) {
+                                            // sub group position of a combined slot always start from 1
+                                            sensor.setSubGroupPosition(idx + 1);
+                                            break;
+                                        }
                                     }
                                 }
+                                setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
                             }
-                            setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
                         }
                     }
                 }
