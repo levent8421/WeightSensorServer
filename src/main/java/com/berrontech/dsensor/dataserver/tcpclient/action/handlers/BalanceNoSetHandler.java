@@ -10,8 +10,6 @@ import com.berrontech.dsensor.dataserver.tcpclient.action.mapping.ActionHandlerM
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
-import com.berrontech.dsensor.dataserver.weight.WeightController;
-import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -35,19 +33,13 @@ import java.util.stream.Collectors;
 @ActionHandlerMapping("balance.no.set")
 public class BalanceNoSetHandler implements ActionHandler {
     private final SlotService slotService;
-    private final WeightController weightController;
-    private final WeightDataHolder weightDataHolder;
     private final WeightSensorService weightSensorService;
     private final SensorMetaDataService sensorMetaDataService;
 
     public BalanceNoSetHandler(SlotService slotService,
-                               WeightController weightController,
-                               WeightDataHolder weightDataHolder,
                                WeightSensorService weightSensorService,
                                SensorMetaDataService sensorMetaDataService) {
         this.slotService = slotService;
-        this.weightController = weightController;
-        this.weightDataHolder = weightDataHolder;
         this.weightSensorService = weightSensorService;
         this.sensorMetaDataService = sensorMetaDataService;
     }

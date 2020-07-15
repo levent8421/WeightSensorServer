@@ -14,9 +14,10 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notEmpty;
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull;
@@ -48,21 +49,41 @@ public class BalanceSkuSetHandler implements ActionHandler {
     public Message onMessage(Message message) throws Exception {
         final Object dataObj = message.getData();
         final List<SkuParam> params = MessageUtils.asList(dataObj, SkuParam.class);
-        checkParams(params);
+        notEmpty(params, BadRequestException.class, "Empty param list!");
+        assert params != null;
+
+        final Map<String, String> failureSlotNos = new HashMap<>(16);
         for (SkuParam param : params) {
-            final Slot query = new Slot();
-            query.setSlotNo(param.getSlotNo());
-            query.setSkuNo(param.getSkuNo());
-            query.setSkuName(param.getName());
-            query.setSkuApw(param.getApw());
-            query.setSkuTolerance(param.getTolerance());
-            query.setSkuShelfLifeOpenDays(param.getSkuShelfLifeOpenDays());
-            slotService.updateSkuInfoBySlotNo(query);
-            notifySkuChanged(param.getSlotNo(), param);
-            log.debug("Set [{}] sku to [{}/{}]", param.getSlotNo(), param.getSkuNo(), param.getName());
+            if (param == null) {
+                log.warn("Receive a null param(On set sku api[{}])!", message.getSeqNo());
+                continue;
+            }
+            try {
+                doSetSku(param);
+            } catch (Exception e) {
+                failureSlotNos.put(param.getSlotNo(), String.format("%s:%s", e.getClass().getSimpleName(), e.getMessage()));
+                log.warn("API message[{}], Error on set slot [{}] sku to [{}],error=[{},{}]",
+                        message.getSeqNo(), param.getSlotNo(), param, e.getClass().getName(), e.getMessage());
+            }
         }
-        val res = Payload.ok();
-        return MessageUtils.replyMessage(message, res);
+        final Payload<Map<String, String>> payload = Payload.ok(failureSlotNos);
+        return MessageUtils.replyMessage(message, payload);
+    }
+
+    private void doSetSku(SkuParam param) {
+        checkParam(param);
+        // ------DATABASE OPERATION START------
+        final Slot queryParam = new Slot();
+        queryParam.setSlotNo(param.getSlotNo());
+        queryParam.setSkuName(param.getName());
+        queryParam.setSkuNo(param.getSkuNo());
+        queryParam.setSkuApw(param.getApw());
+        queryParam.setSkuTolerance(param.getTolerance());
+        queryParam.setSkuShelfLifeOpenDays(param.getSkuShelfLifeOpenDays());
+        slotService.updateSkuInfoBySlotNo(queryParam);
+        // ------DATABASE OPERATION END------
+        // NOTIFY WEIGHT SERVICE SKU CHANGED
+        notifySkuChanged(param.getSlotNo(), param);
     }
 
     private void notifySkuChanged(String slotNo, SkuParam param) {
@@ -77,21 +98,13 @@ public class BalanceSkuSetHandler implements ActionHandler {
         slot.setSku(sku);
     }
 
-    private void checkParams(List<SkuParam> params) {
-        if (params == null) {
-            throw new BadRequestException("Empty Params!");
-        }
-        val e = BadRequestException.class;
-        for (SkuParam param : params) {
-            if (param == null) {
-                throw new BadRequestException("Empty(null) Param!");
-            }
-            val slotNo = param.getSlotNo();
-            notEmpty(slotNo, e, "Empty SlotNo!");
-            notEmpty(param.getName(), e, slotNo + "Empty SkuName!");
-            notNull(param.getApw(), e, slotNo + "Empty SkuAPW!");
-            notEmpty(param.getSkuNo(), e, slotNo + "Empty SkuNo!");
-            notNull(param.getTolerance(), e, slotNo + "Empty Tolerance!");
-        }
+    private void checkParam(SkuParam param) {
+        final Class<BadRequestException> ex = BadRequestException.class;
+        notNull(param, ex, "Null param!");
+        notEmpty(param.getSlotNo(), ex, "Null slotNo!");
+        notEmpty(param.getName(), ex, "Blank skuName!");
+        notNull(param.getApw(), ex, "Null apw!");
+        notNull(param.getTolerance(), ex, "Null tolerance!");
+        notEmpty(param.getSkuNo(), ex, "Blank skuNo!");
     }
 }

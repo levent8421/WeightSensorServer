@@ -23,7 +23,7 @@ CREATE TABLE `t_application_config`
 LOCK TABLES `t_application_config` WRITE;
 
 INSERT INTO `t_application_config`
-VALUES (1, 'application.db_version', '0.0.1', now(), now(), false), # for this database version
+VALUES (1, 'application.db_version', '1', now(), now(), false), # for this database version
        (2, 'application.ui.enable_tabBar', 'true', now(), now(), false); # enable the Dashboard UI TabBar
 
 UNLOCK TABLES;
