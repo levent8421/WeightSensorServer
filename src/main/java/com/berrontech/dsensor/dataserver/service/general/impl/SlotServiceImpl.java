@@ -97,7 +97,7 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
         val slot = new Slot();
         slot.setAddress(sensor.getAddress());
         slot.setSlotNo(defaultSlotNo(sensor));
-        slot.setHasElabel(false);
+        slot.setHasElabel(sensor.getHasElabel());
         slot.setState(WeightSensor.STATE_ONLINE);
         save(slot);
         sensor.setSlotId(slot.getId());

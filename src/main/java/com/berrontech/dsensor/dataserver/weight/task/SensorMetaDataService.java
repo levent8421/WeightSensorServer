@@ -86,4 +86,28 @@ public class SensorMetaDataService {
                 .forEach(slot -> slotTable.put(slot.getSlotNo(), slot));
         weightDataHolder.setSlotTable(slotTable);
     }
+
+    /**
+     * 更新slotTable 中的传感器状态
+     *
+     * @param sensors 传感器列表
+     */
+    public void updateSensorStateInSlotTable(Collection<MemoryWeightSensor> sensors) {
+        final Map<String, MemorySlot> slotTable = weightDataHolder.getSlotTable();
+        final Map<Integer, MemoryWeightSensor> sensorsTable = sensors.stream()
+                .collect(Collectors.toMap(MemoryWeightSensor::getId, v -> v));
+        for (MemorySlot slot : slotTable.values()) {
+            final Collection<MemoryWeightSensor> slotSensors = slot.getSensors();
+            if (slotSensors == null || slotSensors.isEmpty()) {
+                continue;
+            }
+            for (MemoryWeightSensor sensor : slot.getSensors()) {
+                if (sensorsTable.containsKey(sensor.getId())) {
+                    final MemoryWeightSensor targetSensor = sensorsTable.get(sensor.getId());
+                    sensor.setState(targetSensor.getState());
+                    slot.setState(targetSensor.getState());
+                }
+            }
+        }
+    }
 }

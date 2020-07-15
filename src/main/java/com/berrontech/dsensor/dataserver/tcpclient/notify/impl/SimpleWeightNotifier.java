@@ -234,6 +234,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void sensorStateChanged(Collection<MemoryWeightSensor> sensors) {
+        obtainSensorMetaDataService().updateSensorStateInSlotTable(sensors);
         final Map<Integer, SlotVo> slotMap = new HashMap<>(16);
         for (MemoryWeightSensor sensor : sensors) {
             weightSensorService.updateState(sensor.getId(), sensor.getState());
@@ -243,6 +244,8 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
                 ms.setState(sensor.getState());
                 val vo = SlotVo.of(ms);
                 slotMap.put(vo.getId(), vo);
+                log.debug("Update slot[{},{}], sensor[{{},{}}] state to [{}]",
+                        slot.getId(), slot.getSlotNo(), slot.getId(), slot.getAddress(), sensor.getState());
             }
         }
         val slots = new ArrayList<>(slotMap.values());

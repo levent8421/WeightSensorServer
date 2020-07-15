@@ -76,6 +76,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         base.setAddress(update.getAddress485());
         base.setConnectionId(update.getConnectionId());
         base.setState(update.getState());
+        base.setHasElabel(update.getHasElable());
         return updateById(base);
     }
 
@@ -94,7 +95,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         weightSensor.setAddress(sensor.getAddress485());
         weightSensor.setDeviceSn(sensor.getDeviceSn());
         weightSensor.setZeroReference(WeightSensor.DEFAULT_ZERO_REFERENCE);
-        weightSensor.setHasElabel(false);
+        weightSensor.setHasElabel(sensor.getHasElable());
         return weightSensor;
     }
 
