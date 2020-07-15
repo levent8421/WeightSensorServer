@@ -225,14 +225,17 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void doZero(String slotNo) {
-        val sensor = sensorManager.FirstOrNull(slotNo);
-        if (sensor == null) {
+        val sensors = sensorManager.Filter(slotNo);
+        if (sensors == null || sensors.size() <= 0) {
             log.info("Can not found slot({})", slotNo);
         } else {
-            try {
-                sensor.DoZero(true);
-            } catch (Exception ex) {
-                log.warn("#{} Slot({}) Do zero failed,{}", sensor.getParams().getAddress(), slotNo, ex.getMessage());
+            for (val sensor : sensors) {
+                try {
+                    sensor.DoZero(true);
+                    log.info("#{} Slot({}) set to zero", sensor.getParams().getAddress(), slotNo);
+                } catch (Exception ex) {
+                    log.warn("#{} Slot({}) Do zero failed,{}", sensor.getParams().getAddress(), slotNo, ex.getMessage());
+                }
             }
         }
     }

@@ -200,7 +200,6 @@ public class DigitalSensorManager {
     }
 
     public DigitalSensorItem FirstOrNull(String slotNo) {
-        boolean found = false;
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 for (DigitalSensorItem s : g.getSensors()) {
@@ -211,6 +210,20 @@ public class DigitalSensorManager {
             }
         }
         return null;
+    }
+
+    public List<DigitalSensorItem> Filter(String slotNo) {
+        List<DigitalSensorItem> sensors = new ArrayList<>();
+        if (Groups.size() > 0) {
+            for (DigitalSensorGroup g : Groups) {
+                for (DigitalSensorItem s : g.getSensors()) {
+                    if (Objects.equals(s.getSubGroup(), slotNo)) {
+                        sensors.add(s);
+                    }
+                }
+            }
+        }
+        return sensors;
     }
 
     public boolean HighlightMaterial(String barcode) {
