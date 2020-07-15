@@ -14,6 +14,7 @@ import lombok.val;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Create By Lastnika
@@ -42,7 +43,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         log.debug("#{} Notify onSensorStateChanged", sensor.getParams().getAddress());
         try {
             WeightSensor s1 = weightDataHolder.getWeightSensors().stream()
-                    .filter(s -> s.getDeviceSn().equals(sensor.getParams().getDeviceSn()))
+                    .filter(s -> Objects.equals(s.getAddress(), sensor.getParams().getAddress()))
                     .findFirst()
                     .orElse(null);
             if (s1 != null) {
