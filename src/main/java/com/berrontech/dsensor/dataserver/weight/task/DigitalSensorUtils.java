@@ -73,9 +73,8 @@ public class DigitalSensorUtils {
                             params.setELabelModel(DigitalSensorParams.EELabelModel.V4);
                         }
 
-                        val rst = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst();
-                        if (rst.isPresent()) {
-                            Slot slot = rst.get();
+                        Slot slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().orElse(null);
+                        if (slot != null) {
                             val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
                             if (ms != null) {
                                 sensor.setSubGroup(ms.getSlotNo());
