@@ -532,9 +532,17 @@ public class DigitalSensorItem {
             }
             SetELabelStatus(status);
         } else {
-            // inited
-            // get enable mark
-            Params.setEnabled((status & DataPacket.EELabelStatusBits.Enabled) != 0);
+            if (isSlotZombieChild()) {
+                // always enable zombie slot
+                int newStatus = status | DataPacket.EELabelStatusBits.Enabled;
+                if (newStatus != status) {
+                    SetELabelStatus(newStatus);
+                }
+            } else {
+                // inited
+                // get enable mark
+                Params.setEnabled((status & DataPacket.EELabelStatusBits.Enabled) != 0);
+            }
         }
 
         if (!Objects.equals(LastPartNumber, number)) {
