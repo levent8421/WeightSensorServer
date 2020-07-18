@@ -20,6 +20,11 @@ public interface DatabaseUpgrader {
     void checkForUpgrade();
 
     /**
+     * 初始化数据库
+     */
+    void checkForInit();
+
+    /**
      * 执行数据库更新脚本
      *
      * @param scriptFiles sql script files

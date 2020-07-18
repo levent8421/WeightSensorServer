@@ -8,6 +8,7 @@ import com.berrontech.dsensor.dataserver.common.util.ParamChecker;
 import com.berrontech.dsensor.dataserver.common.util.VersionUtils;
 import com.berrontech.dsensor.dataserver.common.vo.DatabaseVersionConfig;
 import com.berrontech.dsensor.dataserver.conf.DatabaseUpgradeConfiguration;
+import com.berrontech.dsensor.dataserver.repository.mapper.DatabaseMetaDataMapper;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
@@ -15,6 +16,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Component;
@@ -40,6 +42,14 @@ import java.util.List;
 @Slf4j
 public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationContextAware {
     /**
+     * 查询所有表名
+     */
+    private static final String TABLE_NAME_APPLICATION_CONFIG = "t_application_config";
+    /**
+     * 数据库初始化脚本
+     */
+    private static final String DATABASE_INIT_SCRIPT_RESOURCE_NAME = "classpath:/db_script/db_init.sql";
+    /**
      * 数据库更新脚本模板
      */
     private static final String DATABASE_UPGRADE_SCRIPT_FILE_NAME_TEMPLATE = "upgrade_scada_wsa_%s.sql";
@@ -61,13 +71,16 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
     private final ApplicationConfigService applicationConfigService;
     private final SqlSessionFactory sqlSessionFactory;
     private ApplicationContext applicationContext;
+    private final DatabaseMetaDataMapper databaseMetaDataMapper;
 
     public MysqlDatabaseUpgrader(DatabaseUpgradeConfiguration databaseUpgradeConfiguration,
                                  ApplicationConfigService applicationConfigService,
-                                 SqlSessionFactory sqlSessionFactory) {
+                                 SqlSessionFactory sqlSessionFactory,
+                                 DatabaseMetaDataMapper databaseMetaDataMapper) {
         this.databaseUpgradeConfiguration = databaseUpgradeConfiguration;
         this.applicationConfigService = applicationConfigService;
         this.sqlSessionFactory = sqlSessionFactory;
+        this.databaseMetaDataMapper = databaseMetaDataMapper;
     }
 
     @Override
@@ -75,6 +88,26 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
         final String dbVersionConfigFile = databaseUpgradeConfiguration.getDbVersionFilePath();
         log.debug("Application database upgrade with config file [{}]!", dbVersionConfigFile);
         checkForUpgrade(dbVersionConfigFile);
+    }
+
+    @Override
+    public void checkForInit() {
+        log.debug("Check for database init!");
+        final List<String> tables = databaseMetaDataMapper.showTables();
+        log.debug("Database INTI: tables=[{}]", tables);
+        final long matchedTables = tables.stream().filter(TABLE_NAME_APPLICATION_CONFIG::equalsIgnoreCase).count();
+        if (matchedTables <= 0) {
+            doDatabaseInit();
+        } else {
+            log.info("Skip Database init!");
+        }
+    }
+
+    private void doDatabaseInit() {
+        final Resource resource = applicationContext.getResource(DATABASE_INIT_SCRIPT_RESOURCE_NAME);
+        final EncodedResource sqlResource = new EncodedResource(resource);
+        log.info("Database init with script: [{}]", DATABASE_INIT_SCRIPT_RESOURCE_NAME);
+        runScript(sqlResource);
     }
 
     /**
@@ -183,13 +216,17 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
         log.info("Running database upgrade script [{}]", filePath);
         final String resourceName = String.format(SCRIPT_RESOURCE_NAME_TEMPLATE, filePath);
         final EncodedResource resource = new EncodedResource(applicationContext.getResource(resourceName));
+        runScript(resource);
+        log.info("Run done database upgrade script [{}]", filePath);
+    }
+
+    private void runScript(EncodedResource resource) {
         try (final SqlSession session = sqlSessionFactory.openSession()) {
             final Connection connection = session.getConnection();
             ScriptUtils.executeSqlScript(connection, resource,
                     CONTINUE_ON_ERROR, IGNORE_FAILED_DROPS, COMMENT_PREFIX, STATEMENT_SEPARATOR,
                     BLOCK_COMMEND_DELIMITER_START, BLOCK_COMMEND_DELIMITER_END);
         }
-        log.info("Run done database upgrade script [{}]", filePath);
     }
 
     @Override

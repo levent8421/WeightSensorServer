@@ -29,6 +29,7 @@ public class DatabaseUpgradeRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
+        databaseUpgrader.checkForInit();
         databaseUpgrader.checkForUpgrade();
     }
 }
