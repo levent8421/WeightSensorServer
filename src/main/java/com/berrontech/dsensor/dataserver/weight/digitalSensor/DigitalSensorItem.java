@@ -131,9 +131,11 @@ public class DigitalSensorItem {
     private int TotalErrors;
     private int TotalSuccess;
     private int ContinueErrors;
-    public boolean Online = false;
-    public int HighResCounter;
-    public boolean CountInAccuracy = true;
+    private boolean Online = false;
+    private int HighResCounter;
+    private boolean CountInAccuracy = true;
+    private long HighlightDeadTime = 0;
+
 
     public boolean isOnline() {
         return Online && (getTotalSuccess() > 0 && getContinueErrors() < 2);
@@ -543,6 +545,20 @@ public class DigitalSensorItem {
                 // inited
                 // get enable mark
                 Params.setEnabled((status & DataPacket.EELabelStatusBits.Enabled) != 0);
+            }
+        }
+
+        if (IsHighlighting()) {
+            if (IsHighlightTimeout()) {
+                DeHighlight();
+            }
+        }
+        else {
+            if ((status | DataPacket.EELabelStatusBits.Highlight) != 0  // ELabel is highlighting
+                    && Values.isNotHighlight()) // buffered status is not highlight
+            {
+                // de highlight if previous operations failed
+                DeHighlight();
             }
         }
 
@@ -1076,6 +1092,24 @@ public class DigitalSensorItem {
         return ReadELabelStatus();
     }
 
+    public void DoHighlight(long duration) {
+        SetELabelHighlight(true);
+        HighlightDeadTime = System.currentTimeMillis() + duration;
+    }
+
+    public void DeHighlight() {
+        SetELabelHighlight(false);
+        HighlightDeadTime = 0;
+    }
+
+    public boolean IsHighlighting() {
+        return HighlightDeadTime > 0;
+    }
+
+    public boolean IsHighlightTimeout() {
+        return IsHighlighting() && HighlightDeadTime < System.currentTimeMillis();
+    }
+
     public void SetELabelHighlight(boolean highlight) {
         if (getParams().hasELabel()) {
             try {
@@ -1086,8 +1120,9 @@ public class DigitalSensorItem {
                 int newStatus = status;
                 if (highlight) {
                     newStatus |= (int) DataPacket.EELabelStatusBits.Highlight;
-                } else
+                } else {
                     newStatus &= (~(int) DataPacket.EELabelStatusBits.Highlight);
+                }
                 if (status != newStatus) {
                     SetELabelStatus(newStatus);
                 }
@@ -1098,7 +1133,7 @@ public class DigitalSensorItem {
         Values.setHighlight(highlight);
     }
 
-    public void SetELabelEnabled(boolean enable) {
+    public void SetEnabled(boolean enable) {
         if (getParams().hasELabel()) {
             try {
                 int status = GetELabelStatus();

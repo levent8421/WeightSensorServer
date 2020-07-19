@@ -244,9 +244,7 @@ public class DigitalSensorManager {
                             try {
                                 if (barcode.equalsIgnoreCase(s.getPassenger().getMaterial().getNumber())) {
                                     found = true;
-                                    s.SetELabelHighlight(true);
-                                } else {
-                                    s.SetELabelHighlight(false);
+                                    s.DoHighlight(10 * 1000);
                                 }
                             } catch (Exception ex) {
                                 log.warn("#{} HighlightMaterial({}) failed: {}", s.getParams().getAddress(), barcode, ex.getMessage());
@@ -259,7 +257,7 @@ public class DigitalSensorManager {
         return found;
     }
 
-    public boolean HighlightSlot(String slotNo) {
+    public boolean HighlightSlot(String slotNo, long duration) {
         boolean found = false;
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
@@ -268,9 +266,7 @@ public class DigitalSensorManager {
                         try {
                             if (Objects.equals(s.getSubGroup(), slotNo)) {
                                 found = true;
-                                s.SetELabelHighlight(true);
-                            } else {
-                                s.SetELabelHighlight(false);
+                                s.DoHighlight(duration);
                             }
                         } catch (Exception ex) {
                             log.warn("#{} HighlightSlot({}) failed: {}", s.getParams().getAddress(), slotNo, ex.getMessage());
@@ -282,7 +278,7 @@ public class DigitalSensorManager {
         return found;
     }
 
-    public boolean HighlightSlots(Collection<String> slots) {
+    public boolean HighlightSlots(Collection<String> slots, long duration) {
         boolean found = false;
         if (Groups.size() > 0 && slots != null) {
             for (DigitalSensorGroup g : Groups) {
@@ -291,9 +287,7 @@ public class DigitalSensorManager {
                         try {
                             if (slots.contains(s.getSubGroup())) {
                                 found = true;
-                                s.SetELabelHighlight(true);
-                            } else {
-                                s.SetELabelHighlight(false);
+                                s.DoHighlight(duration);
                             }
                         } catch (Exception ex) {
                             log.warn("#{} HighlightSlots failed: {}", s.getParams().getAddress(), ex.getMessage());
@@ -311,7 +305,7 @@ public class DigitalSensorManager {
                 synchronized (g.getDriver().getLock()) {
                     for (DigitalSensorItem s : g.getSensors()) {
                         try {
-                            s.SetELabelHighlight(false);
+                            s.DeHighlight();
                         } catch (Exception ex) {
                             log.warn("#{} DeHighlightAll failed: {}", s.getParams().getAddress(), ex.getMessage());
                         }
@@ -331,9 +325,9 @@ public class DigitalSensorManager {
                         try {
                             if (Objects.equals(s.getSubGroup(), slotNo)) {
                                 found = true;
-                                s.SetELabelEnabled(true);
+                                s.SetEnabled(true);
                             } else {
-                                s.SetELabelEnabled(false);
+                                s.SetEnabled(false);
                             }
                         } catch (Exception ex) {
                             log.warn("#{} EnableSlot({}):{} failed: {}", s.getParams().getAddress(), slotNo, enable, ex.getMessage());

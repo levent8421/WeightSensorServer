@@ -52,7 +52,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     private final WeightSensorService sensorService;
     private SerialConfiguration serialConfiguration;
-    Long HighlightDeadTime;
+
 
     @Autowired
     public WeightServiceTaskImpl(WeightDataHolder weightDataHolder,
@@ -97,12 +97,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         if (sensorManager != null) {
             if (sensorManager.isOpened()) {
                 try {
-                    if (HighlightDeadTime != null) {
-                        if (HighlightDeadTime < System.currentTimeMillis()) {
-                            HighlightDeadTime = null;
-                            sensorManager.DeHighlightAll();
-                        }
-                    }
                     // write zero offset to database in period
                     Thread.sleep(1000);
                 } catch (Exception ex) {
@@ -194,23 +188,18 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void onSlotStateChanged(String slotNo, int state) {
-        DigitalSensorItem sensor = sensorManager.FirstOrNull(slotNo);
-        if (sensor == null) {
-            log.warn("Slot({}) is not found", slotNo);
-        } else {
-            switch (state) {
-                case WeightSensor.STATE_ONLINE: {
-                    sensor.getParams().setEnabled(true);
-                    break;
-                }
-                case WeightSensor.STATE_DISABLE: {
-                    sensor.getParams().setEnabled(false);
-                    break;
-                }
-                default: {
-                    log.warn("#{} try set slot({}) to an unaccepted state: {}", sensor.getParams().getAddress(), slotNo, state);
-                    break;
-                }
+        switch (state) {
+            case WeightSensor.STATE_ONLINE: {
+                sensorManager.EnableSlot(Collections.singleton(slotNo), true);
+                break;
+            }
+            case WeightSensor.STATE_DISABLE: {
+                sensorManager.EnableSlot(Collections.singleton(slotNo), false);
+                break;
+            }
+            default: {
+                log.warn("try set slot({}) to an unaccepted state: {}", slotNo, state);
+                break;
             }
         }
     }
@@ -250,16 +239,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void highlight(String slotNo, long duration) {
-        if (sensorManager.HighlightSlot(slotNo)) {
-            HighlightDeadTime = System.currentTimeMillis() + duration;
-        }
+        sensorManager.HighlightSlot(slotNo, duration);
     }
 
     @Override
     public void highlight(Collection<String> slots, long duration) {
-        if (sensorManager.HighlightSlots(slots)) {
-            HighlightDeadTime = System.currentTimeMillis() + duration;
-        }
+        sensorManager.HighlightSlots(slots, duration);
     }
     //////////////////////////////////////////////////////////
     // local functions
