@@ -114,4 +114,11 @@ public class DigitalSensorDriver {
         } while (sendCount <= retries);
         throw new TimeoutException("Wait packet out of " + retries + " retries");
     }
+
+    @Override
+    public String toString() {
+        return "DigitalSensorDriver{" +
+                "connection=" + connection +
+                '}';
+    }
 }

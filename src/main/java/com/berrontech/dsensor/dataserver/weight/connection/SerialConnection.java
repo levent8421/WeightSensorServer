@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.weight.connection;
 
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.weight.serial.SerialPort;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -106,5 +107,11 @@ public class SerialConnection extends BasicConnection {
         }
     }
 
-
+    @Override
+    public String toString() {
+        return "SerialConnection{" +
+                "portName='" + portName + '\'' +
+                ", baudrate=" + baudrate +
+                '}';
+    }
 }

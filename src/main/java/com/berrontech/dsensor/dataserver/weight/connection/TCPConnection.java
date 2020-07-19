@@ -84,4 +84,12 @@ public class TCPConnection extends BasicConnection {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public String toString() {
+        return "TCPConnection{" +
+                "IP='" + IP + '\'' +
+                ", Port=" + Port +
+                '}';
+    }
 }

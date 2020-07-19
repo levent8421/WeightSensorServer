@@ -536,6 +536,7 @@ public class DigitalSensorItem {
                 // always enable zombie slot
                 int newStatus = status | DataPacket.EELabelStatusBits.Enabled;
                 if (newStatus != status) {
+                    log.debug("#{} Slot({}) is zombie, reset to enable", Params.getAddress(), getSubGroup());
                     SetELabelStatus(newStatus);
                 }
             } else {

@@ -75,7 +75,7 @@ public class DigitalSensorManager {
                 try {
                     g.Open();
                 } catch (Exception ex) {
-                    log.error("Open", ex);
+                    log.warn("Open", ex);
                 }
             }
         }
@@ -91,7 +91,7 @@ public class DigitalSensorManager {
                 try {
                     g.Close();
                 } catch (Exception ex) {
-                    log.error("Close", ex);
+                    log.warn("Close", ex);
                 }
             }
         }
@@ -104,7 +104,7 @@ public class DigitalSensorManager {
                 try {
                     g.Init(this);
                 } catch (Exception ex) {
-                    log.error("Init", ex);
+                    log.warn("Init", ex);
                 }
             }
         }
@@ -116,7 +116,7 @@ public class DigitalSensorManager {
                 try {
                     g.BuildSubGroups();
                 } catch (Exception ex) {
-                    log.error("BuildSubGroups", ex);
+                    log.warn("BuildSubGroups", ex);
                 }
             }
         }
@@ -133,7 +133,7 @@ public class DigitalSensorManager {
                     //g.startReading();
                     g.startReading2();
                 } catch (Exception ex) {
-                    log.error("StartReading", ex);
+                    log.warn("StartReading", ex);
                 }
             }
         }
@@ -149,7 +149,7 @@ public class DigitalSensorManager {
                 try {
                     g.stopReading();
                 } catch (Exception ex) {
-                    log.error("StopReading", ex);
+                    log.warn("StopReading", ex);
                 }
             }
         }
@@ -186,7 +186,11 @@ public class DigitalSensorManager {
     public void DoAllZero(boolean save) {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
-                g.DoAllZero(save);
+                try {
+                    g.DoAllZero(save);
+                } catch (Exception ex) {
+                    log.warn("{} DoAllZero failed: {}", g.Driver.toString(), ex.getMessage());
+                }
             }
         }
     }
@@ -194,7 +198,11 @@ public class DigitalSensorManager {
     public void SetAllCreepCorrect(double value) {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
-                g.SetAllCreepCorrect(value);
+                try {
+                    g.SetAllCreepCorrect(value);
+                } catch (Exception ex) {
+                    log.warn("{} SetAllCreepCorrect failed: {}", g.Driver.toString(), ex.getMessage());
+                }
             }
         }
     }
@@ -233,11 +241,15 @@ public class DigitalSensorManager {
                 for (DigitalSensorItem s : g.getSensors()) {
                     if (s.getPassenger() != null) {
                         if (s.getPassenger().getMaterial() != null) {
-                            if (barcode.equalsIgnoreCase(s.getPassenger().getMaterial().getNumber())) {
-                                found = true;
-                                s.getValues().setHighlight(true);
-                            } else {
-                                s.getValues().setHighlight(false);
+                            try {
+                                if (barcode.equalsIgnoreCase(s.getPassenger().getMaterial().getNumber())) {
+                                    found = true;
+                                    s.SetELabelHighlight(true);
+                                } else {
+                                    s.SetELabelHighlight(false);
+                                }
+                            } catch (Exception ex) {
+                                log.warn("#{} HighlightMaterial({}) failed: {}", s.getParams().getAddress(), barcode, ex.getMessage());
                             }
                         }
                     }
@@ -253,11 +265,15 @@ public class DigitalSensorManager {
             for (DigitalSensorGroup g : Groups) {
                 for (DigitalSensorItem s : g.getSensors()) {
                     synchronized (s.getDriver().getLock()) {
-                        if (Objects.equals(s.getSubGroup(), slotNo)) {
-                            found = true;
-                            s.SetELabelHighlight(true);
-                        } else {
-                            s.SetELabelHighlight(false);
+                        try {
+                            if (Objects.equals(s.getSubGroup(), slotNo)) {
+                                found = true;
+                                s.SetELabelHighlight(true);
+                            } else {
+                                s.SetELabelHighlight(false);
+                            }
+                        } catch (Exception ex) {
+                            log.warn("#{} HighlightSlot({}) failed: {}", s.getParams().getAddress(), slotNo, ex.getMessage());
                         }
                     }
                 }
@@ -272,11 +288,15 @@ public class DigitalSensorManager {
             for (DigitalSensorGroup g : Groups) {
                 synchronized (g.getDriver().getLock()) {
                     for (DigitalSensorItem s : g.getSensors()) {
-                        if (slots.contains(s.getSubGroup())) {
-                            found = true;
-                            s.SetELabelHighlight(true);
-                        } else {
-                            s.SetELabelHighlight(false);
+                        try {
+                            if (slots.contains(s.getSubGroup())) {
+                                found = true;
+                                s.SetELabelHighlight(true);
+                            } else {
+                                s.SetELabelHighlight(false);
+                            }
+                        } catch (Exception ex) {
+                            log.warn("#{} HighlightSlots failed: {}", s.getParams().getAddress(), ex.getMessage());
                         }
                     }
                 }
@@ -290,7 +310,11 @@ public class DigitalSensorManager {
             for (DigitalSensorGroup g : Groups) {
                 synchronized (g.getDriver().getLock()) {
                     for (DigitalSensorItem s : g.getSensors()) {
-                        s.SetELabelHighlight(false);
+                        try {
+                            s.SetELabelHighlight(false);
+                        } catch (Exception ex) {
+                            log.warn("#{} DeHighlightAll failed: {}", s.getParams().getAddress(), ex.getMessage());
+                        }
                     }
                 }
             }
@@ -304,11 +328,15 @@ public class DigitalSensorManager {
             for (DigitalSensorGroup g : Groups) {
                 for (DigitalSensorItem s : g.getSensors()) {
                     synchronized (s.getDriver().getLock()) {
-                        if (Objects.equals(s.getSubGroup(), slotNo)) {
-                            found = true;
-                            s.SetELabelEnabled(true);
-                        } else {
-                            s.SetELabelEnabled(false);
+                        try {
+                            if (Objects.equals(s.getSubGroup(), slotNo)) {
+                                found = true;
+                                s.SetELabelEnabled(true);
+                            } else {
+                                s.SetELabelEnabled(false);
+                            }
+                        } catch (Exception ex) {
+                            log.warn("#{} EnableSlot({}):{} failed: {}", s.getParams().getAddress(), slotNo, enable, ex.getMessage());
                         }
                     }
                 }
