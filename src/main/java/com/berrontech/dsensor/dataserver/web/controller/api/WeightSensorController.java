@@ -6,6 +6,7 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.web.vo.MergeSensorsParam;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.val;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +30,15 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
 public class WeightSensorController extends AbstractEntityController<WeightSensor> {
     private final WeightSensorService weightSensorService;
     private final SensorMetaDataService sensorMetaDataService;
+    private final WeightController weightController;
 
     protected WeightSensorController(WeightSensorService weightSensorService,
-                                     SensorMetaDataService sensorMetaDataService) {
+                                     SensorMetaDataService sensorMetaDataService,
+                                     WeightController weightController) {
         super(weightSensorService);
         this.weightSensorService = weightSensorService;
         this.sensorMetaDataService = sensorMetaDataService;
+        this.weightController = weightController;
     }
 
     /**
@@ -129,5 +133,27 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         sensor.setSlotId(-1);
         weightSensorService.updateById(sensor);
         return GeneralResult.ok(sensor);
+    }
+
+    /**
+     * Stop Weight Service
+     *
+     * @return GR
+     */
+    @PostMapping("/_stop-weight-service")
+    public GeneralResult<Void> stopWeightService() {
+        weightController.shutdown();
+        return GeneralResult.ok();
+    }
+
+    /**
+     * Dump All WeightSensor Metadata
+     *
+     * @return GR
+     */
+    @GetMapping("/_dump-all")
+    public GeneralResult<List<WeightSensor>> dumpAll() {
+        final List<WeightSensor> sensors = weightSensorService.dumpAll();
+        return GeneralResult.ok(sensors);
     }
 }

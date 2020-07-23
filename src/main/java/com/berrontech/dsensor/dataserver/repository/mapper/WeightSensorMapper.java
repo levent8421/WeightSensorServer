@@ -97,4 +97,19 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return rows
      */
     int updateSlotIdBySlotId(@Param("slotId") Integer slotId, @Param("newSlotId") int newSlotId);
+
+    /**
+     * Find A Primary Sensor(A sensor with min address) by slot id
+     *
+     * @param slotId SlotId
+     * @return WeightSensor
+     */
+    WeightSensor selectPrimarySensorBySlotId(@Param("slotId") int slotId);
+
+    /**
+     * Dump all sensor meta data from database
+     *
+     * @return sensor list with all inner objects
+     */
+    List<WeightSensor> dumpAll();
 }

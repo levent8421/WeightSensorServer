@@ -11,6 +11,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
  * @author Levent8421
  */
 @Component
+@Slf4j
 public class SensorMetaDataService {
     private final WeightDataHolder weightDataHolder;
     private final DeviceConnectionService deviceConnectionService;
@@ -83,8 +85,18 @@ public class SensorMetaDataService {
         slotMap.values()
                 .stream()
                 .peek(slot -> slot.setData(new MemoryWeightData()))
-                .forEach(slot -> slotTable.put(slot.getSlotNo(), slot));
+                .forEach(slot -> putSlotIntoSlotTable(slotTable, slot));
         weightDataHolder.setSlotTable(slotTable);
+    }
+
+    private void putSlotIntoSlotTable(Map<String, MemorySlot> slotTable, MemorySlot slot) {
+        String slotNo = slot.getSlotNo();
+        int num = 0;
+        while (slotTable.containsKey(slotNo)) {
+            log.warn("Duplicate slotNo [{}]", slotNo);
+            slotNo = String.format("%s(%d)", slotNo, ++num);
+        }
+        slotTable.put(slotNo, slot);
     }
 
     /**

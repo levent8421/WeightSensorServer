@@ -41,6 +41,8 @@
                extends="rm_base">
         <association property="slot"
                      resultMap="com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper.rm_base"/>
+        <association property="connection"
+                     resultMap="com.berrontech.dsensor.dataserver.repository.mapper.DeviceConnectionMapper.rm_base"/>
     </resultMap>
     <update id="updateState">
         update t_weight_sensor as ws
@@ -87,4 +89,20 @@
         set ws.slot_id=#{newSlotId}
         where ws.slot_id = #{slotId};
     </update>
+    <select id="selectPrimarySensorBySlotId" resultMap="rm_base">
+        <include refid="select"/>
+        and ws.slot_id=#{slotId}
+        order by ws.address asc
+        limit 1
+    </select>
+    <select id="dumpAll" resultMap="rm_with_all">
+        select
+        <include refid="columns"/>,
+        <include
+                refid="com.berrontech.dsensor.dataserver.repository.mapper.DeviceConnectionMapper.columns"/>,
+        <include refid="com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper.columns"/>
+        from t_weight_sensor as ws left outer join t_device_connection as dc on ws.connection_id=dc.id left outer join
+        t_slot as s on ws.slot_id=s.id
+        where (s.deleted=false and ws.deleted=false and dc.deleted=false)
+    </select>
 </mapper>

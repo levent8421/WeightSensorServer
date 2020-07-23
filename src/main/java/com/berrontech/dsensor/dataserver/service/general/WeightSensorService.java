@@ -112,4 +112,19 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @param slotId    slot id
      */
     void setSensorsSlotTo(Set<Integer> sensorIds, Integer slotId);
+
+    /**
+     * Find Primary Sensor By SlotId
+     *
+     * @param slotId slotId
+     * @return WeightSensor
+     */
+    WeightSensor findPrimarySensor(int slotId);
+
+    /**
+     * Dump All WeightSensor Metadata from database
+     *
+     * @return sensor list with all inner objects
+     */
+    List<WeightSensor> dumpAll();
 }

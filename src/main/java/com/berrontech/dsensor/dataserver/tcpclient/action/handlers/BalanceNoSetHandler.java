@@ -16,6 +16,7 @@ import lombok.val;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -67,11 +68,33 @@ public class BalanceNoSetHandler implements ActionHandler {
                 log.error("Duplicate Address485 for Connections {}!", connectionIds);
                 throw new InternalServerErrorException("Duplicate Address for connections [" + connectionIds + "]!");
             }
-            final int slotId = sensors.get(0).getSlotId();
+            final WeightSensor sensor = sensors.get(0);
+            if (!isPrimarySensor(sensor)) {
+                log.warn("Sensor [Address={}] is not primary sensor, ignore SlotNoSetAction!", address);
+                continue;
+            }
+            final int slotId = sensor.getSlotId();
             slotService.updateSlotNo(slotId, slotNo);
         }
         sensorMetaDataService.refreshSlotTable();
         val res = Payload.ok();
         return MessageUtils.replyMessage(message, res);
+    }
+
+    /**
+     * 判断传感器是否为主传感器
+     *
+     * @param sensor sensor
+     * @return primary?
+     */
+    private boolean isPrimarySensor(WeightSensor sensor) {
+        final Integer slotId = sensor.getSlotId();
+        if (slotId == null) {
+            return false;
+        }
+        final WeightSensor primarySensor = weightSensorService.findPrimarySensor(slotId);
+        log.debug("Primary Sensor for slot[{}] is [id:{}/addr:{}], give sensor is [id:{}/addr:{}]",
+                slotId, primarySensor.getId(), primarySensor.getAddress(), sensor.getId(), sensor.getAddress());
+        return Objects.equals(primarySensor.getId(), sensor.getId());
     }
 }

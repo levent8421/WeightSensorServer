@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="deploy" default="deploy" basedir="/sdcard/scada_edge_daemon">
+    <!-- 代码里已经给定值，可以直接用 -->
+    <property name="fileDir" value=""/>
+    <!-- app文件名，代码里已经给定值，可以直接用 -->
+    <property name="fileName" value=""/>
+
+    <!-- 文件备份目录 -->
+    <property name="backup_dir" value="${basedir}/bakup/wsa"/>
+    <!-- 部署目录   -->
+    <property name="deploy_dir" value="/sdcard/scada_wsa"/>
+    <!-- APP JAR 存放目录   -->
+    <property name="app_dir" value="${deploy_dir}/app"/>
+    <!-- 数据库脚本存放目录  -->
+    <property name="sql_script_dir" value="${deploy_dir}/db"/>
+    <!-- 驱动文件所在目录 -->
+    <property name="so_dir" value="${deploy_dir}/so"/>
+
+
+    <!-- 部署动作定义 -->
+    <target name="deploy" depends="info, backup, clean, cover, shutdown, startup">
+        <echo message="SCADA_WSA Deploy DONE"/>
+    </target>
+
+    <target name="info">
+        <!-- app_name代码里定义 -->
+        <echo message="SCADA_WSA: update with file [${filename}] and dir [${filedir}]"/>
+    </target>
+
+    <!-- 备份${deploy_dir}下所有文件到备份目录 -->
+    <target name="backup">
+        <echo message="SCADA_WSA: start backup"/>
+        <!-- 删除上一次备份文件 -->
+        <delete includeemptydirs="true" verbose="true" quiet="true">
+            <fileset dir="${backup_dir}" includes="*"/>
+        </delete>
+        <!-- 拷贝所有文件到备份目录-->
+        <copy todir="${backup_dir}" includeemptydirs="true" verbose="true" quiet="true">
+            <fileset dir="${deploy_dir}"/>
+        </copy>
+        <echo message="SCADA_WSA: end backup"/>
+    </target>
+    <!-- 清空部署目录下的所有文件 -->
+    <target name="clean">
+        <echo message="SCADA_WSA: start clean"/>
+        <delete includeemptydirs="true" verbose="true" quiet="true">
+            <fileset dir="${deploy_dir}"/>
+        </delete>
+        <echo message="SCADA_WSA: end clean"/>
+    </target>
+    <!-- 拷贝文件到部署目录 -->
+    <target name="cover" depends="cover_app, cover_sql, cover_so">
+        <echo message="SCADA_WSA: COPY FILE COMPLETED!"/>
+    </target>
+
+    <!-- 拷贝APP JAR 文件到部署目录-->
+    <target name="cover_app">
+        <!-- 创建 ${deployDir}/app 目录-->
+        <mkdir dir="${app_dir}"/>
+        <!-- 拷贝文件到应用目录 -->
+        <copy todir="${app_dir}" overwrite="true" includeemptydirs="true" verbose="true">
+            <!-- 解压后的应用文件名 -->
+            <fileset dir="${fileDir}" includes="*.jar, *.sh"/>
+        </copy>
+        <chmod perm="+x">
+            <fileset dir="${app_dir}" includes="*.sh"/>
+        </chmod>
+    </target>
+
+    <!-- 拷贝驱动文件到${so_dir}目录-->
+    <target name="cover_so">
+        <!-- 创建 ${deployDir}/app 目录-->
+        <mkdir dir="${so_dir}"/>
+        <!-- 拷贝文件到应用目录 -->
+        <copy todir="${so_dir}" overwrite="true" includeemptydirs="true" verbose="true">
+            <!-- 解压后的应用文件名 -->
+            <fileset dir="${fileDir}" includes="*.so"/>
+        </copy>
+    </target>
+
+    <!-- 拷贝数据库脚本文件到部署目录  -->
+    <target name="cover_sql">
+        <!-- 创建 ${deployDir}/app 目录 -->
+        <mkdir dir="${sql_script_dir}"/>
+        <!-- 拷贝文件到应用目录 -->
+        <copy todir="${sql_script_dir}" overwrite="true" includeemptydirs="true" verbose="true">
+            <!-- 解压后的应用文件名 -->
+            <fileset dir="${fileDir}/db" includes="*.sql, *.json"/>
+        </copy>
+    </target>
+
+    <!-- 应用停机  -->
+    <target name="shutdown">
+        <echo message="SCADA_WSA: APP Shutdown!"/>
+        <exec executable="/bin/sh" dir="${app_dir}" failonerror="false" append="true">
+            <arg line="-c  ./shutdown.sh"/>
+        </exec>
+        <sleep seconds="3"/>
+    </target>
+
+    <!-- 应用启动-->
+    <target name="startup">
+        <echo message="SCADA_WSA: APP Startup!"/>
+        <exec executable="/bin/sh" dir="${app_dir}" failonerror="false" append="true">
+            <arg line="-c  ./startup.sh"/>
+        </exec>
+    </target>
+</project>

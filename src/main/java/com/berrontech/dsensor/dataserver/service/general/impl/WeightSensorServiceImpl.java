@@ -167,4 +167,14 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
             throw new InternalServerErrorException("Update rows=[" + rows + "], accept rows=" + sensorIds.size());
         }
     }
+
+    @Override
+    public WeightSensor findPrimarySensor(int slotId) {
+        return weightSensorMapper.selectPrimarySensorBySlotId(slotId);
+    }
+
+    @Override
+    public List<WeightSensor> dumpAll() {
+        return weightSensorMapper.dumpAll();
+    }
 }

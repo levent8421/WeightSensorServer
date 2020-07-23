@@ -2,18 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.berrontech.dsensor.dataserver.repository.mapper.DeviceConnectionMapper">
     <sql id="columns">
-        tdc.id          as dc_id,
-        tdc.type        as dc_type,
-        tdc.target      as dc_target,
-        tdc.create_time as dc_create_time,
-        tdc.update_time as dc_update_time,
-        tdc.deleted     as dc_deleted
+        dc.id          as dc_id,
+        dc.type        as dc_type,
+        dc.target      as dc_target,
+        dc.create_time as dc_create_time,
+        dc.update_time as dc_update_time,
+        dc.deleted     as dc_deleted
     </sql>
     <sql id="select">
         select
         <include refid="columns"/>
-        from t_device_connection as tdc
-        where tdc.deleted = false
+        from t_device_connection as dc
+        where dc.deleted = false
     </sql>
     <resultMap id="rm_base" type="com.berrontech.dsensor.dataserver.common.entity.DeviceConnection"
                extends="com.berrontech.dsensor.dataserver.repository.AbstractMapper.rm_base">

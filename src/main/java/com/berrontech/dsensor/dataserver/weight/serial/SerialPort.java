@@ -33,7 +33,6 @@ import java.io.*;
  */
 @Slf4j
 public class SerialPort {
-    private static final String SERIAL_PORT_LIB_NAME = "serial_port";
     /**
      * Do not remove or rename the field mFd: it is used by native method close();
      */
@@ -58,10 +57,20 @@ public class SerialPort {
         mFileOutputStream = new FileOutputStream(mFd);
     }
 
+    /**
+     * Get InoutStream for this serial port
+     *
+     * @return Stream
+     */
     public InputStream getInputStream() {
         return mFileInputStream;
     }
 
+    /**
+     * Get OutputStream for this serial port
+     *
+     * @return stream
+     */
     public OutputStream getOutputStream() {
         return mFileOutputStream;
     }
@@ -71,10 +80,13 @@ public class SerialPort {
      *
      * @param path     device file path
      * @param baudrate baud Rate
-     * @param flags    open file flag
+     * @param flags    open device file with this flag
      * @return FD
      */
     private native static FileDescriptor open(String path, int baudrate, int flags);
 
+    /**
+     * Native Close Method
+     */
     public native void close();
 }

@@ -4,7 +4,7 @@ spring:
   #    username: usernameforU
   #    password: MyPassword*123
   datasource:
-    url: jdbc:mysql://192.168.1.130:3306/db_weight_slot?userSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=GMT%2B8
+    url: jdbc:mysql://localhost:3306/scada_wsa?userSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=GMT%2B8
     username: root
     password: monolithiot
 server:
@@ -13,7 +13,7 @@ tcp-api:
   ip: 127.0.0.1
   port: 8100
 serial:
-  lib-path: /sdcard/scada_wsa/so/libserial_port.so
+  lib-path: /opt/weightslot/so/libserial_port.so
 logging:
   config: classpath:logback-spring-dev.xml
 db-upgrade:
