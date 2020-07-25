@@ -66,4 +66,8 @@
         set s.has_elabel=#{hasElable}
         where s.id = #{id}
     </update>
+    <select id="selectByAddress" resultMap="rm_base">
+        <include refid="select"/>
+        and s.address=#{address}
+    </select>
 </mapper>

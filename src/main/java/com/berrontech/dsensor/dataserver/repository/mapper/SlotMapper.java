@@ -62,4 +62,12 @@ public interface SlotMapper extends AbstractMapper<Slot> {
      * @return rows
      */
     int updateHasELable(@Param("id") Integer id, @Param("hasElable") Boolean hasElabel);
+
+    /**
+     * Select Slot by address (original address)
+     *
+     * @param address address
+     * @return slot
+     */
+    Slot selectByAddress(@Param("address") int address);
 }

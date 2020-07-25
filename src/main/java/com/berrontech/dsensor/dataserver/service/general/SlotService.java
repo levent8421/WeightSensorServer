@@ -74,4 +74,12 @@ public interface SlotService extends AbstractService<Slot> {
      * @return slot list
      */
     List<Slot> findBySku(String skuNo);
+
+    /**
+     * Find slot by address(original address)
+     *
+     * @param address address
+     * @return slot
+     */
+    Slot findByAddress(int address);
 }

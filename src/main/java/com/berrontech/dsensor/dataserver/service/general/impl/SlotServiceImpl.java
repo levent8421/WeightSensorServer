@@ -36,7 +36,7 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     @Override
     public void updateSkuInfoBySlotNo(Slot slot) {
         final int rows = slotMapper.updateSkuInfoBySlotNo(slot);
-        if (rows != 1) {
+        if (rows < 1) {
             throw new InternalServerErrorException(
                     "Error On Update SkuInfo for Slot["
                             + slot.getSlotNo()
@@ -121,5 +121,10 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
         final Slot query = new Slot();
         query.setSkuNo(skuNo);
         return findByQuery(query);
+    }
+
+    @Override
+    public Slot findByAddress(int address) {
+        return slotMapper.selectByAddress(address);
     }
 }

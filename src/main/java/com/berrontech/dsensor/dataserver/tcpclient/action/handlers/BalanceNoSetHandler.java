@@ -1,10 +1,9 @@
 package com.berrontech.dsensor.dataserver.tcpclient.action.handlers;
 
-import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
-import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import com.berrontech.dsensor.dataserver.common.exception.ResourceNotFoundException;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
-import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.action.ActionHandler;
 import com.berrontech.dsensor.dataserver.tcpclient.action.mapping.ActionHandlerMapping;
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
@@ -14,11 +13,9 @@ import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Create By Levent8421
@@ -34,14 +31,11 @@ import java.util.stream.Collectors;
 @ActionHandlerMapping("balance.no.set")
 public class BalanceNoSetHandler implements ActionHandler {
     private final SlotService slotService;
-    private final WeightSensorService weightSensorService;
     private final SensorMetaDataService sensorMetaDataService;
 
     public BalanceNoSetHandler(SlotService slotService,
-                               WeightSensorService weightSensorService,
                                SensorMetaDataService sensorMetaDataService) {
         this.slotService = slotService;
-        this.weightSensorService = weightSensorService;
         this.sensorMetaDataService = sensorMetaDataService;
     }
 
@@ -53,48 +47,41 @@ public class BalanceNoSetHandler implements ActionHandler {
             throw new BadRequestException("Empty Param Data!");
         }
         final Set<String> addressSet = data.keySet();
+        final Map<String, String> failureTable = new HashMap<>(16);
+        boolean changed = false;
         for (String addressStr : addressSet) {
             val address = Integer.parseInt(addressStr);
             val slotNo = data.get(addressStr);
-            final List<WeightSensor> sensors = weightSensorService.findByAddress(address);
-            if (sensors.size() <= 0) {
-                throw new BadRequestException("Invalidate Address!");
+            try {
+                doSetSlotNo(address, slotNo);
+                changed = true;
+            } catch (Exception e) {
+                final String error = String.format("%s:%s", e.getClass().getSimpleName(), e.getMessage());
+                log.debug("Error on set slotNo[{}] to address [{}],error=[{}]",
+                        slotNo, address, error);
+                failureTable.put(String.valueOf(address), error);
             }
-            if (sensors.size() != 1) {
-                final List<Integer> connectionIds = sensors
-                        .stream()
-                        .map(WeightSensor::getConnectionId)
-                        .collect(Collectors.toList());
-                log.error("Duplicate Address485 for Connections {}!", connectionIds);
-                throw new InternalServerErrorException("Duplicate Address for connections [" + connectionIds + "]!");
-            }
-            final WeightSensor sensor = sensors.get(0);
-            if (!isPrimarySensor(sensor)) {
-                log.warn("Sensor [Address={}] is not primary sensor, ignore SlotNoSetAction!", address);
-                continue;
-            }
-            final int slotId = sensor.getSlotId();
-            slotService.updateSlotNo(slotId, slotNo);
         }
-        sensorMetaDataService.refreshSlotTable();
-        val res = Payload.ok();
+        if (changed) {
+            sensorMetaDataService.refreshSlotTable();
+        }
+        val res = Payload.ok(failureTable);
         return MessageUtils.replyMessage(message, res);
     }
 
     /**
-     * 判断传感器是否为主传感器
+     * 执行设置货道号操作
      *
-     * @param sensor sensor
-     * @return primary?
+     * @param address address
+     * @param slotNo  slotNo
      */
-    private boolean isPrimarySensor(WeightSensor sensor) {
-        final Integer slotId = sensor.getSlotId();
-        if (slotId == null) {
-            return false;
+    private void doSetSlotNo(Integer address, String slotNo) {
+        final Slot slot = slotService.findByAddress(address);
+        if (slot == null) {
+            final String error = String.format("Could not find slot by address[%d]!", address);
+            log.warn("Address Not Found [{}]!", error);
+            throw new ResourceNotFoundException(error);
         }
-        final WeightSensor primarySensor = weightSensorService.findPrimarySensor(slotId);
-        log.debug("Primary Sensor for slot[{}] is [id:{}/addr:{}], give sensor is [id:{}/addr:{}]",
-                slotId, primarySensor.getId(), primarySensor.getAddress(), sensor.getId(), sensor.getAddress());
-        return Objects.equals(primarySensor.getId(), sensor.getId());
+        slotService.updateSlotNo(slot.getId(), slotNo);
     }
 }

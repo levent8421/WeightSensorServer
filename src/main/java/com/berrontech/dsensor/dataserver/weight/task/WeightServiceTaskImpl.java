@@ -2,11 +2,12 @@ package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
-import com.berrontech.dsensor.dataserver.common.util.NativeUtils;
+import com.berrontech.dsensor.dataserver.common.util.OSUtils;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.conf.SerialConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
+import com.berrontech.dsensor.dataserver.weight.NativeLibraryLoader;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
@@ -21,7 +22,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -38,7 +42,6 @@ import java.util.concurrent.ExecutorService;
 @Slf4j
 @Data
 public class WeightServiceTaskImpl implements WeightServiceTask, WeightController {
-
     /**
      * 称重数据临时保存于此
      */
@@ -51,6 +54,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     private final DigitalSensorManager sensorManager;
 
     private final WeightSensorService sensorService;
+    private NativeLibraryLoader nativeLibraryLoader;
     private SerialConfiguration serialConfiguration;
 
 
@@ -59,12 +63,14 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                                  WeightNotifier weightNotifier,
                                  DigitalSensorManager sensorManager,
                                  WeightSensorService sensorService,
-                                 SerialConfiguration serialConfiguration) {
+                                 SerialConfiguration serialConfiguration,
+                                 NativeLibraryLoader nativeLibraryLoader) {
         this.weightDataHolder = weightDataHolder;
         this.weightNotifier = weightNotifier;
         this.sensorManager = sensorManager;
         this.sensorService = sensorService;
         this.serialConfiguration = serialConfiguration;
+        this.nativeLibraryLoader = nativeLibraryLoader;
     }
 
     /**
@@ -72,14 +78,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
      */
     @PostConstruct
     public void loadLibrary() {
-        final String libPath = serialConfiguration.getLibPath();
-        try {
-            log.info("Loading Library [{}]", libPath);
-            NativeUtils.loadLibrary(libPath);
-            log.info("Load Library [{}] Success!", libPath);
-        } catch (Throwable e) {
-            log.error("Can not load library [{}]", libPath, e);
-        }
+        final String osName = OSUtils.getOsName();
+        final String arch = OSUtils.getArch();
+
+        nativeLibraryLoader.loadLib(osName, arch, OSUtils.isWindows());
     }
 
     @Override

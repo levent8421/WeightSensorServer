@@ -17,5 +17,5 @@ serial:
 logging:
   config: classpath:logback-spring-dev.xml
 db-upgrade:
-  db-version-file-path: D:\monolith\workspace\java\digital-sensor-data-server\db-upgrade\db_version.json
-  script-path:  D:\monolith\workspace\java\digital-sensor-data-server\db-upgrade
+  db-version-file-path: D:\monolith\workspace\java\digital-sensor-data-server\upgrade\db\db_version.json
+  script-path:  D:\monolith\workspace\java\digital-sensor-data-server\upgrade\db

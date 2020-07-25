@@ -25,6 +25,10 @@ public class ApplicationConfig extends AbstractEntity {
      */
     public static final String DB_VERSION = "application.db_version";
     /**
+     * 数据库版本名称
+     */
+    public static final String DB_VERSION_NAME = "application.db_version_name";
+    /**
      * 开启TabBar
      */
     public static final String ENABLE_TAB_BAR = "application.ui.enable_tabBar";
