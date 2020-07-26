@@ -461,8 +461,17 @@ public class DigitalSensorItem {
     int LastNotifyPCS = -999999;
     boolean LastNotifyAccuracy = false;
     double LastNotifyWeight = -999999;
+    long LastSaveTicks = 0;
 
     public void TryNotifyListener() {
+        if (LastSaveTicks <= 0) {
+            LastSaveTicks = System.currentTimeMillis();
+        }
+        if (System.currentTimeMillis() - LastSaveTicks >= 5 * 60 * 1000) {
+            // try save zero point every seconds
+            LastSaveTicks = System.currentTimeMillis();
+            getGroup().getManager().getSensorListener().onNotifySaveZeroOffset(this);
+        }
         if (isSlotChild()) {
             // does not notify if it is a child slot
             return;
@@ -552,8 +561,7 @@ public class DigitalSensorItem {
             if (IsHighlightTimeout()) {
                 DeHighlight();
             }
-        }
-        else {
+        } else {
             if ((status | DataPacket.EELabelStatusBits.Highlight) != 0  // ELabel is highlighting
                     && Values.isNotHighlight()) // buffered status is not highlight
             {

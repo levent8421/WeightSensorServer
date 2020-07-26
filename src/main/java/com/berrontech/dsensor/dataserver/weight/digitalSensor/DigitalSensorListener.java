@@ -43,4 +43,11 @@ public interface DigitalSensorListener {
      * @return success
      */
     boolean onWeightChanged(DigitalSensorItem sensor);
+
+    /**
+     * 通知保存零点修正值
+     *
+     * @param sensor sensor
+     */
+    void onNotifySaveZeroOffset(DigitalSensorItem sensor);
 }
