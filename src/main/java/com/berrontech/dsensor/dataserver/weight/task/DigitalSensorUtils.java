@@ -12,6 +12,7 @@ import lombok.val;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -62,12 +63,14 @@ public class DigitalSensorUtils {
                 // reg slot info
                 int pos = 0;
                 for (WeightSensor sen : weightDataHolder.getWeightSensors()) {
-                    if (sen.getConnectionId().equals(conn.getId())) {
+                    if (Objects.equals(sen.getConnectionId(), conn.getId())) {
                         log.debug("Config sensor: conn={}, sen={}", conn, sen);
                         val sensor = group.getSensors().get(pos++);
                         val params = sensor.getParams();
+                        params.setId(sen.getId());
                         params.setAddress(sen.getAddress());
                         params.setDeviceSn(sen.getDeviceSn());
+                        sensor.getValues().setZeroOffset(sen.getZeroReference() == null ? 0 : sen.getZeroReference().floatValue());
                         if (sen.getHasElabel()) {
                             params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
 //                            params.setELabelModel(DigitalSensorParams.EELabelModel.V4);

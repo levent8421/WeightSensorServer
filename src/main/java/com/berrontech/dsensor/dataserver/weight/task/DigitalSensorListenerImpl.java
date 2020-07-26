@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorListener;
@@ -10,6 +11,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -31,11 +33,14 @@ import java.util.Objects;
 public class DigitalSensorListenerImpl implements DigitalSensorListener {
     private final WeightDataHolder weightDataHolder;
     private final WeightNotifier weightNotifier;
+    private final WeightSensorService sensorService;
 
     DigitalSensorListenerImpl(WeightDataHolder weightDataHolder,
-                              WeightNotifier weightNotifier) {
+                              WeightNotifier weightNotifier,
+                              WeightSensorService sensorService) {
         this.weightDataHolder = weightDataHolder;
         this.weightNotifier = weightNotifier;
+        this.sensorService = sensorService;
     }
 
     @Override
@@ -119,6 +124,11 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         }
     }
 
+    @Override
+    public void onNotifySaveZeroOffset(DigitalSensorItem sensor) {
+        sensorService.setZeroReference(sensor.getParams().getId(), (double)sensor.getValues().getZeroOffset());
+    }
+
     private static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
         return weightDataHolder.getSlotTable().get(sensor.getSubGroup());
     }
@@ -150,4 +160,5 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         }
         return state;
     }
+
 }

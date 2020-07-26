@@ -25,6 +25,7 @@ public class DigitalSensorParams {
     private String PCBASn;
     private String DeviceSn;
     private String DeviceModel;
+    private int Id;
 
     public int ELabelModel = EELabelModel.None;
     private boolean Enabled = true;
