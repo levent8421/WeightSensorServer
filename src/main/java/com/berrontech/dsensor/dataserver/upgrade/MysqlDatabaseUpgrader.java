@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.common.io.IOUtils;
+import com.berrontech.dsensor.dataserver.common.util.NumberUtils;
 import com.berrontech.dsensor.dataserver.common.util.ParamChecker;
 import com.berrontech.dsensor.dataserver.common.util.VersionUtils;
 import com.berrontech.dsensor.dataserver.common.vo.DatabaseVersionConfig;
@@ -157,8 +158,8 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
         final String targetVersion = config.getTargetDbVersion();
         try {
             if (VersionUtils.compareDatabaseVersion(targetVersion, currentVersion) > 0) {
-                final int from = Integer.parseInt(currentVersion);
-                final int target = Integer.parseInt(targetVersion);
+                final int from = NumberUtils.parseInt(currentVersion, 1);
+                final int target = NumberUtils.parseInt(targetVersion, 1);
                 final List<File> scriptList = lookupSqlScripts(from, target);
                 runUpgradeScript(scriptList);
             } else {

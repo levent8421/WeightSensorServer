@@ -32,7 +32,11 @@ public class HeartbeatTask {
             initialDelay = ApplicationConstants.Message.HEARTBEAT_INTERVAL)
     public void heartbeat() {
         if (apiClient.isConnected()) {
-            weightNotifier.heartbeat();
+            try {
+                weightNotifier.heartbeat();
+            } catch (Exception e) {
+                log.warn("Error on notify heartbeat!", e);
+            }
         }
     }
 }

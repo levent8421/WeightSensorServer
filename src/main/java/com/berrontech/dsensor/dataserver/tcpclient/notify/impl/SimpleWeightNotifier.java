@@ -178,7 +178,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
      */
     private String getDbVersion() {
         if (this.dbVersion == null) {
-            val config = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION_NAME);
+            final ApplicationConfig config = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION_NAME);
             if (config == null) {
                 throw new InternalServerErrorException("No DbVersion Set!");
             }

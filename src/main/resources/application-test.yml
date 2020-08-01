@@ -15,3 +15,5 @@ db-upgrade:
   script-path: /sdcard/scada_wsa/db
 logging:
   config: classpath:logback-spring-test.xml
+log-conf:
+  log-file-dir: /mnt/hd0/scada_wsa/log

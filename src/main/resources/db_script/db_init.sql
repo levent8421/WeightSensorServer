@@ -25,7 +25,7 @@ LOCK TABLES `t_application_config` WRITE;
 INSERT INTO `t_application_config`
 VALUES (1, 'application.db_version', '4', now(), now(), false),          # for this database version
        (2, 'application.db_version_name', '0.0.2', now(), now(), false), # db version name
-       (2, 'application.ui.enable_tabBar', 'true', now(), now(), false); # enable the Dashboard UI TabBar
+       (3, 'application.ui.enable_tabBar', 'true', now(), now(), false); # enable the Dashboard UI TabBar
 
 UNLOCK TABLES;
 

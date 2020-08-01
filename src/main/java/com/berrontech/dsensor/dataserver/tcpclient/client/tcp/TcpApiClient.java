@@ -4,6 +4,7 @@ import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.tcpclient.action.mapping.HandlerAutoMapping;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListener;
+import com.berrontech.dsensor.dataserver.tcpclient.client.MessageLogger;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.TcpConnectionException;
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
@@ -53,10 +54,12 @@ public class TcpApiClient implements ApiClient, DisposableBean,
     private final MessageManager messageManager;
     private HandlerAutoMapping handlerAutoMapping;
     private ApplicationContext applicationContext;
+    private final MessageLogger messageLogger;
 
     public TcpApiClient(ConnectionConfiguration connectionConfiguration,
                         PackageSplitter packageSplitter,
-                        MessageSerializer messageSerializer) {
+                        MessageSerializer messageSerializer,
+                        MessageLogger messageLogger) {
         this.connectionConfiguration = connectionConfiguration;
         threadPool = createThreadPool();
         this.messageReadingTask = createMessageReadingTask(packageSplitter, messageSerializer);
@@ -64,6 +67,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
         this.messageSendingTask = createMessageSendingTask(messageSerializer);
         initSendingTask();
         messageManager = new MessageManager(messageQueue);
+        this.messageLogger = messageLogger;
     }
 
     private MessageSendingTask createMessageSendingTask(MessageSerializer messageSerializer) {
@@ -99,8 +103,8 @@ public class TcpApiClient implements ApiClient, DisposableBean,
 
     @Override
     public void connect() throws TcpConnectionException {
-        val ip = connectionConfiguration.getIp();
-        val port = connectionConfiguration.getPort();
+        final String ip = connectionConfiguration.getIp();
+        final int port = connectionConfiguration.getPort();
         log.debug("TCPAPI: Connecting [{}:{}]", ip, port);
         try {
             socket = new Socket(ip, port);
@@ -187,6 +191,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
             log.warn("Null Type!");
             return;
         }
+        messageLogger.pushMessage(message);
         switch (type) {
             case Message.TYPE_REQUEST:
                 handleRequestMessage(message);
@@ -247,6 +252,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
         if (Objects.equals(msgType, Message.TYPE_REQUEST)) {
             messageManager.addMessage(messageInfo);
         }
+        messageLogger.pushMessage(messageInfo.getMessage());
     }
 
     @Override

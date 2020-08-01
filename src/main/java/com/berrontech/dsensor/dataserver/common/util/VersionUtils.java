@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.common.util;
 
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Create By Levent8421
@@ -12,6 +13,7 @@ import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorExc
  *
  * @author Levent8421
  */
+@Slf4j
 public class VersionUtils {
     private static final String SUB_VERSION_DELIMITER = ".";
 
@@ -62,8 +64,8 @@ public class VersionUtils {
     public static int compareDatabaseVersion(String versionA, String versionB) {
         final int va, vb;
         try {
-            va = Integer.parseInt(versionA);
-            vb = Integer.parseInt(versionB);
+            va = NumberUtils.parseInt(versionA, 1);
+            vb = NumberUtils.parseInt(versionB, 1);
         } catch (NumberFormatException e) {
             throw new InternalServerErrorException("Invalidate database version!", e);
         }

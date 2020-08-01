@@ -61,8 +61,11 @@ public class DashboardController extends AbstractController {
     @GetMapping("/system-infos")
     public GeneralResult<Map<String, Object>> systemInfos() {
         val res = new HashMap<String, Object>(16);
-        val dbVersion = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
+        final ApplicationConfig dbVersion = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
+        final ApplicationConfig dbVersionName = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION_NAME);
+
         res.put("dbVersion", dbVersion.getValue());
+        res.put("dbVersionName", dbVersionName.getValue());
         res.put("appVersion", ApplicationConstants.Context.APP_VERSION);
         res.put("appName", ApplicationConstants.Context.APP_NAME);
         res.put("pid", ProcessUtils.getProcessId());

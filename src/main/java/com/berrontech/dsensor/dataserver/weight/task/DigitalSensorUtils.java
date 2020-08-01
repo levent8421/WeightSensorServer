@@ -72,8 +72,8 @@ public class DigitalSensorUtils {
                         params.setDeviceSn(sen.getDeviceSn());
                         sensor.getValues().setZeroOffset(sen.getZeroReference() == null ? 0 : sen.getZeroReference().floatValue());
                         if (sen.getHasElabel()) {
-                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
-//                            params.setELabelModel(DigitalSensorParams.EELabelModel.V4);
+//                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
+                            params.setELabelModel(DigitalSensorParams.EELabelModel.V4);
                         }
 
                         Slot slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().orElse(null);

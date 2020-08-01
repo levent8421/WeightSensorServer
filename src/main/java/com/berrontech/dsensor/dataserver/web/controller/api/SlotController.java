@@ -178,7 +178,7 @@ public class SlotController extends AbstractEntityController<Slot> {
      */
     private String normalizeSkuNo(String skuNo) {
         if (skuNo.length() > MAX_SKU_NO_LENGTH && skuNo.contains(COMPOSE_SKU_NO_FEATURES)) {
-            return skuNo.substring(0, MAX_SKU_NO_LENGTH);
+            return skuNo.substring(1, MAX_SKU_NO_LENGTH + 1);
         }
         return skuNo;
     }
