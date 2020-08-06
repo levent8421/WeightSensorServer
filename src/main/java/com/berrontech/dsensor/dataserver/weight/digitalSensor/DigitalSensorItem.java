@@ -1205,7 +1205,7 @@ public class DigitalSensorItem {
         System.arraycopy(bts, 0, content, 5, bts.length);
         DataPacket packet = OperateELabel(cmd, page, totalPage, content);
         byte result = packet.Content[0];
-        log.info("#{} WriteELabelString: str={}, result={}", Params.getAddress(), str, result);
+//        log.info("#{} WriteELabelString: str={}, result={}", Params.getAddress(), str, result);
         if (result != DataPacket.EResult.OK) {
             throw new Exception("WriteELabelString Failed");
         }

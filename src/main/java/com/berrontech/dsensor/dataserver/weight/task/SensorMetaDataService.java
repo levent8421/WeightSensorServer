@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class SensorMetaDataService {
+    private final ExecutorService threadPool = ThreadUtils.createSingleThreadPool("Refresher");
     private final WeightDataHolder weightDataHolder;
     private final DeviceConnectionService deviceConnectionService;
     private final WeightSensorService weightSensorService;
@@ -49,6 +52,10 @@ public class SensorMetaDataService {
     }
 
     public void refreshSlotTable() {
+        threadPool.execute(this::doRefreshSlotTable);
+    }
+
+    private void doRefreshSlotTable() {
         final List<DeviceConnection> connections = deviceConnectionService.all();
         weightDataHolder.setConnections(connections);
 

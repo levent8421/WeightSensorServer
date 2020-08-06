@@ -78,7 +78,7 @@ public class BalanceNoSetHandler implements ActionHandler {
     private void doSetSlotNo(Integer address, String slotNo) {
         final Slot slot = slotService.findByAddress(address);
         if (slot == null) {
-            final String error = String.format("Could not find slot by address[%d]!", address);
+            final String error = String.format("物理地址[%s]不存在!", address);
             log.warn("Address Not Found [{}]!", error);
             throw new ResourceNotFoundException(error);
         }

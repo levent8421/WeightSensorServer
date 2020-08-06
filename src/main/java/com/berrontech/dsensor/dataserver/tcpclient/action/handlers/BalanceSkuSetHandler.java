@@ -100,11 +100,11 @@ public class BalanceSkuSetHandler implements ActionHandler {
 
     private void checkParam(SkuParam param) {
         final Class<BadRequestException> ex = BadRequestException.class;
-        notNull(param, ex, "Null param!");
-        notEmpty(param.getSlotNo(), ex, "Null slotNo!");
-        notEmpty(param.getName(), ex, "Blank skuName!");
-        notNull(param.getApw(), ex, "Null apw!");
-        notNull(param.getTolerance(), ex, "Null tolerance!");
-        notEmpty(param.getSkuNo(), ex, "Blank skuNo!");
+        notNull(param, ex, "参数不能为空!");
+        notEmpty(param.getSlotNo(), ex, "货道号slotNo不能为空!");
+        notEmpty(param.getName(), ex, "SKU名称不能为空!");
+        notNull(param.getApw(), ex, "SKU单重不能为空!");
+        notNull(param.getTolerance(), ex, "SKU允差不能为空!");
+        notEmpty(param.getSkuNo(), ex, "SKU号不能为空!");
     }
 }

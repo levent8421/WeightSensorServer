@@ -83,7 +83,7 @@ public class ApplicationConstants {
         /**
          * Version
          */
-        public static final String APP_VERSION = "0.1.8";
+        public static final String APP_VERSION = "0.1.9";
         /**
          * Application Name
          */

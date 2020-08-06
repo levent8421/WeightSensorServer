@@ -5,6 +5,7 @@ import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import com.berrontech.dsensor.dataserver.common.util.DateTimeUtils;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
@@ -189,11 +190,13 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void heartbeat() {
+        final String timestamp = DateTimeUtils.format(DateTimeUtils.now(), "YYYY-MM-dd HH:mm:ss.SSS");
         val heartbeat = new Heartbeat();
         heartbeat.setAlive(true);
         heartbeat.setAppName(ApplicationConstants.Context.APP_NAME);
         heartbeat.setAppVersion(ApplicationConstants.Context.APP_VERSION);
         heartbeat.setDbVersion(getDbVersion());
+        heartbeat.setTimestamp(timestamp);
         val seqNo = MessageUtils.nextSeqNo();
         val message = MessageUtils.requestMessage(seqNo, ApplicationConstants.Actions.HEARTBEAT, heartbeat);
         sendMessage(message);
