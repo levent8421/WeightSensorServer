@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.common.util;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -62,5 +63,17 @@ public class CollectionUtils {
      */
     public static int size(Map<?, ?> map) {
         return map == null ? 0 : map.size();
+    }
+
+    /**
+     * Copy a map use HashMap
+     *
+     * @param source source map
+     * @param <K>    map key
+     * @param <V>    map value
+     * @return copy map
+     */
+    public static <K, V> Map<K, V> copy(Map<K, V> source) {
+        return new HashMap<>(source);
     }
 }

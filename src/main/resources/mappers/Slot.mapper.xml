@@ -70,4 +70,10 @@
         <include refid="select"/>
         and s.address=#{address}
     </select>
+    <update id="deleteByAddress">
+        delete from t_slot where address in
+        <foreach collection="addressList" item="address" separator="," open="(" close=")">
+            #{address}
+        </foreach>
+    </update>
 </mapper>

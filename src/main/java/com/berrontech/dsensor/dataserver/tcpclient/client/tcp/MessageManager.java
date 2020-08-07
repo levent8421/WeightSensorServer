@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.tcpclient.client.tcp;
 
+import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import java.util.Map;
  */
 @Slf4j
 public class MessageManager {
-    private Map<String, MessageInfo> messageTable = new HashMap<>();
+    private final Map<String, MessageInfo> messageTable = new HashMap<>();
     private MessageQueue messageQueue;
 
     public MessageManager(MessageQueue messageQueue) {
@@ -42,7 +43,11 @@ public class MessageManager {
     public void checkTimeout() {
         val now = System.currentTimeMillis();
         val completedMessage = new ArrayList<String>();
-        for (Map.Entry<String, MessageInfo> entry : messageTable.entrySet()) {
+        final Map<String, MessageInfo> messageInfoMap;
+        synchronized (messageTable) {
+            messageInfoMap = CollectionUtils.copy(messageTable);
+        }
+        for (Map.Entry<String, MessageInfo> entry : messageInfoMap.entrySet()) {
             val message = entry.getValue();
             val seqNo = entry.getKey();
             if (now - message.getSendTime() > message.getTimeout()) {

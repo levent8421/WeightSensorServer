@@ -3,11 +3,13 @@ package com.berrontech.dsensor.dataserver.service.general.impl;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper;
 import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
  * @author Levent8421
  */
 @Service
+@Slf4j
 public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotService {
     private final SlotMapper slotMapper;
 
@@ -126,5 +129,14 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     @Override
     public Slot findByAddress(int address) {
         return slotMapper.selectByAddress(address);
+    }
+
+    @Override
+    public void deleteByAddressList(List<Integer> addressList) {
+        if (CollectionUtils.isEmpty(addressList)) {
+            return;
+        }
+        final int rows = slotMapper.deleteByAddress(addressList);
+        log.warn("Delete Slot[{}] By Address{}.", rows, addressList);
     }
 }

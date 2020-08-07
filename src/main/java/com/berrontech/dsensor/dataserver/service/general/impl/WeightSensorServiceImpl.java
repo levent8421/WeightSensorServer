@@ -7,6 +7,7 @@ import com.berrontech.dsensor.dataserver.repository.mapper.WeightSensorMapper;
 import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  * @author Levent8421
  */
 @Service
+@Slf4j
 public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> implements WeightSensorService {
     private final WeightSensorMapper weightSensorMapper;
 
@@ -51,6 +53,9 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         val existsSensors = all();
         final Map<String, WeightSensor> sensorTable = existsSensors.stream()
                 .collect(Collectors.toMap(WeightSensor::getDeviceSn, v -> v));
+        final Map<Integer, WeightSensor> addressSensorTable = existsSensors.stream()
+                .collect(Collectors.toMap(WeightSensor::getAddress, v -> v));
+
         final List<WeightSensor> updatedSensors = new ArrayList<>();
         final List<WeightSensor> sensorsToSave = new ArrayList<>();
         for (MemoryWeightSensor sensor : sensors) {
@@ -59,6 +64,12 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
                 val existsSensor = sensorTable.get(sensor.getDeviceSn());
                 val res = updateSensorInfo(existsSensor, sensor);
                 updatedSensors.add(res);
+            } else if (addressSensorTable.containsKey(sensor.getAddress485())) {
+                //新扫描的物理地址已经存在
+                final WeightSensor existsSensor = addressSensorTable.get(sensor.getAddress485());
+                log.warn("Scan Done: Find a Sensor [{},{}] And Exists Sensor[{},{}] with same address, IGNORE!!!",
+                        sensor.getDeviceSn(), sensor.getAddress485(),
+                        existsSensor.getDeviceSn(), existsSensor.getAddress());
             } else {
                 // 新的传感器被扫描到
                 val res = createSensor(sensor);

@@ -82,4 +82,11 @@ public interface SlotService extends AbstractService<Slot> {
      * @return slot
      */
     Slot findByAddress(int address);
+
+    /**
+     * Delete Slot By Address List
+     *
+     * @param addressList address List
+     */
+    void deleteByAddressList(List<Integer> addressList);
 }

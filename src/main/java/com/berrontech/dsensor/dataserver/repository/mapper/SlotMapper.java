@@ -70,4 +70,12 @@ public interface SlotMapper extends AbstractMapper<Slot> {
      * @return slot
      */
     Slot selectByAddress(@Param("address") int address);
+
+    /**
+     * Delete By Address List
+     *
+     * @param addressList Address List
+     * @return rows
+     */
+    int deleteByAddress(@Param("addressList") List<Integer> addressList);
 }

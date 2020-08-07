@@ -1,9 +1,11 @@
 package com.berrontech.dsensor.dataserver.web.controller.api;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
+import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notEmpty;
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull;
@@ -33,14 +36,17 @@ public class DeviceConnectionController extends AbstractEntityController<DeviceC
     private final DeviceConnectionService deviceConnectionService;
     private final WeightSensorService weightSensorService;
     private final WeightController weightController;
+    private final SlotService slotService;
 
     protected DeviceConnectionController(DeviceConnectionService deviceConnectionService,
                                          WeightSensorService weightSensorService,
-                                         WeightController weightController) {
+                                         WeightController weightController,
+                                         SlotService slotService) {
         super(deviceConnectionService);
         this.deviceConnectionService = deviceConnectionService;
         this.weightSensorService = weightSensorService;
         this.weightController = weightController;
+        this.slotService = slotService;
     }
 
     /**
@@ -82,9 +88,21 @@ public class DeviceConnectionController extends AbstractEntityController<DeviceC
      */
     @DeleteMapping("/{id}")
     public GeneralResult<Void> delete(@PathVariable("id") Integer id) {
+        cleanUpByConnection(id);
         deviceConnectionService.deleteById(id);
-        weightSensorService.deleteByConnection(id);
         return GeneralResult.ok();
+    }
+
+    /**
+     * 清除某链接下的所有货道和传感器
+     *
+     * @param connectionId 连接ID
+     */
+    private void cleanUpByConnection(int connectionId) {
+        final List<WeightSensor> sensors = weightSensorService.findByConnection(connectionId);
+        final List<Integer> addressList = sensors.stream().map(WeightSensor::getAddress).collect(Collectors.toList());
+        slotService.deleteByAddressList(addressList);
+        weightSensorService.deleteByConnection(connectionId);
     }
 
     /**
