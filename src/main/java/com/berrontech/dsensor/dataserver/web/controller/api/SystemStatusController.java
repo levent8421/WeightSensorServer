@@ -1,6 +1,9 @@
 package com.berrontech.dsensor.dataserver.web.controller.api;
 
+import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
+import com.berrontech.dsensor.dataserver.conf.ApplicationConfiguration;
 import com.berrontech.dsensor.dataserver.repository.mapper.DatabaseMetaDataMapper;
+import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageLogger;
 import com.berrontech.dsensor.dataserver.tcpclient.client.tcp.ConnectionConfiguration;
@@ -33,15 +36,21 @@ public class SystemStatusController extends AbstractController {
     private final ConnectionConfiguration connectionConfiguration;
     private final DatabaseMetaDataMapper databaseMetaDataMapper;
     private final MessageLogger messageLogger;
+    private final ApplicationConfiguration applicationConfiguration;
+    private final ApplicationConfigService applicationConfigService;
 
     public SystemStatusController(ApiClient apiClient,
                                   ConnectionConfiguration connectionConfiguration,
                                   DatabaseMetaDataMapper databaseMetaDataMapper,
-                                  MessageLogger messageLogger) {
+                                  MessageLogger messageLogger,
+                                  ApplicationConfiguration applicationConfiguration,
+                                  ApplicationConfigService applicationConfigService) {
         this.apiClient = apiClient;
         this.connectionConfiguration = connectionConfiguration;
         this.databaseMetaDataMapper = databaseMetaDataMapper;
         this.messageLogger = messageLogger;
+        this.applicationConfiguration = applicationConfiguration;
+        this.applicationConfigService = applicationConfigService;
     }
 
     /**
@@ -100,5 +109,29 @@ public class SystemStatusController extends AbstractController {
     public GeneralResult<List<Message>> messageLog() {
         final List<Message> messages = messageLogger.messageList();
         return GeneralResult.ok(messages);
+    }
+
+    /**
+     * Get App Version
+     *
+     * @return version string
+     */
+    @GetMapping("/app-version")
+    public String getAppVersion() {
+        return applicationConfiguration.getAppVersion();
+    }
+
+    /**
+     * Get Db Version
+     *
+     * @return version string
+     */
+    @GetMapping("/db-version")
+    public String getDbVersion() {
+        final ApplicationConfig config = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION_NAME);
+        if (config == null) {
+            return "Null";
+        }
+        return config.getValue();
     }
 }

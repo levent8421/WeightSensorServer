@@ -1,8 +1,8 @@
 package com.berrontech.dsensor.dataserver.tcpclient.action.handlers;
 
-import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
 import com.berrontech.dsensor.dataserver.common.util.ProcessUtils;
+import com.berrontech.dsensor.dataserver.conf.ApplicationConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.tcpclient.action.ActionHandler;
 import com.berrontech.dsensor.dataserver.tcpclient.action.mapping.ActionHandlerMapping;
@@ -29,16 +29,20 @@ import lombok.val;
 public class StatusHandler implements ActionHandler {
     private final ApiClient apiClient;
     private final ApplicationConfigService applicationConfigService;
+    private final ApplicationConfiguration applicationConfiguration;
 
-    public StatusHandler(ApiClient apiClient, ApplicationConfigService applicationConfigService) {
+    public StatusHandler(ApiClient apiClient,
+                         ApplicationConfigService applicationConfigService,
+                         ApplicationConfiguration applicationConfiguration) {
         this.apiClient = apiClient;
         this.applicationConfigService = applicationConfigService;
+        this.applicationConfiguration = applicationConfiguration;
     }
 
     @Override
     public Message onMessage(Message message) {
         val data = new RuokVo();
-        data.setAppVersion(ApplicationConstants.Context.APP_VERSION);
+        data.setAppVersion(applicationConfiguration.getAppVersion());
         val dbVersion = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
         data.setDbVersion(dbVersion == null ? "NotSet" : dbVersion.getValue());
         data.setConnectionStatus(apiClient.isConnected() ? "Connected" : "disconnected");

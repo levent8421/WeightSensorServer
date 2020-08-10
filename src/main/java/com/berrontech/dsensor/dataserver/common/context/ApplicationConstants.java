@@ -81,10 +81,6 @@ public class ApplicationConstants {
          */
         public static final Charset DEFAULT_CHARSET = Charset.forName(DEFAULT_CHARSET_STR);
         /**
-         * Version
-         */
-        public static final String APP_VERSION = "0.1.10";
-        /**
          * Application Name
          */
         public static final String APP_NAME = "balance";

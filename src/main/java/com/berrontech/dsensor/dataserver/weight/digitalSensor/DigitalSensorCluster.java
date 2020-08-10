@@ -15,9 +15,8 @@ public class DigitalSensorCluster extends DigitalSensorItem {
 
     private List<DigitalSensorItem> Children = new ArrayList<>();
 
-    public DigitalSensorItem getFirstChild()
-    {
-        if (Children == null || Children.size() <= 0){
+    public DigitalSensorItem getFirstChild() {
+        if (Children == null || Children.size() <= 0) {
             return null;
         }
         return Children.stream().sorted(Comparator.comparing(DigitalSensorItem::getSubGroupPosition)).collect(Collectors.toList()).get(0);
@@ -29,20 +28,15 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         }
         DigitalSensorItem firstSensor = Children.stream().sorted(Comparator.comparing(DigitalSensorItem::getSubGroupPosition)).collect(Collectors.toList()).get(0);
 
-        float fSum = 0f;
+        float fSum;
         BigDecimal sum;
         sum = BigDecimal.ZERO;
-        for (DigitalSensorItem c : Children) {
-            sum = sum.add(c.getValues().getGrossWeight());
-        }
-        getValues().setGrossWeight(sum);
         getValues().setUnit(firstSensor.getValues().getUnit());
         fSum = 0f;
         for (DigitalSensorItem c : Children) {
             fSum += c.getValues().getHighGross();
         }
         getValues().setHighGross(fSum);
-        getValues().setStatus((Children.stream().filter(s -> !s.getValues().isStable()).count() > 0) ? DigitalSensorValues.EStatus.Dynamic : DigitalSensorValues.EStatus.Stable);
         fSum = 0f;
         for (DigitalSensorItem c : Children) {
             fSum += c.getValues().getHighTare();
@@ -53,6 +47,11 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         for (DigitalSensorItem c : Children) {
             fSum += c.getTotalSuccess();
         }
+        for (DigitalSensorItem c : Children) {
+            sum = sum.add(c.getValues().getGrossWeight());
+        }
+        getValues().setGrossWeight(sum);
+        getValues().setStatus((Children.stream().anyMatch(s -> s.getValues().isDynamic())) ? DigitalSensorValues.EStatus.Dynamic : DigitalSensorValues.EStatus.Stable);
         setTotalSuccess((int) fSum);
         setOnline(Children.stream().filter(s -> !s.isOnline()).count() <= 0);
         getValues().setAPW(firstSensor.getValues().getAPW());
@@ -72,11 +71,11 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         }
         DigitalSensorItem firstSensor = Children.stream().sorted(Comparator.comparing(DigitalSensorItem::getSubGroupPosition)).collect(Collectors.toList()).get(0);
 
-        String number = null;
-        String name = null;
-        String bin = null;
-        String wgt = null;
-        String pcs = null;
+        String number;
+        String name;
+        String bin;
+        String wgt;
+        String pcs;
         if (getParams().isEnabled()) {
             number = getPassenger().getMaterial().Number;
             name = getPassenger().getMaterial().Name;

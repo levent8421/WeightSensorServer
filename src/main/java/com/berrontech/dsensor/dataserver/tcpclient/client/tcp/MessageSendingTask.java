@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.tcpclient.client.tcp;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.TcpConnectionException;
+import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -60,11 +61,8 @@ public class MessageSendingTask implements Runnable {
     }
 
     private void sendMessageSync(MessageInfo messageInfo) {
-        log.debug("Sending Message [{}/{}/{}]",
-                messageInfo.getMessage().getType(),
-                messageInfo.getMessage().getAction(),
-                messageInfo.getMessage().getSeqNo());
-        val bytes = messageSerializer.serialize(messageInfo.getMessage());
+        final byte[] bytes = messageSerializer.serialize(messageInfo.getMessage());
+        logSend(messageInfo, bytes);
         try {
             outputStream.write(bytes);
             this.listener.afterSend(messageInfo);
@@ -73,6 +71,14 @@ public class MessageSendingTask implements Runnable {
         }
     }
 
+    private void logSend(MessageInfo messageInfo, byte[] bytes) {
+        final String messageStr = MessageUtils.messageBytes2String(bytes);
+        log.debug("Sending Message [{}/{}/{}], package:\r\n{}\r\n",
+                messageInfo.getMessage().getType(),
+                messageInfo.getMessage().getAction(),
+                messageInfo.getMessage().getSeqNo(),
+                messageStr);
+    }
 
     /**
      * Message Send Listener

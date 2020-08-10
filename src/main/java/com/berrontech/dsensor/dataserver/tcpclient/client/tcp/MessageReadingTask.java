@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.tcpclient.client.tcp;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.TcpConnectionException;
+import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -74,8 +75,14 @@ public class MessageReadingTask implements Runnable, NewPackageListener {
             log.warn("Convert bytes[len={}] to Message result=null", packet.length);
             return;
         }
-        log.debug("Resolve Message [{}/{}/{}]", message.getType(), message.getAction(), message.getSeqNo());
+        logRead(message, packet);
         listener.onNewMessage(message);
+    }
+
+    private void logRead(Message message, byte[] bytes) {
+        final String messageStr = MessageUtils.messageBytes2String(bytes);
+        log.debug("Resolve Message [{}/{}/{}], package=\r\n{}\r\n",
+                message.getType(), message.getAction(), message.getSeqNo(), messageStr);
     }
 
     public void stop() {

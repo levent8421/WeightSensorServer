@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.web.controller.api;
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
 import com.berrontech.dsensor.dataserver.common.util.ProcessUtils;
+import com.berrontech.dsensor.dataserver.conf.ApplicationConfiguration;
 import com.berrontech.dsensor.dataserver.conf.SerialConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
@@ -34,13 +35,16 @@ public class DashboardController extends AbstractController {
     private final WeightDataHolder weightDataHolder;
     private final ApplicationConfigService applicationConfigService;
     private final SerialConfiguration serialConfiguration;
+    private final ApplicationConfiguration applicationConfiguration;
 
     public DashboardController(WeightDataHolder weightDataHolder,
                                ApplicationConfigService applicationConfigService,
-                               SerialConfiguration serialConfiguration) {
+                               SerialConfiguration serialConfiguration,
+                               ApplicationConfiguration applicationConfiguration) {
         this.weightDataHolder = weightDataHolder;
         this.applicationConfigService = applicationConfigService;
         this.serialConfiguration = serialConfiguration;
+        this.applicationConfiguration = applicationConfiguration;
     }
 
     /**
@@ -63,10 +67,11 @@ public class DashboardController extends AbstractController {
         val res = new HashMap<String, Object>(16);
         final ApplicationConfig dbVersion = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
         final ApplicationConfig dbVersionName = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION_NAME);
+        final String appVersion = applicationConfiguration.getAppVersion();
 
         res.put("dbVersion", dbVersion.getValue());
         res.put("dbVersionName", dbVersionName.getValue());
-        res.put("appVersion", ApplicationConstants.Context.APP_VERSION);
+        res.put("appVersion", appVersion);
         res.put("appName", ApplicationConstants.Context.APP_NAME);
         res.put("pid", ProcessUtils.getProcessId());
         res.put("libPath", serialConfiguration.getLibPath());

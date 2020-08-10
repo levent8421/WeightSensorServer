@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class MessageUtils {
+    private static final int MIN_PACKET_SIZE = 2;
     private static final String SEQ_NO_FORMAT = "yyMMddHHmmssSSS";
     private static final int MAX_SEQ_SUFFIX = 999;
     private static final AtomicInteger NEXT_SEQ_SUFFIX = new AtomicInteger();
@@ -130,5 +131,15 @@ public class MessageUtils {
             }
             return i;
         }
+    }
+
+    public static String messageBytes2String(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        if (bytes.length <= MIN_PACKET_SIZE) {
+            return "Invalidate Package size " + bytes.length;
+        }
+        return new String(bytes, 1, bytes.length - MIN_PACKET_SIZE);
     }
 }

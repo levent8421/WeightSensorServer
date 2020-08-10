@@ -6,6 +6,7 @@ import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.common.util.DateTimeUtils;
+import com.berrontech.dsensor.dataserver.conf.ApplicationConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
@@ -49,6 +50,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SimpleWeightNotifier implements WeightNotifier, MessageListener, ApplicationContextAware {
     /**
+     * New Line
+     */
+    private static final String NEW_LINE = "\r\n";
+    /**
      * Action 通知货道数据改变
      */
     private static final String ACTION_COUNT_CHANGED = "notify.balance.weight_changed";
@@ -75,15 +80,18 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     private final ApplicationConfigService applicationConfigService;
     private SensorMetaDataService sensorMetaDataService;
     private ApplicationContext applicationContext;
+    private final ApplicationConfiguration applicationConfiguration;
 
     public SimpleWeightNotifier(ApiClient apiClient,
                                 WeightSensorService weightSensorService,
                                 SlotService slotService,
-                                ApplicationConfigService applicationConfigService) {
+                                ApplicationConfigService applicationConfigService,
+                                ApplicationConfiguration applicationConfiguration) {
         this.apiClient = apiClient;
         this.weightSensorService = weightSensorService;
         this.slotService = slotService;
         this.applicationConfigService = applicationConfigService;
+        this.applicationConfiguration = applicationConfiguration;
     }
 
     @Override
@@ -194,7 +202,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
         val heartbeat = new Heartbeat();
         heartbeat.setAlive(true);
         heartbeat.setAppName(ApplicationConstants.Context.APP_NAME);
-        heartbeat.setAppVersion(ApplicationConstants.Context.APP_VERSION);
+        heartbeat.setAppVersion(applicationConfiguration.getAppVersion());
         heartbeat.setDbVersion(getDbVersion());
         heartbeat.setTimestamp(timestamp);
         val seqNo = MessageUtils.nextSeqNo();
@@ -204,9 +212,31 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void countChange(Collection<MemorySlot> slots) {
-        val dataList = memoryObject2SlotVo(slots);
+        final Collection<SlotVo> dataList = memoryObject2SlotVo(slots);
         val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_COUNT_CHANGED, dataList);
+        logPcsChanged(dataList, message);
         sendMessage(message);
+    }
+
+    private void logPcsChanged(Collection<SlotVo> slots, Message message) {
+        final String seqNo = message.getSeqNo();
+        final List<String> logs = slots.stream().map(this::asPcsChangedLogString).collect(Collectors.toList());
+        final StringBuilder logString = new StringBuilder("Notify WeightChanged,message=");
+        logString.append(seqNo).append(NEW_LINE);
+        for (String str : logs) {
+            logString.append(str).append(NEW_LINE);
+        }
+        log.info(logString.toString());
+    }
+
+    private String asPcsChangedLogString(SlotVo slotVo) {
+        final WeightDataVo data = slotVo.getData();
+        final String slotNo = slotVo.getNo();
+        if (data == null) {
+            return String.format("Notify slot[%s] weight changed,with a null data!", slotNo);
+        }
+        return String.format("Notify slot[%s] weight changed, with count=[%s], weight=[%s], tolerance=[%s], toleranceState=[%s]",
+                slotNo, data.getCount(), data.getWeight(), data.getTolerance(), data.getToleranceState());
     }
 
     @Override
