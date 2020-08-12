@@ -20,7 +20,7 @@ public class BytePackageSplitter implements PackageSplitter {
     /**
      * Default Buffer Size=1M Byte
      */
-    private byte[] recvBuffer = new byte[1024 * 1024];
+    private final byte[] recvBuffer = new byte[1024 * 1024];
     private int currentPos = 0;
     private NewPackageListener listener;
 

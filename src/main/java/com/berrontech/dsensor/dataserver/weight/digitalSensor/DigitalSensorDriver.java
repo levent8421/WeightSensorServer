@@ -6,13 +6,8 @@ import com.berrontech.dsensor.dataserver.weight.connection.SerialConnection;
 import com.berrontech.dsensor.dataserver.weight.connection.TCPConnection;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.jni.Time;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 @Data
@@ -64,12 +59,23 @@ public class DigitalSensorDriver {
                 DataPacket packet = null;
                 if (data != null) {
                     packet = DataPacket.ParseData(data);
+                    if (!isValid(packet)) {
+                        return null;
+                    }
                 }
-                //log.debug("<--- #{} {} dataLen={}", packet.getAddress(), (char) packet.getCmd(), packet.getContentLength());
                 return packet;
             }
         } while (System.currentTimeMillis() <= endTime);
         throw new TimeoutException("Wait packet timeout");
+    }
+
+    private boolean isValid(DataPacket packet) {
+        final byte checkSum = packet.CalcChecksum();
+        final boolean valid = packet.getChecksum() == checkSum;
+        if (!valid) {
+            log.debug("Checksum error, recv=[{}], calc=[{}]", packet.getChecksum(), checkSum);
+        }
+        return valid;
     }
 
     public DataPacket Read(byte address, byte cmd, int timeout) throws TimeoutException {

@@ -5,13 +5,13 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorListener;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorValues;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -85,7 +85,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             val slotData = slot.getData();
             slotData.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
             slotData.setCount(sensor.getValues().getPieceCount());
-            slotData.setTolerance((int) (sensor.getValues().getPieceCountAccuracy() * 100));
+            slotData.setTolerance(toTolerance(sensor.getValues()));
             slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
             final Collection<MemorySlot> slots = Collections.singleton(slot);
             weightNotifier.countChange(slots);
@@ -94,6 +94,12 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             log.warn("notify onPieceCountChanged error: {}", ex.getMessage());
             return false;
         }
+    }
+
+    private int toTolerance(DigitalSensorValues values) {
+        final double apw = values.getAPW() * 1000;
+        final double toleranceRate = 1 - values.getPieceCountAccuracy();
+        return (int) (apw * toleranceRate);
     }
 
     @Override
@@ -126,7 +132,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     @Override
     public void onNotifySaveZeroOffset(DigitalSensorItem sensor) {
-        sensorService.setZeroReference(sensor.getParams().getId(), (double)sensor.getValues().getZeroOffset());
+        sensorService.setZeroReference(sensor.getParams().getId(), (double) sensor.getValues().getZeroOffset());
     }
 
     private static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
@@ -160,5 +166,4 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         }
         return state;
     }
-
 }

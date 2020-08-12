@@ -106,7 +106,7 @@ public class DigitalSensorGroup {
             item.setGroup(first.getGroup());
             item.setSubGroup(first.getSubGroup());
             item.setPassenger(first.getPassenger());
-            item.Calc();
+            item.calc();
             clusters.add(item);
         }
         ClusterSensors = clusters;
@@ -316,7 +316,7 @@ public class DigitalSensorGroup {
 
                             val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
                             if (s2 != null) {
-                                s2.Calc();
+                                s2.calc();
                             }
                         }
                         Thread.sleep(CommInterval);
@@ -358,7 +358,7 @@ public class DigitalSensorGroup {
                                 //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
                                 val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
                                 if (s2 != null) {
-                                    s2.Calc();
+                                    s2.calc();
                                     s2.UpdateELabel();
                                     s2.TryNotifyListener();
                                 }

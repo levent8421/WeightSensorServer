@@ -25,4 +25,4 @@ server:
     threads:
       min-spare: 2
 app:
-  app-version: 0.1.11
+  app-version: 0.1.12

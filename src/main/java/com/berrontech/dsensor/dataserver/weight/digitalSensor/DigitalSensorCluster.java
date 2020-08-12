@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -9,6 +10,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Create By Levent at 2020/8/11 13:58
+ * DigitalSensorCluster
+ * DigitalSensorCluster 货道组合
+ *
+ * @author levent
+ */
+@EqualsAndHashCode(callSuper = true)
 @Slf4j
 @Data
 public class DigitalSensorCluster extends DigitalSensorItem {
@@ -22,7 +31,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         return Children.stream().sorted(Comparator.comparing(DigitalSensorItem::getSubGroupPosition)).collect(Collectors.toList()).get(0);
     }
 
-    public void Calc() {
+    public void calc() {
         if (Children.size() <= 0) {
             return;
         }
