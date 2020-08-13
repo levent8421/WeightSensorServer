@@ -22,4 +22,8 @@ public class LogConfiguration {
      * 日志文件存放位置
      */
     private String logFileDir = "/mnt/hd0/scada_wsa/log";
+    /**
+     * 日志保持天数
+     */
+    private int logKeepDays = 30;
 }

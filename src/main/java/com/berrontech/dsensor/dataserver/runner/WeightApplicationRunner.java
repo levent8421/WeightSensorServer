@@ -37,6 +37,11 @@ public class WeightApplicationRunner implements ApplicationRunner, Runnable, Dis
         this.sensorMetaDataService = sensorMetaDataService;
     }
 
+    /**
+     * 启动称重服务
+     *
+     * @param args command args
+     */
     @Override
     public void run(ApplicationArguments args) {
         log.debug("Weight Service Application Runner!");

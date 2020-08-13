@@ -81,6 +81,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     private SensorMetaDataService sensorMetaDataService;
     private ApplicationContext applicationContext;
     private final ApplicationConfiguration applicationConfiguration;
+    private final WeightChangedEventBuffer weightChangedEventBuffer = new WeightChangedEventBuffer();
 
     public SimpleWeightNotifier(ApiClient apiClient,
                                 WeightSensorService weightSensorService,
@@ -212,10 +213,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void countChange(Collection<MemorySlot> slots) {
-        final Collection<SlotVo> dataList = memoryObject2SlotVo(slots);
-        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_COUNT_CHANGED, dataList);
-        logPcsChanged(dataList, message);
-        sendMessage(message);
+        weightChangedEventBuffer.pushEvent(slots);
     }
 
     private void logPcsChanged(Collection<SlotVo> slots, Message message) {
@@ -338,5 +336,14 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
             this.sensorMetaDataService = this.applicationContext.getBean(SensorMetaDataService.class);
         }
         return this.sensorMetaDataService;
+    }
+
+    @Override
+    public void checkForNotify() {
+        final List<MemorySlot> events = weightChangedEventBuffer.copyEventAndClean();
+        final Collection<SlotVo> dataList = memoryObject2SlotVo(events);
+        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_COUNT_CHANGED, dataList);
+        logPcsChanged(dataList, message);
+        sendMessage(message);
     }
 }

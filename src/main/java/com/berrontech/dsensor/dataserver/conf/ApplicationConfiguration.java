@@ -27,6 +27,10 @@ public class ApplicationConfiguration {
      */
     private String appVersion;
 
+    /**
+     * 组件初始化完成后运行
+     * 打印日志 应用版本
+     */
     @PostConstruct
     public void showVersion() {
         log.info("Application Version [{}]", appVersion);

@@ -27,6 +27,12 @@ public class DatabaseUpgradeRunner implements ApplicationRunner {
         this.databaseUpgrader = databaseUpgrader;
     }
 
+    /**
+     * 运行数据库初始化
+     * 运行数据库自动更新
+     *
+     * @param args command args
+     */
     @Override
     public void run(ApplicationArguments args) {
         databaseUpgrader.checkForInit();

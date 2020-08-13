@@ -57,4 +57,9 @@ public interface WeightNotifier {
      * @param sensors 发生状态改变的传感器
      */
     void sensorStateChanged(Collection<MemoryWeightSensor> sensors);
+
+    /**
+     * Do notify
+     */
+    void checkForNotify();
 }

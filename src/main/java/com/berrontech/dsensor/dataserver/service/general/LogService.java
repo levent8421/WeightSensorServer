@@ -29,4 +29,11 @@ public interface LogService {
      * @return file
      */
     File getLogFileByDate(Date date);
+
+    /**
+     * 删除过期的日志文件
+     *
+     * @return 删除的文件列表
+     */
+    List<File> deleteExpireLogFiles();
 }

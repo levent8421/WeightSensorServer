@@ -74,4 +74,9 @@ public class LogServiceImpl implements LogService {
         }
         return logFile;
     }
+
+    @Override
+    public List<File> deleteExpireLogFiles() {
+        return null;
+    }
 }
