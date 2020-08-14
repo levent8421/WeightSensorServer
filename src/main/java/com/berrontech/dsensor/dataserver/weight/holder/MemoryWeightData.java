@@ -2,6 +2,8 @@ package com.berrontech.dsensor.dataserver.weight.holder;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/18 20:13
@@ -13,7 +15,7 @@ import lombok.Data;
  * @author Levent8421
  */
 @Data
-public class MemoryWeightData {
+public class MemoryWeightData implements Serializable {
     /**
      * 称重状态 稳定
      */

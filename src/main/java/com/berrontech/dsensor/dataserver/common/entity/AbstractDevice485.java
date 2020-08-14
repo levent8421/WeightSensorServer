@@ -19,10 +19,15 @@ import javax.persistence.Column;
 @Data
 public abstract class AbstractDevice485 extends AbstractEntity {
     public static final int STATE_ONLINE = 0x01;
+    public static final String STATE_ONLINE_STR = "online";
     public static final int STATE_OFFLINE = 0x02;
+    public static final String STATE_OFFLINE_STR = "offline";
     public static final int STATE_DISABLE = 0x03;
+    public static final String STATE_DISABLE_STR = "disable";
     public static final int STATE_OVERLOAD = 0x04;
+    public static final String STATE_OVERLOAD_STR = "overload";
     public static final int STATE_UNDER_LOAD = 0x05;
+    public static final String STATE_UNDER_LOAD_STR = "underload";
 
     public static String getStateString(Integer state) {
         if (state == null) {
@@ -30,17 +35,34 @@ public abstract class AbstractDevice485 extends AbstractEntity {
         }
         switch (state) {
             case STATE_ONLINE:
-                return "online";
+                return STATE_ONLINE_STR;
             case STATE_OFFLINE:
-                return "offline";
+                return STATE_OFFLINE_STR;
             case STATE_DISABLE:
-                return "disable";
+                return STATE_DISABLE_STR;
             case STATE_OVERLOAD:
-                return "overload";
+                return STATE_OVERLOAD_STR;
             case STATE_UNDER_LOAD:
-                return "underload";
+                return STATE_UNDER_LOAD_STR;
             default:
                 return String.valueOf(state);
+        }
+    }
+
+    public static int getState(String state) {
+        switch (state) {
+            case STATE_ONLINE_STR:
+                return STATE_ONLINE;
+            case STATE_OFFLINE_STR:
+                return STATE_OFFLINE;
+            case STATE_DISABLE_STR:
+                return STATE_DISABLE;
+            case STATE_OVERLOAD_STR:
+                return STATE_OVERLOAD;
+            case STATE_UNDER_LOAD_STR:
+                return STATE_UNDER_LOAD;
+            default:
+                return -1;
         }
     }
 

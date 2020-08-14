@@ -7,6 +7,7 @@ import lombok.Data;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 @Data
 @Component
 @Scope("singleton")
-public class WeightDataHolder {
+public class WeightDataHolder implements Serializable {
     /**
      * 货道表
      */

@@ -2,6 +2,8 @@ package com.berrontech.dsensor.dataserver.weight.holder;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/18 20:07
@@ -13,7 +15,7 @@ import lombok.Data;
  * @author Levent8421
  */
 @Data
-public class MemorySku {
+public class MemorySku implements Serializable {
     private String name;
     private String skuNo;
     private Integer apw;

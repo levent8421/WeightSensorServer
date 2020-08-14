@@ -4,6 +4,8 @@ import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/18 20:01
@@ -15,7 +17,7 @@ import lombok.Data;
  * @author Levent8421
  */
 @Data
-public class MemoryWeightSensor {
+public class MemoryWeightSensor implements Serializable {
     /**
      * 状态 在线 正常
      */

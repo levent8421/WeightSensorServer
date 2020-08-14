@@ -81,7 +81,8 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     private SensorMetaDataService sensorMetaDataService;
     private ApplicationContext applicationContext;
     private final ApplicationConfiguration applicationConfiguration;
-    private final WeightChangedEventBuffer weightChangedEventBuffer = new WeightChangedEventBuffer();
+    private final DistinctObjectBuffer<MemorySlot> weightChangedEventBuffer = new DistinctObjectBuffer<>();
+    private final DistinctObjectBuffer<MemorySlot> stateChangedEventBuffer = new DistinctObjectBuffer<>();
 
     public SimpleWeightNotifier(ApiClient apiClient,
                                 WeightSensorService weightSensorService,
@@ -213,7 +214,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void countChange(Collection<MemorySlot> slots) {
-        weightChangedEventBuffer.pushEvent(slots);
+        weightChangedEventBuffer.push(slots, MemorySlot::getSlotNo);
     }
 
     private void logPcsChanged(Collection<SlotVo> slots, Message message) {
@@ -240,12 +241,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     @Override
     public void deviceStateChanged(Collection<MemorySlot> slots, int state) {
         log.info("Slot State Changed: state=[{}]", state);
-        val dataList = memoryObject2SlotVo(slots);
-        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_STATE_CHANGED, dataList);
-        for (MemorySlot slot : slots) {
-            slotService.updateState(slot.getId(), state);
-        }
-        sendMessage(message);
+        stateChangedEventBuffer.push(slots, MemorySlot::getSlotNo);
     }
 
     @Override
@@ -267,21 +263,21 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     public void sensorStateChanged(Collection<MemoryWeightSensor> sensors) {
         obtainSensorMetaDataService().updateSensorStateInSlotTable(sensors);
         final Map<Integer, SlotVo> slotMap = new HashMap<>(16);
+        final List<MemorySlot> memorySlots = new ArrayList<>();
         for (MemoryWeightSensor sensor : sensors) {
             weightSensorService.updateState(sensor.getId(), sensor.getState());
             if (!slotMap.containsKey(sensor.getId())) {
                 val slot = slotService.get(sensor.getSlotId());
                 val ms = MemorySlot.of(slot);
                 ms.setState(sensor.getState());
+                memorySlots.add(ms);
                 val vo = SlotVo.of(ms);
                 slotMap.put(vo.getId(), vo);
                 log.debug("Update slot[{},{}], sensor[{{},{}}] state to [{}]",
                         slot.getId(), slot.getSlotNo(), slot.getId(), slot.getAddress(), sensor.getState());
             }
         }
-        val slots = new ArrayList<>(slotMap.values());
-        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_STATE_CHANGED, slots);
-        sendMessage(message);
+        stateChangedEventBuffer.push(memorySlots, MemorySlot::getSlotNo);
     }
 
     private List<Slot> createOrUpdateSlot(Collection<MemoryWeightSensor> sensors) {
@@ -340,10 +336,43 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void checkForNotify() {
+        long offset = System.currentTimeMillis();
+        log.info("Check For State Changed Notify Start");
+        checkForStateChangedNotify();
+        long end = System.currentTimeMillis();
+        log.info("Check for State Changed Notify End, time=[{}]", (end - offset));
+        offset = end;
+        log.info("Check For Weight Changed Notify Start");
+        checkForWeightChangedNotify();
+        end = System.currentTimeMillis();
+        log.info("Check for State Changed Notify End, time=[{}]", (end - offset));
+    }
+
+    private void checkForWeightChangedNotify() {
         final List<MemorySlot> events = weightChangedEventBuffer.copyEventAndClean();
+        if (events.isEmpty()) {
+            log.info("WeightChanged Notify Buffer size=0,Skip Notify!");
+            return;
+        }
+        log.info("WeightChanged Notify Buffer size=[{}]", events.size());
         final Collection<SlotVo> dataList = memoryObject2SlotVo(events);
-        val message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_COUNT_CHANGED, dataList);
+        final Message message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_COUNT_CHANGED, dataList);
         logPcsChanged(dataList, message);
+        sendMessage(message);
+    }
+
+    private void checkForStateChangedNotify() {
+        final Collection<MemorySlot> slots = stateChangedEventBuffer.copyEventAndClean();
+        if (slots.size() <= 0) {
+            log.info("StateChanged Notify Buffer size=0,Skip Notify!");
+            return;
+        }
+        log.info("StateChanged Notify Buffer size=[{}]", slots.size());
+        final List<SlotVo> dataList = memoryObject2SlotVo(slots);
+        final Message message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_STATE_CHANGED, dataList);
+        for (MemorySlot slot : slots) {
+            slotService.updateState(slot.getId(), slot.getState());
+        }
         sendMessage(message);
     }
 }
