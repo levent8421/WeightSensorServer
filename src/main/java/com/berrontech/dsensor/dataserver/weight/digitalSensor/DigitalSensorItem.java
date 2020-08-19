@@ -441,8 +441,7 @@ public class DigitalSensorItem {
                         // apw from passenger will replace local apw
                         Values.setAPW(Passenger.getMaterial().getAPW());
                         // here SF set tolerance as gram not percent
-                        setCountInAccuracy(Passenger.getMaterial().getTolerance() <= 0 ||
-                                Math.abs(1 - Values.getPieceCountAccuracy()) <= Passenger.getMaterial().getTolerance());
+                        setCountInAccuracy(calcCountAccuracy(Passenger.getMaterial().getTolerance(), Values));
                     } else {
                         setCountInAccuracy(true);
                     }
@@ -457,9 +456,20 @@ public class DigitalSensorItem {
         }
     }
 
+    protected static boolean calcCountAccuracy(double tolerance, DigitalSensorValues values) {
+        int pcs = values.getPieceCount();
+        double apw = values.getAPW();
+        double apwTolerance = apw * tolerance;
+        double totalTol = apwTolerance * pcs;
+        double resultTol = Math.min(apw / 2, totalTol);
+        double error = Math.abs(values.getHighNet() - apw * pcs);
+        return tolerance <= 0 || error < resultTol;
+    }
+
     EFlatStatus LatsNotifyStatus = null;
     int LastNotifyPCS = -999999;
     boolean LastNotifyAccuracy = false;
+    double LastNotifyPCSWeight = 0;
     double LastNotifyWeight = -999999;
     long LastSaveTicks = 0;
 
@@ -501,13 +511,20 @@ public class DigitalSensorItem {
                 LastNotifyWeight = Values.getNetWeight().doubleValue();
             }
         }
-        if (LastNotifyPCS != Values.getPieceCount() || LastNotifyAccuracy != isCountInAccuracy()) {
+        if (LastNotifyPCS != Values.getPieceCount() || isAccuracyChangedAndBigEnough()) {
             if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
                 LastNotifyPCS = Values.getPieceCount();
                 LastNotifyAccuracy = isCountInAccuracy();
+                LastNotifyPCSWeight = Values.getHighNet();
             }
         }
     }
+
+    private boolean isAccuracyChangedAndBigEnough() {
+        return LastNotifyAccuracy != isCountInAccuracy() &&
+                Math.abs(LastNotifyPCSWeight - Values.getHighNet()) > Params.getIncrement().floatValue() * 2;
+    }
+
 
     private String LastPartNumber;
     private String LastPartName;

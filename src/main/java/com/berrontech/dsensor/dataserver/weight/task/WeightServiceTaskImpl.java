@@ -321,6 +321,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void setAllCompensationStatus(boolean enable) {
-        // TODO 开启全部补偿
+        scanManager.SetAllCreepCorrect(enable ? 0.5 : 0);
     }
 }

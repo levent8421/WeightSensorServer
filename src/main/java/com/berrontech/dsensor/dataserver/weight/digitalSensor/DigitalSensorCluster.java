@@ -65,7 +65,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         setOnline(Children.stream().filter(s -> !s.isOnline()).count() <= 0);
         getValues().setAPW(firstSensor.getValues().getAPW());
         if (getValues().isPieceCounting()) {
-            setCountInAccuracy(Math.abs(1 - getValues().getPieceCountAccuracy()) <= getPassenger().getMaterial().getTolerance());
+            setCountInAccuracy(calcCountAccuracy(getPassenger().getMaterial().getTolerance(), getValues()));
         } else {
             setCountInAccuracy(true);
         }
