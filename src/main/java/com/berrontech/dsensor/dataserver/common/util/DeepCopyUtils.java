@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.common.util;
 
 import com.berrontech.dsensor.dataserver.common.exception.CopyException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 
@@ -11,6 +12,7 @@ import java.io.*;
  *
  * @author levent
  */
+@Slf4j
 public class DeepCopyUtils {
     /**
      * Deep copy object
@@ -21,8 +23,13 @@ public class DeepCopyUtils {
      * @throws CopyException error
      */
     public static <T extends Serializable> T deepCopy(T source) throws CopyException {
+        final long start = System.currentTimeMillis();
         final byte[] bytes = object2Bytes(source);
-        return readFromBytes(bytes);
+        final T obj = readFromBytes(bytes);
+        log.debug("Copy Object[{}@{}], Size=[{}]B,Time=[{}]ms",
+                Integer.toHexString(source.hashCode()), source.getClass().getSimpleName(),
+                bytes.length, (System.currentTimeMillis() - start));
+        return obj;
     }
 
     @SuppressWarnings("unchecked")

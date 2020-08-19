@@ -7,6 +7,7 @@ import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
+import com.berrontech.dsensor.dataserver.web.vo.CompensationStateParam;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +71,19 @@ public class SlotController extends AbstractEntityController<Slot> {
     @PostMapping("/zero-all")
     public GeneralResult<Void> doZeroAll() {
         weightController.doZeroAll();
+        return GeneralResult.ok();
+    }
+
+    /**
+     * 设置全部补偿状态
+     *
+     * @return 补偿状态
+     */
+    @PostMapping("/_all-compensation")
+    public GeneralResult<Void> setAllCompensationState(@RequestBody CompensationStateParam param) {
+        notNull(param, BadRequestException.class, "No Params!");
+        notNull(param.getEnableCompensation(), BadRequestException.class, "No state!");
+        weightController.setAllCompensationStatus(param.getEnableCompensation());
         return GeneralResult.ok();
     }
 

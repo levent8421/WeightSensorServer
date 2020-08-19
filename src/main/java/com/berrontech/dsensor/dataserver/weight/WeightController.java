@@ -93,4 +93,11 @@ public interface WeightController {
      * @param slots    slot number list
      */
     void highlight(Collection<String> slots, long duration);
+
+    /**
+     * 设置补偿状态
+     *
+     * @param enable 状态
+     */
+    void setAllCompensationStatus(boolean enable);
 }

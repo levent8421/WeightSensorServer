@@ -95,3 +95,6 @@ CREATE TABLE `t_weight_sensor`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDb
   DEFAULT CHARSET = utf8;
+
+
+select id,address,slot_id ,case when ws.has_elabel  then 'E' else 'N' end from t_weight_sensor as ws order by ws.address asc;

@@ -1,12 +1,12 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 
-import java.util.*;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 @Component
 @Scope("singleton")
@@ -129,8 +129,8 @@ public class DigitalSensorManager {
         Reading = true;
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
+                log.debug("Start reading [{}]", g.getName());
                 try {
-                    //g.startReading();
                     g.startReading2();
                 } catch (Exception ex) {
                     log.warn("StartReading", ex);

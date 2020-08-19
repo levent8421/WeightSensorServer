@@ -334,7 +334,9 @@ public class DigitalSensorGroup {
     }
 
     public void startReading2() {
+        log.debug("Start reading [{}]", getName());
         if (isNotOpened() || isReading()) {
+            log.debug("Is not opend or reading ");
             return;
         }
         Reading = true;
