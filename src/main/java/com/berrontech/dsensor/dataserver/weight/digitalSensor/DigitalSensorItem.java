@@ -465,6 +465,9 @@ public class DigitalSensorItem {
 
     protected static boolean calcCountAccuracy(double tolerance, DigitalSensorValues values) {
         int pcs = values.getPieceCount();
+        if (pcs <= 0) {
+            pcs = 1;
+        }
         double apw = values.getAPW();
         double apwTolerance = apw * tolerance;
         double totalTol = apwTolerance * pcs;
@@ -528,8 +531,15 @@ public class DigitalSensorItem {
     }
 
     private boolean isAccuracyChangedAndBigEnough() {
-        return LastNotifyAccuracy != isCountInAccuracy() &&
-                Math.abs(LastNotifyPCSWeight - Values.getHighNet()) > Params.getIncrement().floatValue() * 2;
+        if (LastNotifyAccuracy) {
+            // hard to enter not accuracy status
+            return !isCountInAccuracy() &&
+                    Math.abs(LastNotifyPCSWeight - Values.getHighNet()) > Params.getIncrement().floatValue() * 2;
+        }
+        else {
+            // easy to fall in accuracy status
+            return isCountInAccuracy();
+        }
     }
 
 
