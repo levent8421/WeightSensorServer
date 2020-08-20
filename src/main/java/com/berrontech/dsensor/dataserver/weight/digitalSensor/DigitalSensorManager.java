@@ -207,6 +207,18 @@ public class DigitalSensorManager {
         }
     }
 
+    public void SetAllZeroCapture(double value) {
+        if (Groups.size() > 0) {
+            for (DigitalSensorGroup g : Groups) {
+                try {
+                    g.SetAllZeroCapture(value);
+                } catch (Exception ex) {
+                    log.warn("{} SetAllCreepCorrect failed: {}", g.Driver.toString(), ex.getMessage());
+                }
+            }
+        }
+    }
+
     public DigitalSensorItem FirstOrNull(String slotNo) {
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {

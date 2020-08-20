@@ -691,7 +691,14 @@ public class DigitalSensorGroup {
         if (isNotOpened()) {
             return;
         }
-        DigitalSensorItem.setAllCreepCorrect(Driver, value);
+        DigitalSensorItem.SetAllCreepCorrect(Driver, value);
+    }
+
+    public void SetAllZeroCapture(double value) {
+        if (isNotOpened()) {
+            return;
+        }
+        DigitalSensorItem.SetAllCreepCorrect(Driver, value);
     }
 
 }
