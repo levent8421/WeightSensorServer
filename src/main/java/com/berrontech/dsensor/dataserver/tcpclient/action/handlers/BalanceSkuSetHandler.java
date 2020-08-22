@@ -63,7 +63,7 @@ public class BalanceSkuSetHandler implements ActionHandler {
             } catch (Exception e) {
                 failureSlotNos.put(param.getSlotNo(), String.format("%s:%s", e.getClass().getSimpleName(), e.getMessage()));
                 log.warn("API message[{}], Error on set slot [{}] sku to [{}],error=[{},{}]",
-                        message.getSeqNo(), param.getSlotNo(), param, e.getClass().getName(), e.getMessage());
+                        message.getSeqNo(), param.getSlotNo(), param, e.getClass().getName(), e.getMessage(), e);
             }
         }
         final Payload<Map<String, String>> payload = Payload.ok(failureSlotNos);

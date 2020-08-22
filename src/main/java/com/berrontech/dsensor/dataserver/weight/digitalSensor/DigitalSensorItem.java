@@ -465,14 +465,14 @@ public class DigitalSensorItem {
 
     protected static boolean calcCountAccuracy(double tolerance, DigitalSensorValues values) {
         int pcs = values.getPieceCount();
+        double apw = values.getAPW();
+        double apwTolerance = apw * tolerance;
+        double error = Math.abs(values.getHighNet() - apw * pcs);
         if (pcs <= 0) {
             pcs = 1;
         }
-        double apw = values.getAPW();
-        double apwTolerance = apw * tolerance;
         double totalTol = apwTolerance * pcs;
         double resultTol = Math.min(apw / 2, totalTol);
-        double error = Math.abs(values.getHighNet() - apw * pcs);
         return tolerance <= 0 || error < resultTol;
     }
 
@@ -523,6 +523,13 @@ public class DigitalSensorItem {
         }
         if (LastNotifyPCS != Values.getPieceCount() || isAccuracyChangedAndBigEnough()) {
             if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
+                log.debug("#{} Notified piece count changed (last/new): PCS={}/{}, Accuracy={}/{}, PCSWgt={}/{}, APW={}, Tol={}, TolWgt={}",
+                        Params.getAddress(),
+                        LastNotifyPCS, Values.getPieceCount(),
+                        LastNotifyAccuracy, isCountInAccuracy(),
+                        LastNotifyPCSWeight, Values.getHighNet(),
+                        Values.getAPW(),
+                        getPassenger().getMaterial().getTolerance(), Values.getAPW() * getPassenger().getMaterial().getTolerance());
                 LastNotifyPCS = Values.getPieceCount();
                 LastNotifyAccuracy = isCountInAccuracy();
                 LastNotifyPCSWeight = Values.getHighNet();
