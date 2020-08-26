@@ -11,6 +11,7 @@ import com.berrontech.dsensor.dataserver.weight.NativeLibraryLoader;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
+import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
@@ -323,5 +324,11 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public void setAllCompensationStatus(boolean enable) {
         scanManager.SetAllCreepCorrect(enable ? 1 : 0);
         scanManager.SetAllZeroCapture(enable ? 3 : 0.5);
+    }
+
+    @Override
+    public SensorPackageCounter getPackageCounter(Integer connectionId, int address) {
+        // TODO get Package Counter
+        return null;
     }
 }

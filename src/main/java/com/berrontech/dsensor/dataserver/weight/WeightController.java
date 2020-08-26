@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 
 import java.io.IOException;
@@ -100,4 +101,13 @@ public interface WeightController {
      * @param enable 状态
      */
     void setAllCompensationStatus(boolean enable);
+
+    /**
+     * 查询指定连接的指定地址传感器的数据包计数器
+     *
+     * @param connectionId 连接ID
+     * @param address      485地址
+     * @return 包计数器
+     */
+    SensorPackageCounter getPackageCounter(Integer connectionId, int address);
 }
