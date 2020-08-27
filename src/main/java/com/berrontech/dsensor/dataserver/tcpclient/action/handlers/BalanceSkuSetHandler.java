@@ -95,6 +95,12 @@ public class BalanceSkuSetHandler implements ActionHandler {
         weightController.setSku(slotNo, sku);
 
         final MemorySlot slot = weightDataHolder.getSlotTable().get(slotNo);
+        if (slot == null) {
+            // 货道数据库内容已更新 但内存数据未更新
+            // 此时内存数据更新任务正在执行还未完成，该情况暂时忽略
+            log.warn("Can noe find slot[{}] in memory to update sku info!", slotNo);
+            return;
+        }
         slot.setSku(sku);
     }
 

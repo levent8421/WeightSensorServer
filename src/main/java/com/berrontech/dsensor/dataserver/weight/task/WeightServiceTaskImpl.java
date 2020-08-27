@@ -321,7 +321,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void setAllCompensationStatus(boolean enable) {
-        scanManager.SetAllCreepCorrect(enable ? 1 : 0);
-        scanManager.SetAllZeroCapture(enable ? 3 : 0.5);
+        sensorManager.SetAllCreepCorrect(enable ? 2 : 0);
+        sensorManager.SetAllZeroCapture(enable ? 3 : 0.5);
     }
 }

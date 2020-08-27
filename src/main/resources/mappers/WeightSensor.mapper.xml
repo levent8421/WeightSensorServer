@@ -46,22 +46,22 @@
     </resultMap>
     <update id="updateState">
         update t_weight_sensor as ws
-        set ws.state=#{state}
+        set ws.state=#{state}, ws.update_time=now()
         where ws.id = #{id}
     </update>
     <update id="updateZeroReference">
         update t_weight_sensor as ws
-        set ws.zero_reference=#{zeroReference}
+        set ws.zero_reference=#{zeroReference}, ws.update_time=now()
         where ws.id = #{id}
     </update>
     <update id="updateConfigStr">
         update t_weight_sensor as ws
-        set config_str=#{configStr}
+        set config_str=#{configStr},ws.update_time=now()
         where ws.id = #{id}
     </update>
     <update id="updateHasElableBySlotId">
         update t_weight_sensor as ws
-        set ws.has_elabel=#{hasElable}
+        set ws.has_elabel=#{hasElable}, ws.update_time=now()
         where ws.slot_id = #{slotId}
     </update>
     <select id="selectAllWithSlot" resultMap="rm_with_all">
@@ -73,7 +73,7 @@
     </select>
     <update id="updateHasElable">
         update t_weight_sensor as ws
-        set ws.has_elabel=#{hasElabel}
+        set ws.has_elabel=#{hasElabel}, ws.update_time=now()
         where ws.id = #{id}
     </update>
     <select id="selectByAddress" resultMap="rm_base">
@@ -81,12 +81,12 @@
         and ws.address=#{address}
     </select>
     <update id="updateSlotIdByIds">
-        update t_weight_sensor as ws set ws.slot_id=#{slotId} where ws.id in
+        update t_weight_sensor as ws set ws.slot_id=#{slotId},ws.update_time=now() where ws.id in
         <foreach collection="ids" open="(" close=")" separator="," item="id">#{id}</foreach>
     </update>
     <update id="updateSlotIdBySlotId">
         update t_weight_sensor as ws
-        set ws.slot_id=#{newSlotId}
+        set ws.slot_id=#{newSlotId}, ws.update_time=now()
         where ws.slot_id = #{slotId};
     </update>
     <select id="selectPrimarySensorBySlotId" resultMap="rm_base">
