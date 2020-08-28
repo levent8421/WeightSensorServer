@@ -340,8 +340,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void cleanPackageCounter() {
-
-        sensorManager.SetAllCreepCorrect(enable ? 2 : 0);
-        sensorManager.SetAllZeroCapture(enable ? 3 : 0.5);
+        sensorManager.ClearAllCounters();
     }
 }
