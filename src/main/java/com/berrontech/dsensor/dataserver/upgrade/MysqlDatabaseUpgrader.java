@@ -105,10 +105,7 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
     }
 
     private void doDatabaseInit() {
-        final Resource resource = applicationContext.getResource(DATABASE_INIT_SCRIPT_RESOURCE_NAME);
-        final EncodedResource sqlResource = new EncodedResource(resource);
-        log.info("Database init with script: [{}]", DATABASE_INIT_SCRIPT_RESOURCE_NAME);
-        runScript(sqlResource);
+        resetDatabase();
     }
 
     /**
@@ -205,6 +202,14 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
         for (File scriptFile : scriptFiles) {
             runScript(scriptFile);
         }
+    }
+
+    @Override
+    public void resetDatabase() {
+        final Resource resource = applicationContext.getResource(DATABASE_INIT_SCRIPT_RESOURCE_NAME);
+        final EncodedResource sqlResource = new EncodedResource(resource);
+        log.info("Database init with script: [{}]", DATABASE_INIT_SCRIPT_RESOURCE_NAME);
+        runScript(sqlResource);
     }
 
     /**

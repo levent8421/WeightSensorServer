@@ -31,4 +31,9 @@ public interface DatabaseUpgrader {
      * @throws Exception e
      */
     void runUpgradeScript(List<File> scriptFiles) throws Exception;
+
+    /**
+     * 重置数据库
+     */
+    void resetDatabase();
 }

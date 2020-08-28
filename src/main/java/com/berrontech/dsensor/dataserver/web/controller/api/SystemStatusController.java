@@ -8,8 +8,10 @@ import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageLogger;
 import com.berrontech.dsensor.dataserver.tcpclient.client.tcp.ConnectionConfiguration;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
+import com.berrontech.dsensor.dataserver.upgrade.DatabaseUpgrader;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
+import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,19 +40,25 @@ public class SystemStatusController extends AbstractController {
     private final MessageLogger messageLogger;
     private final ApplicationConfiguration applicationConfiguration;
     private final ApplicationConfigService applicationConfigService;
+    private final DatabaseUpgrader databaseUpgrader;
+    private final SensorMetaDataService sensorMetaDataService;
 
     public SystemStatusController(ApiClient apiClient,
                                   ConnectionConfiguration connectionConfiguration,
                                   DatabaseMetaDataMapper databaseMetaDataMapper,
                                   MessageLogger messageLogger,
                                   ApplicationConfiguration applicationConfiguration,
-                                  ApplicationConfigService applicationConfigService) {
+                                  ApplicationConfigService applicationConfigService,
+                                  DatabaseUpgrader databaseUpgrader,
+                                  SensorMetaDataService sensorMetaDataService) {
         this.apiClient = apiClient;
         this.connectionConfiguration = connectionConfiguration;
         this.databaseMetaDataMapper = databaseMetaDataMapper;
         this.messageLogger = messageLogger;
         this.applicationConfiguration = applicationConfiguration;
         this.applicationConfigService = applicationConfigService;
+        this.databaseUpgrader = databaseUpgrader;
+        this.sensorMetaDataService = sensorMetaDataService;
     }
 
     /**
@@ -133,5 +141,17 @@ public class SystemStatusController extends AbstractController {
             return "Null";
         }
         return config.getValue();
+    }
+
+    /**
+     * 重置数据库
+     *
+     * @return GR
+     */
+    @PostMapping("/_db-reset")
+    public GeneralResult<Void> resetDatabase() {
+        databaseUpgrader.resetDatabase();
+        sensorMetaDataService.refreshSlotTable();
+        return GeneralResult.ok();
     }
 }
