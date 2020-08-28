@@ -135,8 +135,8 @@ public class DigitalSensorItem {
     }
 
 
-    private int TotalErrors;
-    private int TotalSuccess;
+    private long TotalErrors;
+    private long TotalSuccess;
     private int ContinueErrors;
     private boolean Online = false;
     private int HighResCounter;
@@ -476,7 +476,7 @@ public class DigitalSensorItem {
         return tolerance <= 0 || error < resultTol;
     }
 
-    EFlatStatus LatsNotifyStatus = null;
+    EFlatStatus LastNotifyStatus = null;
     int LastNotifyPCS = -999999;
     boolean LastNotifyAccuracy = false;
     double LastNotifyPCSWeight = 0;
@@ -500,18 +500,19 @@ public class DigitalSensorItem {
             // does not notify is slot is empty
             return;
         }
-        if (LatsNotifyStatus != getFlatStatus()) {
+        if (LastNotifyStatus != getFlatStatus()) {
             switch (getFlatStatus()) {
                 case Offline:
                 case Disabled:
                 case Normal: {
                     if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
-                        LatsNotifyStatus = getFlatStatus();
+                        LastNotifyStatus = getFlatStatus();
                     }
                     break;
                 }
                 default: {
                     // do not notify these status
+                    LastNotifyStatus = EFlatStatus.Normal;
                     break;
                 }
             }
@@ -1226,7 +1227,7 @@ public class DigitalSensorItem {
             do {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
                 if (packet.Content[1] == cmd) {
-                    SetCommResult(true);
+                    //SetCommResult(true);
                     return packet;
                 }
             } while (System.currentTimeMillis() <= endTime);

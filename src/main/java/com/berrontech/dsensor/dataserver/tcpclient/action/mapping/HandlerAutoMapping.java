@@ -29,7 +29,7 @@ import java.util.Map;
 @Component
 @Slf4j
 public class HandlerAutoMapping implements ApplicationContextAware {
-    private final Map<String, ActionHandler> handlerTable = new HashMap<>();
+    private final Map<String, ActionHandler> handlerTable = new HashMap<>(16);
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
