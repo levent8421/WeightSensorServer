@@ -261,6 +261,18 @@ public class DigitalSensorManager {
         return null;
     }
 
+    public void ClearAllCounters()
+    {
+        if (Groups != null && Groups.size() > 0) {
+            for (DigitalSensorGroup g : Groups) {
+                    for (DigitalSensorItem s : g.getSensors()) {
+                        s.setTotalSuccess(0);
+                        s.setTotalErrors(0);
+                }
+            }
+        }
+    }
+
     public boolean HighlightMaterial(String barcode) {
         boolean found = false;
         if (Groups.size() > 0) {
