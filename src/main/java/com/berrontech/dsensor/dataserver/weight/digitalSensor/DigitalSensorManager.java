@@ -213,7 +213,7 @@ public class DigitalSensorManager {
                 try {
                     g.SetAllZeroCapture(value);
                 } catch (Exception ex) {
-                    log.warn("{} SetAllCreepCorrect failed: {}", g.Driver.toString(), ex.getMessage());
+                    log.warn("{} SetAllZeroCapture failed: {}", g.Driver.toString(), ex.getMessage());
                 }
             }
         }
@@ -244,6 +244,21 @@ public class DigitalSensorManager {
             }
         }
         return sensors;
+    }
+
+    public DigitalSensorItem FirstOrNull(int connectionId, int address) {
+        if (Groups != null && Groups.size() > 0) {
+            for (DigitalSensorGroup g : Groups) {
+                if (g.getConnectionId() == connectionId) {
+                    for (DigitalSensorItem s : g.getSensors()) {
+                        if (s.getParams().getAddress() == address) {
+                            return s;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public boolean HighlightMaterial(String barcode) {

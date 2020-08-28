@@ -322,13 +322,20 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void setAllCompensationStatus(boolean enable) {
-        scanManager.SetAllCreepCorrect(enable ? 1 : 0);
-        scanManager.SetAllZeroCapture(enable ? 3 : 0.5);
+        sensorManager.SetAllCreepCorrect(enable ? 2 : 0);
+        sensorManager.SetAllZeroCapture(enable ? 3 : 0.5);
     }
 
     @Override
     public SensorPackageCounter getPackageCounter(Integer connectionId, int address) {
-        // TODO get Package Counter
+        SensorPackageCounter counter = new SensorPackageCounter();
+        DigitalSensorItem sensor = sensorManager.FirstOrNull(connectionId, address);
+        if (sensor != null)
+        {
+            sensor.setTotalErrors(sensor.getTotalErrors());
+            sensor.setTotalSuccess(sensor.getTotalSuccess());
+            sensor.setContinueErrors(sensor.getContinueErrors());
+        }
         return null;
     }
 }
