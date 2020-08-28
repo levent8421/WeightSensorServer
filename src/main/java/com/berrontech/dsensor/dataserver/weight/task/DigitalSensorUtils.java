@@ -35,6 +35,7 @@ public class DigitalSensorUtils {
                     }
                     case DeviceConnection.TYPE_SERIAL: {
                         log.debug("Add group on serial: {}", conn.getTarget());
+                        group.setConnectionId(conn.getId());
                         group.setCommMode(DigitalSensorGroup.ECommMode.Com);
                         group.setCommSerial(conn.getTarget());
                         break;
@@ -44,6 +45,7 @@ public class DigitalSensorUtils {
                         //String target = "127.0.0.1:8200";
                         log.debug("Add group on tcp: {}", target);
                         String[] parts = target.split(":");
+                        group.setConnectionId(conn.getId());
                         group.setCommMode(DigitalSensorGroup.ECommMode.Net);
                         group.setCommAddress(parts[0]);
                         if (parts.length > 1) {

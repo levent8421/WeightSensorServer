@@ -3,7 +3,6 @@ package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
 import lombok.Data;
-import org.apache.ibatis.javassist.bytecode.ByteArray;
 
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
@@ -57,7 +56,7 @@ public class DataPacket {
         byte[] bts = new byte[1 + 1 + 1 + GetLength()];
         bts[0] = Head1;
         bts[1] = Head2;
-        bts[2] = (byte)GetLength();
+        bts[2] = (byte) GetLength();
         bts[3] = getVersion();
         bts[4] = getAddress();
         bts[5] = getCmd();
@@ -207,8 +206,7 @@ public class DataPacket {
         int Bpp16 = 2;
     }
 
-    public interface  EELabelColor
-    {
+    public interface EELabelColor {
         int White = 0xFFFF;
         int Black = 0x0000;
         int Blue = 0x001F;
@@ -327,7 +325,7 @@ public class DataPacket {
         byte[] bts = ByteHelper.floatToBytes(weight);
         byte[] content = new byte[bts.length + 1];
         content[0] = (byte) (save ? 1 : 0);
-        System.arraycopy(bts, 0, content, content.length, bts.length);
+        System.arraycopy(bts, 0, content, 1, bts.length);
         return Build(address, ESendCmd.DoZero, content);
     }
 
@@ -397,6 +395,4 @@ public class DataPacket {
         }
         return Build(address, ESendCmd.ELabel, content);
     }
-
-
 }

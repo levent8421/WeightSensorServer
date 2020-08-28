@@ -62,7 +62,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         getValues().setGrossWeight(sum);
         getValues().setStatus((Children.stream().anyMatch(s -> s.getValues().isDynamic())) ? DigitalSensorValues.EStatus.Dynamic : DigitalSensorValues.EStatus.Stable);
         setTotalSuccess((int) fSum);
-        setOnline(Children.stream().filter(s -> !s.isOnline()).count() <= 0);
+        setOnlineAndNotify(Children.stream().filter(s -> !s.isOnline()).count() <= 0);
         getValues().setAPW(firstSensor.getValues().getAPW());
         if (getValues().isPieceCounting()) {
             setCountInAccuracy(calcCountAccuracy(getPassenger().getMaterial().getTolerance(), getValues()));

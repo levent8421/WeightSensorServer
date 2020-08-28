@@ -143,9 +143,11 @@ public class DigitalSensorItem {
     private boolean CountInAccuracy = true;
     private long HighlightDeadTime = 0;
 
-
-    public boolean isOnline() {
-        return Online && (getTotalSuccess() > 0 && getContinueErrors() < 2);
+    public void setOnlineAndNotify(boolean value) {
+        if (Online != value) {
+            Online = value;
+            TryNotifyListener();
+        }
     }
 
     public boolean IsCountOutOfAccuracy() {
@@ -176,12 +178,15 @@ public class DigitalSensorItem {
 
     private void SetCommResult(boolean ok) {
         if (ok) {
-            setOnline(true);
+            setOnlineAndNotify(true);
             TotalSuccess++;
             ContinueErrors = 0;
         } else {
             TotalErrors++;
             ContinueErrors++;
+            if (ContinueErrors > 2) {
+                setOnlineAndNotify(false);
+            }
         }
     }
 
@@ -543,8 +548,7 @@ public class DigitalSensorItem {
             // hard to enter not accuracy status
             return !isCountInAccuracy() &&
                     Math.abs(LastNotifyPCSWeight - Values.getHighNet()) > Params.getIncrement().floatValue() * 2;
-        }
-        else {
+        } else {
             // easy to fall in accuracy status
             return isCountInAccuracy();
         }
