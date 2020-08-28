@@ -330,12 +330,16 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public SensorPackageCounter getPackageCounter(Integer connectionId, int address) {
         SensorPackageCounter counter = new SensorPackageCounter();
         DigitalSensorItem sensor = sensorManager.FirstOrNull(connectionId, address);
-        if (sensor != null)
-        {
-            sensor.setTotalErrors(sensor.getTotalErrors());
-            sensor.setTotalSuccess(sensor.getTotalSuccess());
-            sensor.setContinueErrors(sensor.getContinueErrors());
+        if (sensor != null) {
+            counter.setTotalErrors(sensor.getTotalErrors());
+            counter.setTotalSuccess(sensor.getTotalSuccess());
+            counter.setContinueErrors(sensor.getContinueErrors());
         }
-        return null;
+        return counter;
+    }
+
+    @Override
+    public void cleanPackageCounter() {
+
     }
 }

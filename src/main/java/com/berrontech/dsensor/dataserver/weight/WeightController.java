@@ -110,4 +110,9 @@ public interface WeightController {
      * @return 包计数器
      */
     SensorPackageCounter getPackageCounter(Integer connectionId, int address);
+
+    /**
+     * 清空包计数器
+     */
+    void cleanPackageCounter();
 }
