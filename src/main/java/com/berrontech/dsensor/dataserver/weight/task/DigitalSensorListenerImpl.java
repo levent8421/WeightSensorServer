@@ -53,7 +53,8 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                     .orElse(null);
             if (s1 != null) {
                 MemoryWeightSensor s2 = MemoryWeightSensor.of(s1);
-                s2.setState(toState(sensor));
+                int state = toState(sensor);
+                s2.setState(state);
                 Collection<MemoryWeightSensor> sensors = Collections.singleton(s2);
                 weightNotifier.sensorStateChanged(sensors);
             }
@@ -120,7 +121,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                 }
                 val data = slot.getData();
                 data.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
-                data.setWeightState(toState(sensor));
+                data.setWeightState(sensor.getValues().isStable() ? MemoryWeightData.WEIGHT_STATE_STABLE : MemoryWeightData.WEIGHT_STATE_DYNAMIC);
                 slot.setState(toState(sensor));
             }
             return true;
@@ -140,8 +141,12 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     }
 
     private static int toState(DigitalSensorItem sensor) {
+        return toState(sensor.getFlatStatus());
+    }
+
+    private static int toState(DigitalSensorItem.EFlatStatus flatStatus) {
         int state;
-        switch (sensor.getFlatStatus()) {
+        switch (flatStatus) {
             case Offline: {
                 state = WeightSensor.STATE_OFFLINE;
                 break;

@@ -486,6 +486,7 @@ public class DigitalSensorItem {
     boolean LastNotifyAccuracy = false;
     double LastNotifyPCSWeight = 0;
     double LastNotifyWeight = -999999;
+    boolean LastNotifyStable = false;
     long LastSaveTicks = 0;
 
     public void TryNotifyListener() {
@@ -505,26 +506,19 @@ public class DigitalSensorItem {
             // does not notify is slot is empty
             return;
         }
-        if (LastNotifyStatus != getFlatStatus()) {
-            switch (getFlatStatus()) {
-                case Offline:
-                case Disabled:
-                case Normal: {
-                    if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
-                        LastNotifyStatus = getFlatStatus();
-                    }
-                    break;
-                }
-                default: {
-                    // do not notify these status
-                    LastNotifyStatus = EFlatStatus.Normal;
-                    break;
+        {
+            EFlatStatus status = getFlatStatus();
+            if (LastNotifyStatus != status) {
+                if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
+                    LastNotifyStatus = status;
                 }
             }
         }
-        if (LastNotifyWeight != Values.getNetWeight().doubleValue()) {
+        if (LastNotifyWeight != Values.getNetWeight().doubleValue() ||
+                LastNotifyStable != Values.isStable()) {
             if (getGroup().getManager().getSensorListener().onWeightChanged(this)) {
                 LastNotifyWeight = Values.getNetWeight().doubleValue();
+                LastNotifyStable = Values.isStable();
             }
         }
         if (LastNotifyPCS != Values.getPieceCount() || isAccuracyChangedAndBigEnough()) {
