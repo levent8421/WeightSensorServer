@@ -1,9 +1,15 @@
 package com.berrontech.dsensor.dataserver.web.controller.api;
 
+import com.berrontech.dsensor.dataserver.common.entity.AbstractEntity;
 import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
+import com.berrontech.dsensor.dataserver.common.entity.Slot;
+import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.conf.ApplicationConfiguration;
 import com.berrontech.dsensor.dataserver.repository.mapper.DatabaseMetaDataMapper;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
+import com.berrontech.dsensor.dataserver.service.general.SlotService;
+import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageLogger;
 import com.berrontech.dsensor.dataserver.tcpclient.client.tcp.ConnectionConfiguration;
@@ -11,16 +17,16 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.upgrade.DatabaseUpgrader;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
+import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.SystemError;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Create By Levent8421
@@ -43,6 +49,9 @@ public class SystemStatusController extends AbstractController {
     private final ApplicationConfigService applicationConfigService;
     private final DatabaseUpgrader databaseUpgrader;
     private final SensorMetaDataService sensorMetaDataService;
+    private final WeightSensorService weightSensorService;
+    private final SlotService slotService;
+    private final WeightController weightController;
 
     public SystemStatusController(ApiClient apiClient,
                                   ConnectionConfiguration connectionConfiguration,
@@ -51,7 +60,10 @@ public class SystemStatusController extends AbstractController {
                                   ApplicationConfiguration applicationConfiguration,
                                   ApplicationConfigService applicationConfigService,
                                   DatabaseUpgrader databaseUpgrader,
-                                  SensorMetaDataService sensorMetaDataService) {
+                                  SensorMetaDataService sensorMetaDataService,
+                                  WeightSensorService weightSensorService,
+                                  SlotService slotService,
+                                  WeightController weightController) {
         this.apiClient = apiClient;
         this.connectionConfiguration = connectionConfiguration;
         this.databaseMetaDataMapper = databaseMetaDataMapper;
@@ -60,6 +72,9 @@ public class SystemStatusController extends AbstractController {
         this.applicationConfigService = applicationConfigService;
         this.databaseUpgrader = databaseUpgrader;
         this.sensorMetaDataService = sensorMetaDataService;
+        this.weightSensorService = weightSensorService;
+        this.slotService = slotService;
+        this.weightController = weightController;
     }
 
     /**
@@ -165,5 +180,59 @@ public class SystemStatusController extends AbstractController {
     public GeneralResult<?> systemErrors() {
         final List<SystemError> errors = sensorMetaDataService.getSensorErrors();
         return GeneralResult.ok(errors);
+    }
+
+    /**
+     * 获取传感器详细信息
+     *
+     * @param address 地址
+     * @return GR
+     */
+    @GetMapping("/{address}/_details")
+    public GeneralResult<DeviceDetails> sensorDetails(@PathVariable("address") Integer address) {
+        final List<WeightSensor> sensors = weightSensorService.findByAddress(address);
+        if (sensors.size() != 1) {
+            throw new InternalServerErrorException("duplicate or empty sensor for address " + address);
+        }
+        final WeightSensor sensor = sensors.get(0);
+        final Slot slot = slotService.findByAddress(address);
+        final DeviceDetails deviceDetails = getDeviceDetails(sensor, slot);
+        return GeneralResult.ok(deviceDetails);
+    }
+
+    private DeviceDetails getDeviceDetails(WeightSensor sensor, Slot slot) {
+        final DeviceDetails deviceDetails = weightController.getSensorDetails(sensor.getConnectionId(), sensor.getAddress());
+        if (deviceDetails == null) {
+            throw new InternalServerErrorException("Fail to get device details!");
+        }
+        return deviceDetails.set(DeviceDetails.SENSOR, sensor)
+                .set(DeviceDetails.SLOT, slot);
+    }
+
+    /**
+     * 全部传感器的详细信息
+     *
+     * @return GR
+     */
+    @GetMapping("/_all-sensor-details")
+    public GeneralResult<Map<Integer, Object>> allSensorDeviceDetails() {
+        final List<WeightSensor> sensors = weightSensorService.all();
+        final List<Slot> slots = slotService.all();
+        final Map<Integer, Slot> slotMap = slots.stream().collect(Collectors.toMap(AbstractEntity::getId, s -> s));
+
+        final Map<Integer, Object> res = new HashMap<>(128);
+        for (WeightSensor sensor : sensors) {
+            final Slot slot = slotMap.get(sensor.getSlotId());
+            if (res.containsKey(sensor.getAddress())) {
+                res.put(sensor.getAddress() + 1000, "duplicate address");
+            }
+            try {
+                final DeviceDetails deviceDetails = getDeviceDetails(sensor, slot);
+                res.put(sensor.getAddress(), deviceDetails);
+            } catch (Exception e) {
+                res.put(sensor.getAddress(), String.format("%s:%s", e.getClass().getSimpleName(), e.getMessage()));
+            }
+        }
+        return GeneralResult.ok(res);
     }
 }

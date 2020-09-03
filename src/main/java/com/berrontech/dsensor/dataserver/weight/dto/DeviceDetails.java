@@ -113,6 +113,14 @@ public class DeviceDetails extends HashMap<String, Object> {
      * 电子标签信息
      */
     public static final String E_LABEL_DETAILS = "eLabelDetails";
+    /**
+     * 传感器信息
+     */
+    public static final String SENSOR = "sensor";
+    /**
+     * 货道信息
+     */
+    public static final String SLOT = "slot";
 
     /**
      * 设置信息
