@@ -11,6 +11,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.upgrade.DatabaseUpgrader;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
+import com.berrontech.dsensor.dataserver.weight.dto.SystemError;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -153,5 +154,16 @@ public class SystemStatusController extends AbstractController {
         databaseUpgrader.resetDatabase();
         sensorMetaDataService.refreshSlotTable();
         return GeneralResult.ok();
+    }
+
+    /**
+     * 获取系统错误列表
+     *
+     * @return GR
+     */
+    @GetMapping("/_errors")
+    public GeneralResult<?> systemErrors() {
+        final List<SystemError> errors = sensorMetaDataService.getSensorErrors();
+        return GeneralResult.ok(errors);
     }
 }

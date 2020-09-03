@@ -261,7 +261,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void sensorStateChanged(Collection<MemoryWeightSensor> sensors) {
-        obtainSensorMetaDataService().updateSensorStateInSlotTable(sensors);
+        obtainSensorMetaDataService().syncStateBySensor(sensors);
         final Map<Integer, SlotVo> slotMap = new HashMap<>(16);
         final List<MemorySlot> memorySlots = new ArrayList<>();
         for (MemoryWeightSensor sensor : sensors) {

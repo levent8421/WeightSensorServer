@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.common.util;
 
 import com.berrontech.dsensor.dataserver.common.exception.CopyException;
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -14,22 +15,50 @@ import java.io.*;
  */
 @Slf4j
 public class DeepCopyUtils {
-    /**
-     * Deep copy object
-     *
-     * @param source source object
-     * @param <T>    object type
-     * @return target object
-     * @throws CopyException error
-     */
-    public static <T extends Serializable> T deepCopy(T source) throws CopyException {
+    private static final ThreadLocal<ObjectCopier> COPIERS = new ThreadLocal<>();
+
+    public static <T extends Serializable> T deepCopy(T obj) throws CopyException {
         final long start = System.currentTimeMillis();
-        final byte[] bytes = object2Bytes(source);
-        final T obj = readFromBytes(bytes);
-        log.debug("Copy Object[{}@{}], Size=[{}]B,Time=[{}]ms",
-                Integer.toHexString(source.hashCode()), source.getClass().getSimpleName(),
-                bytes.length, (System.currentTimeMillis() - start));
-        return obj;
+        ObjectCopier copier = COPIERS.get();
+        if (copier == null) {
+            copier = new ObjectCopier();
+            COPIERS.set(copier);
+        }
+        final long useTime = System.currentTimeMillis() - start;
+        final String logStr = String.format("Copy object [%s@%s] useTime=[%s]ms!", obj.hashCode(), obj.getClass().getSimpleName(), useTime);
+        System.out.println(logStr);
+        log.debug(logStr);
+        return copier.copy(obj);
+    }
+}
+
+class ObjectCopier {
+    private final ByteArrayOutputStream out;
+    private final ObjectOutputStream oos;
+
+    ObjectCopier() {
+        out = new ByteArrayOutputStream();
+        oos = buildObjectOutputStream();
+    }
+
+    private ObjectOutputStream buildObjectOutputStream() {
+        try {
+            return new ObjectOutputStream(out);
+        } catch (IOException e) {
+            throw new InternalServerErrorException(e);
+        }
+    }
+
+    public <T extends Serializable> T copy(T obj) throws CopyException {
+        try {
+            oos.reset();
+            oos.writeObject(obj);
+            oos.flush();
+            final byte[] bytes = out.toByteArray();
+            return readFromBytes(bytes);
+        } catch (IOException e) {
+            throw new CopyException(e);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -42,18 +71,5 @@ public class DeepCopyUtils {
             throw new CopyException("Error on read object !", e);
         }
         return target;
-    }
-
-    private static byte[] object2Bytes(Serializable source) throws CopyException {
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try (final ObjectOutputStream out = new ObjectOutputStream(bos)) {
-            out.writeObject(source);
-            out.flush();
-        } catch (IOException e) {
-            final String error = String.format("Error on write object [%s] at [%s]",
-                    source.getClass().getName(), source.hashCode());
-            throw new CopyException(error, e);
-        }
-        return bos.toByteArray();
     }
 }

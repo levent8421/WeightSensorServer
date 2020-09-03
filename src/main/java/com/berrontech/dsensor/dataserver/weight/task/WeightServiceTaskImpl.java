@@ -11,6 +11,7 @@ import com.berrontech.dsensor.dataserver.weight.NativeLibraryLoader;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
+import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
@@ -342,5 +343,16 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public void cleanPackageCounter() {
         sensorManager.ClearAllCounters();
+    }
+
+    @Override
+    public DeviceDetails getSensorDetails(Integer connectionId, Integer address) {
+        return new DeviceDetails()
+                .set(DeviceDetails.ADDRESS, address)
+                .set(DeviceDetails.E_LABEL_DETAILS, getElabelDetails(connectionId, address));
+    }
+
+    private DeviceDetails getElabelDetails(Integer connectionId, Integer address) {
+        return new DeviceDetails().set(DeviceDetails.ADDRESS, address);
     }
 }

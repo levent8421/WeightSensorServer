@@ -26,4 +26,16 @@ public class SensorPackageCounter {
      * 连续失败次数
      */
     private long continueErrors;
+    /**
+     * 电子标签通信成功次数
+     */
+    private long eLabelSuccess;
+    /**
+     * 电子标签通信失败次数
+     */
+    private long eLabelErrors;
+    /**
+     * 电子标签通信连续失败次数
+     */
+    private long eLabelContinueErrors;
 }

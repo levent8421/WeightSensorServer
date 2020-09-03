@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 
@@ -115,4 +116,13 @@ public interface WeightController {
      * 清空包计数器
      */
     void cleanPackageCounter();
+
+    /**
+     * 获取传感器详细信息
+     *
+     * @param connectionId 连接ID
+     * @param address      物理地址
+     * @return details
+     */
+    DeviceDetails getSensorDetails(Integer connectionId, Integer address);
 }

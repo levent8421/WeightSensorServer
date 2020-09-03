@@ -1,12 +1,15 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
+import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.dto.SystemError;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
@@ -116,28 +119,66 @@ public class SensorMetaDataService implements ThreadFactory {
         slotTable.put(slotNo, slot);
     }
 
-    /**
-     * 更新slotTable 中的传感器状态
-     *
-     * @param sensors 传感器列表
-     */
-    public void updateSensorStateInSlotTable(Collection<MemoryWeightSensor> sensors) {
-        final Map<String, MemorySlot> slotTable = weightDataHolder.getSlotTable();
-        final Map<Integer, MemoryWeightSensor> sensorsTable = sensors.stream()
-                .collect(Collectors.toMap(MemoryWeightSensor::getId, v -> v));
-        for (MemorySlot slot : slotTable.values()) {
+    public void syncStateBySensor(Collection<MemoryWeightSensor> sensors) {
+        if (CollectionUtils.isEmpty(sensors)) {
+            return;
+        }
+        final Map<Integer, MemoryWeightSensor> sensorMap = sensors.stream().collect(Collectors.toMap(MemoryWeightSensor::getId, v -> v));
+        for (MemorySlot slot : weightDataHolder.getSlotTable().values()) {
             final Collection<MemoryWeightSensor> slotSensors = slot.getSensors();
-            if (slotSensors == null || slotSensors.isEmpty()) {
+            if (CollectionUtils.isEmpty(slotSensors)) {
                 continue;
             }
-            for (MemoryWeightSensor sensor : slot.getSensors()) {
-                if (sensorsTable.containsKey(sensor.getId())) {
-                    final MemoryWeightSensor targetSensor = sensorsTable.get(sensor.getId());
-                    sensor.setState(targetSensor.getState());
-                    slot.setState(targetSensor.getState());
+
+            int slotState = AbstractDevice485.STATE_ONLINE;
+            for (MemoryWeightSensor sensor : slotSensors) {
+                if (sensorMap.containsKey(sensor.getId())) {
+                    final MemoryWeightSensor targetStateSensor = sensorMap.get(sensor.getId());
+                    sensor.setState(targetStateSensor.getState());
+                    if (!Objects.equals(targetStateSensor.getState(), AbstractDevice485.STATE_ONLINE)) {
+                        slotState = targetStateSensor.getState();
+                    }
+                }
+            }
+            slot.setState(slotState);
+        }
+    }
+
+    /**
+     * 获取传感器异常信息
+     *
+     * @return 异常列表
+     */
+    public List<SystemError> getSensorErrors() {
+        final List<SystemError> errors = new ArrayList<>();
+        final Collection<MemorySlot> slots = weightDataHolder.getSlotTable().values();
+        for (MemorySlot slot : slots) {
+            final Collection<MemoryWeightSensor> sensors = slot.getSensors();
+            if (CollectionUtils.isEmpty(sensors)) {
+                continue;
+            }
+            for (MemoryWeightSensor sensor : sensors) {
+                final SystemError err = tryReadError(sensor, slot);
+                if (err != null) {
+                    errors.add(err);
                 }
             }
         }
+        return errors;
+    }
+
+    private SystemError tryReadError(MemoryWeightSensor sensor, MemorySlot slot) {
+        if (!Objects.equals(sensor.getState(), AbstractDevice485.STATE_OFFLINE)) {
+            return null;
+        }
+        final SystemError error = new SystemError();
+        error.setType(SystemError.TYPE_SENSOR_ERROR);
+        error.setSensorAddress(sensor.getAddress485());
+        error.setSensorState(sensor.getState());
+        error.setSlotNo(slot.getSlotNo());
+        error.setSlotState(slot.getState());
+        error.setMessage("传感器离线");
+        return error;
     }
 
     @Override
