@@ -25,10 +25,18 @@ public class DigitalSensorParams {
     private String PCBASn;
     private String DeviceSn;
     private String DeviceModel;
+    private String ELabelFirmwareVersion;
+    private String ELabelPCBASn;
+    private String ELabelDeviceSn;
+    private String ELabelDeviceModel;
     private int Id;
 
     public int ELabelModel = EELabelModel.None;
     private boolean Enabled = true;
+
+    public int getELabelAddress() {
+        return Address + DataPacket.AddressELabelStart;
+    }
 
 
     public final static KeyValueList<Double, String> Increments = new KeyValueList<>(

@@ -333,9 +333,13 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         final DigitalSensorItem sensor = sensorManager.FirstOrNull(connectionId, address);
         log.debug("Find package counter for [{}/{}], sensor=[{}]", connectionId, address, sensor);
         if (sensor != null) {
-            counter.setTotalErrors(sensor.getTotalErrors());
             counter.setTotalSuccess(sensor.getTotalSuccess());
+            counter.setTotalErrors(sensor.getTotalErrors());
             counter.setContinueErrors(sensor.getContinueErrors());
+
+            counter.setELabelErrors(sensor.getELabelTotalErrors());
+            counter.setELabelSuccess(sensor.getELabelTotalSuccess());
+            counter.setELabelContinueErrors(sensor.getELabelContinueErrors());
         }
         return counter;
     }
@@ -347,12 +351,57 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public DeviceDetails getSensorDetails(Integer connectionId, Integer address) {
-        return new DeviceDetails()
-                .set(DeviceDetails.ADDRESS, address)
-                .set(DeviceDetails.E_LABEL_DETAILS, getElabelDetails(connectionId, address));
-    }
+        val d = new DeviceDetails();
+        val s = sensorManager.FirstOrNull(connectionId, address);
+        if (s != null)
+        {
+            try {
+                s.UpdateRawCount();
+                s.UpdateHighResolution(false);
+                s.UpdateParams();
+                d.set(DeviceDetails.ADDRESS, address)
 
-    private DeviceDetails getElabelDetails(Integer connectionId, Integer address) {
-        return new DeviceDetails().set(DeviceDetails.ADDRESS, address);
+                        .set(DeviceDetails.WEIGHT, s.getValues().getNetWeight())
+                        .set(DeviceDetails.HIGH_RESOLUTION, s.getValues().getHighNet())
+                        .set(DeviceDetails.STABLE, s.getValues().isStable())
+                        .set(DeviceDetails.ZERO_OFFSET, s.getValues().getZeroOffset())
+                        .set(DeviceDetails.UNIT, s.getValues().getUnit())
+                        .set(DeviceDetails.RAW_COUNT, s.getValues().getRawCount())
+                        .set(DeviceDetails.COUNTING, s.getValues().isPieceCounting())
+                        .set(DeviceDetails.APW, s.getValues().getAPW())
+                        .set(DeviceDetails.PIECES, s.getValues().getPieceCount())
+
+                        .set(DeviceDetails.PT1_RAW_COUNT, s.getParams().getPoint1RawCount())
+                        .set(DeviceDetails.PT1_WEIGHT, s.getParams().getPoint1Weight())
+                        .set(DeviceDetails.PT2_RAW_COUNT, s.getParams().getPoint2RawCount())
+                        .set(DeviceDetails.PT2_WEIGHT, s.getParams().getPoint2Weight())
+                        .set(DeviceDetails.CAPACITY, s.getParams().getCapacity())
+                        .set(DeviceDetails.INCREMENT, s.getParams().getIncrement())
+                        .set(DeviceDetails.GEO_FACTOR, s.getParams().getGeoFactor())
+                        .set(DeviceDetails.ZERO_CAPTURE, s.getParams().getZeroCapture())
+                        .set(DeviceDetails.CREEP_CORRECT, s.getParams().getCreepCorrect())
+                        .set(DeviceDetails.STABLE_RANGE, s.getParams().getStableRange())
+                        .set(DeviceDetails.PCB_SN, s.getParams().getPCBASn())
+                        .set(DeviceDetails.DEVICE_SN, s.getParams().getDeviceSn())
+                        .set(DeviceDetails.DEVICE_MODEL, s.getParams().getDeviceModel())
+                        .set(DeviceDetails.FIRMWARE_VERSION, s.getParams().getFirmwareVersion());
+
+                if (s.getParams().hasELabel())
+                {
+                    val dtl = new DeviceDetails()
+                            .set(DeviceDetails.ADDRESS, s.getParams().getELabelAddress())
+                            .set(DeviceDetails.PCB_SN, s.getParams().getELabelPCBASn())
+                            .set(DeviceDetails.DEVICE_SN, s.getParams().getELabelDeviceSn())
+                            .set(DeviceDetails.DEVICE_MODEL, s.getParams().getELabelDeviceModel())
+                            .set(DeviceDetails.FIRMWARE_VERSION, s.getParams().getELabelFirmwareVersion());
+                    d.set(DeviceDetails.E_LABEL_DETAILS, dtl);
+                }
+            }
+            catch (Exception ex)
+            {
+                log.warn("getSensorDetails", ex);
+            }
+        }
+        return d;
     }
 }

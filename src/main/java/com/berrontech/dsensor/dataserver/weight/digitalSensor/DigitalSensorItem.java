@@ -138,6 +138,9 @@ public class DigitalSensorItem {
     private long TotalErrors;
     private long TotalSuccess;
     private int ContinueErrors;
+    private long ELabelTotalErrors;
+    private long ELabelTotalSuccess;
+    private int ELabelContinueErrors;
     private boolean Online = false;
     private int HighResCounter;
     private boolean CountInAccuracy = true;
@@ -190,6 +193,16 @@ public class DigitalSensorItem {
         }
     }
 
+    private void SetELabelCommResult(boolean ok) {
+        if (ok) {
+            ELabelTotalSuccess++;
+            ELabelContinueErrors = 0;
+        } else {
+            ELabelTotalErrors++;
+            ELabelContinueErrors++;
+        }
+    }
+
     public static DigitalSensorItem NewSensor(byte address, DigitalSensorDriver driver, DigitalSensorGroup group) {
         DigitalSensorItem item = new DigitalSensorItem();
         item.Params = new DigitalSensorParams();
@@ -225,7 +238,7 @@ public class DigitalSensorItem {
 
     public void SetELabelAddress() throws Exception {
         try {
-            int labelAddr = Params.getAddress() + DataPacket.AddressELabelStart;
+            int labelAddr = Params.getELabelAddress();
             log.info("#{} SetELabelAddress: {}", Params.getAddress(), labelAddr);
             DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressDefault, (byte) (labelAddr));
             synchronized (getDriver().getLock()) {
@@ -327,7 +340,7 @@ public class DigitalSensorItem {
             log.info("#{} SetAddressByDeviceSn", DataPacket.AddressConditionalBroadcast);
             byte newAddress;
             if (type == DataPacket.EDeviceType.ELabel) {
-                newAddress = (byte) (DataPacket.AddressELabelStart + Params.getAddress());
+                newAddress = (byte) Params.getELabelAddress();
             } else {
                 newAddress = (byte) Params.getAddress();
             }
@@ -561,79 +574,94 @@ public class DigitalSensorItem {
             return;
         }
 
-        int status = GetELabelStatus();
-        if (status == -1) {
-            // not online
-            return;
-        }
+        try {
+            int status = GetELabelStatus();
+            if (status == -1) {
+                // not online
+                return;
+            }
+            SetELabelCommResult(true);
 
-        if ((status & DataPacket.EELabelStatusBits.Inited) == 0) {
-            // not inited
-            status |= DataPacket.EELabelStatusBits.Inited;
-            LastPartNumber = null;
-            LastPartName = null;
-            LastBinNo = null;
-            LastWeight = null;
-            // restore enable mark
-            if (Params.isEnabled()) {
-                status |= DataPacket.EELabelStatusBits.Enabled;
+            if ((status & DataPacket.EELabelStatusBits.Inited) == 0) {
+                // not inited
+                status |= DataPacket.EELabelStatusBits.Inited;
+                LastPartNumber = null;
+                LastPartName = null;
+                LastBinNo = null;
+                LastWeight = null;
+                // restore enable mark
+                if (Params.isEnabled()) {
+                    status |= DataPacket.EELabelStatusBits.Enabled;
+                }
+                if (Values.isHighlight()) {
+                    status |= DataPacket.EELabelStatusBits.Highlight;
+                }
+                SetELabelStatus(status);
+                SetELabelCommResult(true);
+            } else {
+                if (isSlotZombieChild()) {
+                    // always enable zombie slot
+                    int newStatus = status | DataPacket.EELabelStatusBits.Enabled;
+                    if (newStatus != status) {
+                        log.debug("#{} Slot({}) is zombie, reset to enable", Params.getAddress(), getSubGroup());
+                        SetELabelStatus(newStatus);
+                        SetELabelCommResult(true);
+                    }
+                } else {
+                    // inited
+                    // get enable mark
+                    Params.setEnabled((status & DataPacket.EELabelStatusBits.Enabled) != 0);
+                }
             }
-            if (Values.isHighlight()) {
-                status |= DataPacket.EELabelStatusBits.Highlight;
-            }
-            SetELabelStatus(status);
-        } else {
-            if (isSlotZombieChild()) {
-                // always enable zombie slot
-                int newStatus = status | DataPacket.EELabelStatusBits.Enabled;
-                if (newStatus != status) {
-                    log.debug("#{} Slot({}) is zombie, reset to enable", Params.getAddress(), getSubGroup());
-                    SetELabelStatus(newStatus);
+
+            if (IsHighlighting()) {
+                if (IsHighlightTimeout()) {
+                    DeHighlight();
+                    SetELabelCommResult(true);
                 }
             } else {
-                // inited
-                // get enable mark
-                Params.setEnabled((status & DataPacket.EELabelStatusBits.Enabled) != 0);
+                if ((status | DataPacket.EELabelStatusBits.Highlight) != 0  // ELabel is highlighting
+                        && Values.isNotHighlight()) // buffered status is not highlight
+                {
+                    // de highlight if previous operations failed
+                    DeHighlight();
+                    SetELabelCommResult(true);
+                }
             }
-        }
 
-        if (IsHighlighting()) {
-            if (IsHighlightTimeout()) {
-                DeHighlight();
+            if (!Objects.equals(LastPartNumber, number)) {
+                if (TextUtils.isTrimedEmpty(number)) {
+                    SetELabelPartNumber(number);
+                } else {
+                    SetELabelPartNumber("SKU:" + number);  // add prefix: SKU
+                }
+                LastPartNumber = number;
+                SetELabelCommResult(true);
             }
-        } else {
-            if ((status | DataPacket.EELabelStatusBits.Highlight) != 0  // ELabel is highlighting
-                    && Values.isNotHighlight()) // buffered status is not highlight
-            {
-                // de highlight if previous operations failed
-                DeHighlight();
+            if (!Objects.equals(LastPartName, name)) {
+                SetELabelPartName(name);
+                LastPartName = name;
+                SetELabelCommResult(true);
             }
-        }
-
-        if (!Objects.equals(LastPartNumber, number)) {
-            if (TextUtils.isTrimedEmpty(number)) {
-                SetELabelPartNumber(number);
-            } else {
-                SetELabelPartNumber("SKU:" + number);  // add prefix: SKU
+            if (!Objects.equals(LastBinNo, bin)) {
+                SetELabelBinNo(bin);
+                LastBinNo = bin;
+                SetELabelCommResult(true);
             }
-            LastPartNumber = number;
-        }
-        if (!Objects.equals(LastPartName, name)) {
-            SetELabelPartName(name);
-            LastPartName = name;
-        }
-        if (!Objects.equals(LastBinNo, bin)) {
-            SetELabelBinNo(bin);
-            LastBinNo = bin;
-        }
-        if (!Objects.equals(LastWeight, wgt)) {
-            SetELabelWeight(wgt);
-            LastWeight = wgt;
-        }
-        if (!Objects.equals(LastPCS, pcs) || LastAccuracy != isCountInAccuracy()) {
-            SetELabelPieceCount(pcs);
-            LastPCS = pcs;
-            LastAccuracy = isCountInAccuracy();
+            if (!Objects.equals(LastWeight, wgt)) {
+                SetELabelWeight(wgt);
+                LastWeight = wgt;
+                SetELabelCommResult(true);
+            }
+            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != isCountInAccuracy()) {
+                SetELabelPieceCount(pcs);
+                LastPCS = pcs;
+                LastAccuracy = isCountInAccuracy();
+                SetELabelCommResult(true);
+            }
+        } catch (Exception ex) {
+            SetELabelCommResult(false);
+            throw ex;
         }
     }
 
@@ -828,6 +856,28 @@ public class DigitalSensorItem {
         throw new TimeoutException("Get " + param + " failed: recv param= " + packet.Content[0]);
     }
 
+    public DataPacket ReadELabelParam(int param, int retries) throws Exception {
+        DataPacket packet = DataPacket.BuildReadParam((byte) Params.getELabelAddress(), param);
+        log.info("#{} ReadELabelParam: name={}, retries={}", packet.getAddress(), param, retries);
+
+        long endTime = System.currentTimeMillis() + getReadTimeout();
+        synchronized (Driver.getLock()) {
+            do {
+                try {
+
+                    packet = Driver.WriteRead(packet, getReadTimeout(), retries);
+                    if (packet.Content[0] == param) {
+                        SetELabelCommResult(true);
+                        return packet;
+                    }
+                } catch (TimeoutException ex) {
+                    // ignore
+                }
+            } while (System.currentTimeMillis() <= endTime);
+        }
+        throw new TimeoutException("Get " + param + " failed: recv param= " + packet.Content[0]);
+    }
+
     public byte[] ReadParamAsBytes(int param, byte[] defaultValue) throws IOException {
         try {
             DataPacket packet = ReadParam(param);
@@ -840,6 +890,22 @@ public class DigitalSensorItem {
         } catch (Exception ex) {
             // read error used default
             log.debug("#{} ReadParamAsBytes failed: {}", Params.getAddress(), ex.getMessage());
+            return defaultValue;
+        }
+    }
+
+    public byte[] ReadELabelParamAsBytes(int param, byte[] defaultValue, int retries) throws IOException {
+        try {
+            DataPacket packet = ReadELabelParam(param, retries);
+            byte[] value = new byte[packet.getContentLength()];
+            System.arraycopy(packet.Content, 1, value, 0, packet.getContentLength());
+            log.info("#{} ReadELabelParamAsBytes: name={}, counts={}", packet.getAddress(), param, value.length);
+            return value;
+        } catch (IOException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            // read error used default
+            log.debug("#{} ReadELabelParamAsBytes failed: {}", Params.getELabelAddress(), ex.getMessage());
             return defaultValue;
         }
     }
@@ -899,7 +965,7 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = ReadParam(param, retries);
             String value = new String(packet.Content, 1, packet.getContentLength() - 1, Charset.forName(DataPacket.DefaultCharsetName));
-            log.info("#{} ReadParamAsString: name={}, value={}", Params.getAddress(), param, value);
+            log.info("#{} ReadParamAsString: name={}, value={}", packet.getAddress(), param, value);
             return value;
         } catch (IOException ex) {
             // port is closed
@@ -907,6 +973,22 @@ public class DigitalSensorItem {
         } catch (Exception ex) {
             // read error used default
             log.debug("#{} ReadParamAsString failed: {}", Params.getAddress(), ex.getMessage());
+            return defaultValue;
+        }
+    }
+
+    public String ReadELabelParamAsString(int param, String defaultValue, int retries) throws IOException {
+        try {
+            DataPacket packet = ReadELabelParam(param, retries);
+            String value = new String(packet.Content, 1, packet.getContentLength() - 1, Charset.forName(DataPacket.DefaultCharsetName));
+            log.info("#{} ReadELabelParamAsString: name={}, value={}", packet.getAddress(), param, value);
+            return value;
+        } catch (IOException ex) {
+            // port is closed
+            throw ex;
+        } catch (Exception ex) {
+            // read error used default
+            log.debug("#{} ReadELabelParamAsString failed: {}", Params.getELabelAddress(), ex.getMessage());
             return defaultValue;
         }
     }
@@ -1074,6 +1156,19 @@ public class DigitalSensorItem {
         }
     }
 
+    public String GetELabelFirmwareVersion(int retries) throws Exception {
+        try {
+            log.info("#{} GetELabelFirmwareVersion", Params.getELabelAddress());
+            byte[] value = ReadELabelParamAsBytes(DataPacket.EParam.FirmwareVersion, new byte[4], retries);
+            String d = value[0] + ":D2." + value[1] + ":D2." + value[2] + ":D2." + value[3] + ":D3";
+            log.info("#{} GetELabelFirmwareVersion: value={}", Params.getELabelAddress(), d);
+            return d;
+        } catch (Exception ex) {
+            SetELabelCommResult(false);
+            throw ex;
+        }
+    }
+
 
     public void SetPCBASn(String value) throws Exception {
         WriteParam(DataPacket.EParam.PCBASn, value, 16);
@@ -1081,6 +1176,10 @@ public class DigitalSensorItem {
 
     public String GetPCBASn() throws Exception {
         return ReadParamAsString(DataPacket.EParam.PCBASn, Params.getPCBASn());
+    }
+
+    public String GetELabelPCBASn(int retries) throws Exception {
+        return ReadELabelParamAsString(DataPacket.EParam.PCBASn, Params.getELabelPCBASn(), retries);
     }
 
     public void SetDeviceSn(String value) throws Exception {
@@ -1095,6 +1194,10 @@ public class DigitalSensorItem {
         return ReadParamAsString(DataPacket.EParam.DeviceSn, Params.getDeviceSn(), retries);
     }
 
+    public String GetELabelDeviceSn(int retries) throws Exception {
+        return ReadELabelParamAsString(DataPacket.EParam.DeviceSn, Params.getDeviceSn(), retries);
+    }
+
     public void SetDeviceModel(String value) throws Exception {
         WriteParam(DataPacket.EParam.DeviceModel, value, 16);
     }
@@ -1102,6 +1205,10 @@ public class DigitalSensorItem {
 
     public String GetDeviceModel() throws Exception {
         return ReadParamAsString(DataPacket.EParam.DeviceModel, Params.getDeviceModel());
+    }
+
+    public String GetELabelDeviceModel(int retries) throws Exception {
+        return ReadELabelParamAsString(DataPacket.EParam.DeviceModel, Params.getDeviceModel(), retries);
     }
 
 
@@ -1217,7 +1324,8 @@ public class DigitalSensorItem {
     }
 
     public DataPacket OperateELabel(byte cmd, byte page, byte totalPage, byte[] data) throws Exception {
-        int address = Params.getAddress() + DataPacket.AddressELabelStart;
+
+        int address = Params.getELabelAddress();
         DataPacket packet = DataPacket.BuildELabelCmd((byte) address, cmd, page, totalPage, data);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
@@ -1368,8 +1476,14 @@ public class DigitalSensorItem {
                 Params.setPCBASn(GetPCBASn());
                 Params.setDeviceSn(GetDeviceSn());
                 Params.setDeviceModel(GetDeviceModel());
+
+                if (Params.hasELabel()) {
+                    Params.setFirmwareVersion(GetELabelFirmwareVersion(0));
+                    Params.setPCBASn(GetELabelPCBASn(0));
+                    Params.setDeviceSn(GetELabelDeviceSn(0));
+                    Params.setDeviceModel(GetELabelDeviceModel(0));
+                }
             }
-            SetCommResult(true);
             log.info("#{} UpdateParams Done", Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);

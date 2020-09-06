@@ -268,6 +268,8 @@ public class DigitalSensorManager {
                     for (DigitalSensorItem s : g.getSensors()) {
                         s.setTotalSuccess(0);
                         s.setTotalErrors(0);
+                        s.setELabelTotalSuccess(0);
+                        s.setELabelTotalErrors(0);
                 }
             }
         }
