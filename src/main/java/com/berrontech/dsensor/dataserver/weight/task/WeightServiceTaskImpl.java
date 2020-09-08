@@ -323,7 +323,8 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void setAllCompensationStatus(boolean enable) {
-        sensorManager.SetAllCreepCorrect(enable ? 2 : 0);
+        sensorManager.SetAllCreepCorrect(enable ? 0.5 : 0);
+        ThreadUtils.trySleep(120);
         sensorManager.SetAllZeroCapture(enable ? 3 : 0.5);
     }
 
@@ -353,14 +354,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public DeviceDetails getSensorDetails(Integer connectionId, Integer address) {
         val d = new DeviceDetails();
         val s = sensorManager.FirstOrNull(connectionId, address);
-        if (s != null)
-        {
+        if (s != null) {
             try {
                 s.UpdateRawCount();
                 s.UpdateHighResolution(false);
                 s.UpdateParams();
                 d.set(DeviceDetails.ADDRESS, address)
-
                         .set(DeviceDetails.WEIGHT, s.getValues().getNetWeight())
                         .set(DeviceDetails.HIGH_RESOLUTION, s.getValues().getHighNet())
                         .set(DeviceDetails.STABLE, s.getValues().isStable())
@@ -370,7 +369,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         .set(DeviceDetails.COUNTING, s.getValues().isPieceCounting())
                         .set(DeviceDetails.APW, s.getValues().getAPW())
                         .set(DeviceDetails.PIECES, s.getValues().getPieceCount())
-
                         .set(DeviceDetails.PT1_RAW_COUNT, s.getParams().getPoint1RawCount())
                         .set(DeviceDetails.PT1_WEIGHT, s.getParams().getPoint1Weight())
                         .set(DeviceDetails.PT2_RAW_COUNT, s.getParams().getPoint2RawCount())
@@ -386,8 +384,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                         .set(DeviceDetails.DEVICE_MODEL, s.getParams().getDeviceModel())
                         .set(DeviceDetails.FIRMWARE_VERSION, s.getParams().getFirmwareVersion());
 
-                if (s.getParams().hasELabel())
-                {
+                if (s.getParams().hasELabel()) {
                     val dtl = new DeviceDetails()
                             .set(DeviceDetails.ADDRESS, s.getParams().getELabelAddress())
                             .set(DeviceDetails.PCB_SN, s.getParams().getELabelPCBASn())
@@ -396,9 +393,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                             .set(DeviceDetails.FIRMWARE_VERSION, s.getParams().getELabelFirmwareVersion());
                     d.set(DeviceDetails.E_LABEL_DETAILS, dtl);
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 log.warn("getSensorDetails", ex);
             }
         }

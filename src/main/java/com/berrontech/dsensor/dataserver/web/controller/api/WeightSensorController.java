@@ -156,4 +156,16 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         final List<WeightSensor> sensors = weightSensorService.dumpAll();
         return GeneralResult.ok(sensors);
     }
+
+    /**
+     * find Sensor by id
+     *
+     * @param id id
+     * @return GR
+     */
+    @GetMapping("/{id}")
+    public GeneralResult<WeightSensor> findById(@PathVariable("id") Integer id) {
+        final WeightSensor sensor = weightSensorService.require(id);
+        return GeneralResult.ok(sensor);
+    }
 }

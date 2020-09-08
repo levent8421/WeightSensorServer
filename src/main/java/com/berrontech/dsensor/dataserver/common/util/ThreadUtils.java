@@ -1,5 +1,7 @@
 package com.berrontech.dsensor.dataserver.common.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.*;
 
 /**
@@ -12,6 +14,7 @@ import java.util.concurrent.*;
  *
  * @author Levent8421
  */
+@Slf4j
 public class ThreadUtils {
     /**
      * 创建单线程 线程池
@@ -34,6 +37,19 @@ public class ThreadUtils {
     public static ExecutorService createThreadPoolExecutorService(int poolCoreSize, int poolMaxSize, String threadName) {
         return new ThreadPoolExecutor(poolCoreSize, poolMaxSize, 0, TimeUnit.MILLISECONDS,
                 new LinkedBlockingDeque<>(), new NamedThreadFactory(threadName));
+    }
+
+    /**
+     * 当前线程睡眠
+     *
+     * @param ms 毫秒数
+     */
+    public static void trySleep(int ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            log.error("Error on thread sleep", e);
+        }
     }
 }
 
