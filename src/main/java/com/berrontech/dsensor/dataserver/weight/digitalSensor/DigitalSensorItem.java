@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
+import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.QrCodeUtil;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
@@ -9,9 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -1147,22 +1146,30 @@ public class DigitalSensorItem {
         try {
             log.info("#{} GetFirmwareVersion", Params.getAddress());
             byte[] value = GetFirmwareVersionBytes();
-            String d = value[0] + ":D2." + value[1] + ":D2." + value[2] + ":D2." + value[3] + ":D3";
-            log.info("#{} GetFirmwareVersion: value={}", Params.getAddress(), d);
-            return d;
+            final String versionStr = formatVersion(value);
+            log.info("#{} GetFirmwareVersion: value={}", Params.getAddress(), versionStr);
+            return versionStr;
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
         }
     }
 
+    private String formatVersion(byte[] versionBytes) {
+        final List<Integer> sections = new ArrayList<>();
+        for (byte b : versionBytes) {
+            sections.add((int) b);
+        }
+        return CollectionUtils.join(sections.stream(), ".");
+    }
+
     public String GetELabelFirmwareVersion(int retries) throws Exception {
         try {
             log.info("#{} GetELabelFirmwareVersion", Params.getELabelAddress());
             byte[] value = ReadELabelParamAsBytes(DataPacket.EParam.FirmwareVersion, new byte[4], retries);
-            String d = value[0] + ":D2." + value[1] + ":D2." + value[2] + ":D2." + value[3] + ":D3";
-            log.info("#{} GetELabelFirmwareVersion: value={}", Params.getELabelAddress(), d);
-            return d;
+            final String versionStr = formatVersion(value);
+            log.info("#{} GetELabelFirmwareVersion: value={}", Params.getELabelAddress(), versionStr);
+            return versionStr;
         } catch (Exception ex) {
             SetELabelCommResult(false);
             throw ex;
@@ -1478,10 +1485,10 @@ public class DigitalSensorItem {
                 Params.setDeviceModel(GetDeviceModel());
 
                 if (Params.hasELabel()) {
-                    Params.setFirmwareVersion(GetELabelFirmwareVersion(0));
-                    Params.setPCBASn(GetELabelPCBASn(0));
-                    Params.setDeviceSn(GetELabelDeviceSn(0));
-                    Params.setDeviceModel(GetELabelDeviceModel(0));
+                    Params.setELabelFirmwareVersion(GetELabelFirmwareVersion(0));
+                    Params.setELabelPCBASn(GetELabelPCBASn(0));
+                    Params.setELabelDeviceSn(GetELabelDeviceSn(0));
+                    Params.setELabelDeviceModel(GetELabelDeviceModel(0));
                 }
             }
             log.info("#{} UpdateParams Done", Params.getAddress());
@@ -1510,251 +1517,4 @@ public class DigitalSensorItem {
         }
         return readPack;
     }
-//
-//    protected boolean UpgradeQuery(byte[] version) {
-//        version = null;
-//
-//        log.debug("#{} UpgradeQuery", Params.getAddress());
-//        DataPacket packet = DataPacket.BuildUpgradeQuery((byte) Params.getAddress());
-//        try {
-//            packet = UpgradeWriteRead(packet, UpgradeReadTimeout);
-//            SetCommResult(true);
-//            result = (DataPacket.EResult) packet.Content[1];
-//            version = ArrayHelper.SubArray(packet.Content, 2, 4);
-//            Log.D($"UpgradeQuery: result={result}, protocol={version[0]}, version={version[1]}.{version[2]}.{version[3]}");
-//            if (result == DataPacket.EResult.OK)
-//                return true;
-//            else
-//                return false;
-//        } catch (TimeoutException) {
-//            return false;
-//        } catch (IOException ex) {
-//            // port is closed
-//            throw ex;
-//        } catch (Exception ex) {
-//            Log.E($"UpgradeQuery", ex);
-//
-//            SetCommResult(false);
-//            throw ex;
-//        }
-//    }
-//
-//    protected bool UpgradeStart(DataPacket.EDeviceType deviceType) {
-//        Log.D($"#{Params.Address} UpgradeStart: DeviceType={deviceType}");
-//        DataPacket packet = DataPacket.BuildUpgradeStart((byte) Params.Address, (byte) deviceType, 1000);
-//        try {
-//            packet = UpgradeWriteRead(packet, UpgradeReadTimeout);
-//            SetCommResult(true);
-//            DataPacket.EResult result = (DataPacket.EResult) packet.Content[1];
-//            Log.D($"UpgradeStart: result={result}");
-//            if (result == DataPacket.EResult.OK)
-//                return true;
-//            else
-//                return false;
-//        } catch (TimeoutException) {
-//            return false;
-//        } catch (IOException ex) {
-//            // port is closed
-//            throw ex;
-//        } catch (Exception ex) {
-//            Log.E($"UpgradeStart", ex);
-//
-//            SetCommResult(false);
-//            throw ex;
-//        }
-//    }
-//
-//    protected bool UpgradeSendHead(uint flushAddress, int dataSize) {
-//        int roundSize = dataSize;
-//        while (roundSize % 4 != 0)
-//            roundSize++;
-//        DataPacket.EResult result = DataPacket.EResult.ErrUnknow;
-//        Log.D($"#{Params.Address} UpgradeSendHead: address=0x{flushAddress:X8}, size={roundSize}({dataSize})");
-//        DataPacket packet = DataPacket.BuildUpgradeHead((byte) Params.Address, flushAddress, roundSize);
-//        try {
-//            packet = UpgradeWriteRead(packet, EmptyFlashTimeout);
-//            SetCommResult(true);
-//            result = (DataPacket.EResult) packet.Content[1];
-//            Log.D($"UpgradeSendHead: result={result}");
-//            if (result == DataPacket.EResult.OK)
-//                return true;
-//            else
-//                return false;
-//        } catch (TimeoutException) {
-//            return false;
-//        } catch (IOException ex) {
-//            // port is closed
-//            throw ex;
-//        } catch (Exception ex) {
-//            Log.E($"UpgradeSendHead", ex);
-//
-//            SetCommResult(false);
-//            throw ex;
-//        }
-//    }
-//
-//    protected bool UpgradeSendEnd() {
-//        DataPacket.EResult result = DataPacket.EResult.ErrUnknow;
-//        Log.D($"#{Params.Address} UpgradeSendEnd");
-//        DataPacket packet = DataPacket.BuildUpgradeEnd((byte) Params.Address);
-//        Driver.Write(packet);
-//        Thread.Sleep(100);
-//        Driver.Write(packet);
-//        return true;
-//        //try
-//        //{
-//        //    packet = UpgradeWriteRead(packet, UpgradeReadTimeout);
-//        //    SetCommResult(true);
-//        //    result = (DataPacket.EResult)packet.Content[1];
-//        //    Log.D($"UpgradeSendEnd: result={result}");
-//        //    if (result == DataPacket.EResult.OK)
-//        //        return true;
-//        //    else
-//        //        return false;
-//        //}
-//        //catch (TimeoutException)
-//        //{
-//        //    return false;
-//        //}
-//        //catch (IOException ex)
-//        //{
-//        //    // port is closed
-//        //    throw ex;
-//        //}
-//        //catch (Exception ex)
-//        //{
-//        //    Log.E($"UpgradeSendEnd", ex);
-//
-//        //    SetCommResult(false);
-//        //    throw ex;
-//        //}
-//    }
-//
-//    protected bool UpgradeSendData(byte packNo, IEnumerable<byte> data) {
-//        DataPacket.EResult result = DataPacket.EResult.ErrUnknow;
-//        Log.D($"#{Params.Address} UpgradeSendData: packNo={packNo}, dataLen={data.Count()}");
-//        DataPacket packet = DataPacket.BuildUpgradeData((byte) Params.Address, packNo, data);
-//        try {
-//            packet = UpgradeWriteRead(packet, WriteParamTimeout);
-//            SetCommResult(true);
-//            result = (DataPacket.EResult) packet.Content[1];
-//            Log.D($"UpgradeSendData: result={result}");
-//            if (result == DataPacket.EResult.OK)
-//                return true;
-//            else
-//                return false;
-//        } catch (TimeoutException) {
-//            return false;
-//        } catch (IOException ex) {
-//            // port is closed
-//            throw ex;
-//        } catch (Exception ex) {
-//            Log.E($"UpgradeSendData", ex);
-//
-//            SetCommResult(false);
-//            throw ex;
-//        }
-//    }
-//
-//    private bool _upgrading = false;
-//        [XmlIgnore]
-//    public bool Upgrading
-//
-//    {
-//        get =>_upgrading;
-//        set =>SetValue(ref _upgrading, value, nameof(Upgrading));
-//    }
-//
-//    public bool DoUpgrade(string firmware, DataPacket.EDeviceType deviceType) {
-//        if (Upgrading) return false;
-//
-//        HexFileParser hex = new HexFileParser();
-//        List<HexDataBlockInfo> blocks = new List<HexDataBlockInfo>();
-//        try {
-//            hex.OpenFile(firmware);
-//            blocks = hex.ReadToDataBlocks();
-//        } finally {
-//            hex.CloseFile();
-//        }
-//
-//        lock(Driver.Locker)
-//        {
-//            try {
-//                Upgrading = true;
-//                DigitalSensorItem sensor = this;
-//                // check status
-//                if (!sensor.UpgradeQuery(out var result, out var version)) {
-//                    try {
-//                        Log.D("Try start device boot");
-//                        // unlock first
-//                        sensor.Unlock();
-//                        // start to bootloader
-//                        if (sensor.UpgradeStart(deviceType))
-//                            Log.D("Call boot done");
-//                        else
-//                            Log.D("Call boot failed, try upgrading directly");
-//                    } catch (TimeoutException) {
-//                        // ignore
-//                        Log.D("Start boot failed, try upgrading directly");
-//                    }
-//                }
-//                // build default sensor for upgrading
-//                sensor = NewDefaultSensor(Driver, Group);
-//                // handshake
-//                while (Upgrading) {
-//                    if (sensor.UpgradeQuery(out result, out version)) {
-//                        break;
-//                    }
-//                }
-//                bool hasError = false;
-//                // send blocks
-//                foreach(var block in blocks)
-//                {
-//                    if (!Upgrading) break;
-//
-//                    // send head
-//                    if (sensor.UpgradeSendHead(block.Address, block.Data.Count)) {
-//                        byte packNo = (byte) DataPacket.EUpgradePackNo.DataHead;
-//                        int offset = 0;
-//                        int size = 128;
-//                        while (Upgrading) {
-//                            var data = ListHelper.SubList(block.Data, offset, size);
-//                            if (data.Count == 0)
-//                                break;  // no more data
-//                            while (data.Count % 4 != 0)
-//                                data.Add(0xFF); // padding to 4 multiple
-//                            Log.D($"Downloading prograss {offset * 100 / block.Data.Count}%");
-//                            if (sensor.UpgradeSendData(packNo, data)) {
-//                                offset += data.Count;
-//                                packNo++;
-//                                if (packNo > (byte) DataPacket.EUpgradePackNo.DataEnd)
-//                                    packNo = (byte) DataPacket.EUpgradePackNo.DataHead;
-//                            }
-//                        }
-//                    } else {
-//                        hasError = true;
-//                    }
-//                }
-//                if (!Upgrading) return false;
-//                if (hasError) {
-//                    Log.W("Upgrading Failed");
-//                    return false;
-//                } else {
-//                    // send end
-//                    if (sensor.UpgradeSendEnd()) {
-//                        // finish upgrading
-//                    }
-//                    Log.N("Upgrading Finished");
-//                    return true;
-//                }
-//            } finally {
-//                Upgrading = false;
-//            }
-//        }
-//    }
-//
-//    public void AbortUpgrading() {
-//        Upgrading = false;
-//    }
-
 }
