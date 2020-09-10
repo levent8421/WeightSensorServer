@@ -35,7 +35,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         if (Children.size() <= 0) {
             return;
         }
-        DigitalSensorItem firstSensor = Children.stream().sorted(Comparator.comparing(DigitalSensorItem::getSubGroupPosition)).collect(Collectors.toList()).get(0);
+        DigitalSensorItem firstSensor = getFirstChild();
 
         float fSum;
         BigDecimal sum;
@@ -78,7 +78,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         if (Children.size() <= 0) {
             return;
         }
-        DigitalSensorItem firstSensor = Children.stream().sorted(Comparator.comparing(DigitalSensorItem::getSubGroupPosition)).collect(Collectors.toList()).get(0);
+        DigitalSensorItem firstSensor = getFirstChild();
 
         String number;
         String name;
@@ -100,13 +100,15 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         }
 
         firstSensor.UpdateELabel(number, name, bin, wgt, pcs);
-        for (int pos = 1; pos < Children.size(); pos++) {
-            number = " ";
-            name = " ";
-            bin = getSubGroup();
-            wgt = " ";
-            pcs = " ";
-            Children.get(pos).UpdateELabel(number, name, bin, wgt, pcs);
+        number = " ";
+        name = " ";
+        bin = getSubGroup();
+        wgt = " ";
+        pcs = " ";
+        for (int pos = 0; pos < Children.size(); pos++) {
+            if (Children.get(pos) != firstSensor) {
+                Children.get(pos).UpdateELabel(number, name, bin, wgt, pcs);
+            }
         }
     }
 }
