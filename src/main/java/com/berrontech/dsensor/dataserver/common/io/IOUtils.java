@@ -2,10 +2,7 @@ package com.berrontech.dsensor.dataserver.common.io;
 
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Create By Levent8421
@@ -46,11 +43,16 @@ public class IOUtils {
      * @throws IOException any exception
      */
     public static byte[] readAsBytes(File source) throws IOException {
-        try (final FileInputStream fis = new FileInputStream(source);
-             final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+        try (final FileInputStream fis = new FileInputStream(source)) {
+            return readAsBytes(fis);
+        }
+    }
+
+    public static byte[] readAsBytes(InputStream in) throws IOException {
+        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             final byte[] buffers = new byte[1024];
             int readLen;
-            while ((readLen = fis.read(buffers)) > 0) {
+            while ((readLen = in.read(buffers)) > 0) {
                 bos.write(buffers, 0, readLen);
             }
             return bos.toByteArray();

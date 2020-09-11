@@ -13,6 +13,8 @@ import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
+import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareResource;
+import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
@@ -398,5 +400,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             }
         }
         return d;
+    }
+
+    @Override
+    public void upgradeFirmware(Integer connectionId, Integer address, FirmwareResource resource, UpgradeFirmwareListener listener) {
+        // TODO 升级固件
     }
 }

@@ -127,6 +127,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
                     + id
                     + "]!");
         }
+        log.debug("Set sensor[{}] zeroOffset to [{}]", id, zeroReference);
     }
 
     @Override

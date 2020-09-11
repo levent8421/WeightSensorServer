@@ -3,6 +3,8 @@ package com.berrontech.dsensor.dataserver.weight;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
+import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareResource;
+import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 
 import java.io.IOException;
@@ -125,4 +127,14 @@ public interface WeightController {
      * @return details
      */
     DeviceDetails getSensorDetails(Integer connectionId, Integer address);
+
+    /**
+     * 烧写固件
+     *
+     * @param connectionId 连接ID
+     * @param address      物理地址
+     * @param resource     固件资源
+     * @param listener     监听器
+     */
+    void upgradeFirmware(Integer connectionId, Integer address, FirmwareResource resource, UpgradeFirmwareListener listener);
 }
