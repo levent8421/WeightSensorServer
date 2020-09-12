@@ -65,8 +65,8 @@ public class HexFileParser {
                     if (startAdd + data.length == this.CurrentAddress + line.Offset) {
                         // continuous data, append to the end
                         byte[] newbuf = new byte[data.length + line.DataLength];
-                        System.arraycopy(newbuf, 0, data, 0, data.length);
-                        System.arraycopy(newbuf, data.length, line.Data, 0, line.DataLength);
+                        System.arraycopy(data, 0, newbuf, 0, data.length);
+                        System.arraycopy(line.Data, 0, newbuf, data.length, line.DataLength);
                         data = newbuf;
                     } else {
                         // not continuous address, save history, start new block recording
@@ -78,7 +78,7 @@ public class HexFileParser {
                         // start new block
                         startAdd = this.CurrentAddress + line.Offset;
                         data = new byte[line.DataLength];
-                        System.arraycopy(data, 0, line.Data, 0, line.DataLength);
+                        System.arraycopy(line.Data, 0, data, 0, line.DataLength);
                     }
                     break;
                 }
@@ -120,7 +120,7 @@ public class HexFileParser {
         }
 
         public static final char HeadChar = ':';
-        public byte DataLength;
+        public int DataLength;
 
         public int Offset;
 

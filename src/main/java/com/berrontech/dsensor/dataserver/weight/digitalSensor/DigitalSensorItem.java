@@ -1528,7 +1528,7 @@ public class DigitalSensorItem {
             packet = UpgradeWriteRead(packet, getUpgradeReadTimeout());
             SetCommResult(true);
             result = packet.Content[1];
-            System.arraycopy(version, 0, packet.Content, 2, version.length);
+            System.arraycopy(packet.Content, 2, version, 0, version.length);
             log.debug("UpgradeQuery: result={}, protocol={}, version={}.{}.{}", result, version[0], version[1], version[2], version[3]);
             return result == DataPacket.EResult.OK;
         } catch (TimeoutException ex) {
@@ -1706,7 +1706,7 @@ public class DigitalSensorItem {
                                 break;
                             }
                             try {
-                                System.arraycopy(data, 0, block.Data, offset, realSize);
+                                System.arraycopy(block.Data, offset, data, 0, realSize);
                             } catch (Throwable e) {
                                 e.printStackTrace();
                             }
