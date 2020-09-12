@@ -2,12 +2,9 @@ package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 
-import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Data
@@ -70,6 +67,7 @@ public class HexFileParser {
                         byte[] newbuf = new byte[data.length + line.DataLength];
                         System.arraycopy(newbuf, 0, data, 0, data.length);
                         System.arraycopy(newbuf, data.length, line.Data, 0, line.DataLength);
+                        data = newbuf;
                     } else {
                         // not continuous address, save history, start new block recording
                         if (data.length != 0) {
@@ -138,7 +136,7 @@ public class HexFileParser {
             if (this.Data != null) {
                 sum += ByteHelper.calcSum(Data);
             }
-            sum = (byte) (0x100 - sum);
+            sum = (0x100 - (sum & 0xFF)) & 0xFF;
             return sum;
         }
 
@@ -180,7 +178,7 @@ public class HexFileParser {
         public static int BytesToAddress(byte[] bytes) {
             int address = 0;
             for (byte b : bytes) {
-                address = (address << 8) + b;
+                address = (address << 8) + (b & 0xFF);
             }
             return address;
         }
@@ -214,9 +212,9 @@ public class HexFileParser {
             info.Offset = BytesToAddress(HexStrToBytes(line, 3, 4));
             info.RecordType = ByteHelper.hexCharsToByte(line, 7, 2);
             info.Data = HexStrToBytes(line, 9, info.DataLength * 2);
-            byte checksum = ByteHelper.hexCharsToByte(line, 9 + info.DataLength * 2, 2);
+            int checksum = ByteHelper.hexCharsToByte(line, 9 + info.DataLength * 2, 2) & 0xFF;
             if (checksum != info.CalcChecksum()) {
-                throw new Exception(String.format("Error checksum: %d / %d", checksum, info.CalcChecksum()));
+                throw new Exception(String.format("Error checksum: %X / %X", checksum, info.CalcChecksum()));
             }
 
             return info;

@@ -4,7 +4,6 @@ import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.QrCodeUtil;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
-import jdk.internal.jline.internal.Log;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -1696,17 +1695,24 @@ public class DigitalSensorItem {
                         byte packNo = (byte) DataPacket.EUpgradePackNo.DataHead;
                         int offset = 0;
                         int size = 128;
+                        byte[] data = new byte[size];
 
                         totalSize += block.Data.length;
                         while (Upgrading) {
-                            byte[] data = new byte[((size + 3) / 4) * 4]; // padding to 4 multiple
-                            if (data.length == 0) {
-                                break;  // no more data
+                            // padding to 4 multiple
+                            int realSize = Math.min(size, block.Data.length - offset);
+                            if (realSize <= 0) {
+                                // no more data
+                                break;
                             }
-                            for (int pos = size; pos < data.length; pos++) {
+                            try {
+                                System.arraycopy(data, 0, block.Data, offset, realSize);
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                            }
+                            for (int pos = realSize; pos < data.length; pos++) {
                                 data[pos] = (byte) 0xFF;
                             }
-                            System.arraycopy(data, 0, block.Data, offset, size);
                             log.debug("Downloading progress {}%", offset * 100 / block.Data.length);
                             if (p != null) {
                                 p.onProgress(block.Data.length, offset);

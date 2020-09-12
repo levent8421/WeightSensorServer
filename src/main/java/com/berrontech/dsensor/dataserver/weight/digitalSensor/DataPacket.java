@@ -350,6 +350,9 @@ public class DataPacket {
 
 
     public static DataPacket BuildUpgrade(byte address, byte packNo, byte[] data) {
+        if (data == null) {
+            data = new byte[0];
+        }
         byte[] content = new byte[data.length + 1];
         content[0] = packNo;
         System.arraycopy(data, 0, content, 1, data.length);
