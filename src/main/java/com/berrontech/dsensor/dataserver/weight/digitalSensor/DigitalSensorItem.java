@@ -4,8 +4,10 @@ import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.QrCodeUtil;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
+import jdk.internal.jline.internal.Log;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -1517,4 +1519,236 @@ public class DigitalSensorItem {
         }
         return readPack;
     }
+
+    protected boolean UpgradeQuery(byte[] version) throws Exception {
+        int result = DataPacket.EResult.ErrUnknow;
+
+        log.debug("#{} UpgradeQuery", Params.getAddress());
+        DataPacket packet = DataPacket.BuildUpgradeQuery((byte) Params.getAddress());
+        try {
+            packet = UpgradeWriteRead(packet, getUpgradeReadTimeout());
+            SetCommResult(true);
+            result = packet.Content[1];
+            System.arraycopy(version, 0, packet.Content, 2, version.length);
+            log.debug("UpgradeQuery: result={}, protocol={}, version={}.{}.{}", result, version[0], version[1], version[2], version[3]);
+            return result == DataPacket.EResult.OK;
+        } catch (TimeoutException ex) {
+            return false;
+        } catch (IOException ex) {
+            // port is closed
+            throw ex;
+        } catch (Exception ex) {
+            log.error("UpgradeQuery", ex);
+
+            SetCommResult(false);
+            throw ex;
+        }
+    }
+
+    protected boolean UpgradeStart(int deviceType) throws Exception {
+        log.debug("#{} UpgradeStart: DeviceType={}", Params.getAddress(), deviceType);
+        DataPacket packet = DataPacket.BuildUpgradeStart((byte) Params.getAddress(), (byte) deviceType, 1000);
+        try {
+            packet = UpgradeWriteRead(packet, getUpgradeReadTimeout());
+            SetCommResult(true);
+            int result = packet.Content[1];
+            log.debug("UpgradeStart: result={}", result);
+            return result == DataPacket.EResult.OK;
+        } catch (TimeoutException ex) {
+            return false;
+        } catch (IOException ex) {
+            // port is closed
+            throw ex;
+        } catch (Exception ex) {
+            log.error("UpgradeStart", ex);
+
+            SetCommResult(false);
+            throw ex;
+        }
+    }
+
+    protected boolean UpgradeSendHead(int flushAddress, int dataSize) throws Exception {
+        int roundSize = dataSize;
+        while (roundSize % 4 != 0) {
+            roundSize++;
+        }
+        int result = DataPacket.EResult.ErrUnknow;
+        log.debug("#{} UpgradeSendHead: address=0x{}, size={}({})", Params.getAddress(), Integer.toHexString(flushAddress), roundSize, dataSize);
+        DataPacket packet = DataPacket.BuildUpgradeHead((byte) Params.getAddress(), flushAddress, roundSize);
+        try {
+            packet = UpgradeWriteRead(packet, getEmptyFlashTimeout());
+            SetCommResult(true);
+            result = packet.Content[1];
+            log.debug("UpgradeSendHead: result={}", result);
+            return result == DataPacket.EResult.OK;
+        } catch (TimeoutException ex) {
+            return false;
+        } catch (IOException ex) {
+            // port is closed
+            throw ex;
+        } catch (Exception ex) {
+            log.error("UpgradeSendHead", ex);
+
+            SetCommResult(false);
+            throw ex;
+        }
+    }
+
+    protected boolean UpgradeSendEnd() throws Exception {
+        int result = DataPacket.EResult.ErrUnknow;
+        log.debug("#{} UpgradeSendEnd", Params.getAddress());
+        DataPacket packet = DataPacket.BuildUpgradeEnd((byte) Params.getAddress());
+        Driver.Write(packet);
+        Thread.sleep(100);
+        Driver.Write(packet);
+        return true;
+    }
+
+    protected boolean UpgradeSendData(byte packNo, byte[] data) throws Exception {
+        int result = DataPacket.EResult.ErrUnknow;
+        log.debug("#{Params.Address} UpgradeSendData: packNo={packNo}, dataLen={data.Count()}");
+        DataPacket packet = DataPacket.BuildUpgradeData((byte) Params.getAddress(), packNo, data);
+        try {
+            packet = UpgradeWriteRead(packet, getWriteParamTimeout());
+            SetCommResult(true);
+            result = packet.Content[1];
+            log.debug("UpgradeSendData: result={}", result);
+            return result == DataPacket.EResult.OK;
+        } catch (TimeoutException ex) {
+            return false;
+        } catch (IOException ex) {
+            // port is closed
+            throw ex;
+        } catch (Exception ex) {
+            log.error("UpgradeSendData", ex);
+
+            SetCommResult(false);
+            throw ex;
+        }
+    }
+
+    public interface OnUpgradeProgress {
+        void onProgress(int total, int current);
+    }
+
+    private boolean Upgrading = false;
+
+    public boolean UpgradeSensor(byte[] hexFileContent, OnUpgradeProgress p) throws Exception {
+        return DoUpgrade(hexFileContent, DataPacket.EDeviceType.DigitalSensor, p);
+    }
+
+    public boolean DoUpgrade(byte[] hexFileContent, int deviceType, OnUpgradeProgress p) throws Exception {
+        if (p != null) {
+            p.onProgress(0, 0);
+        }
+        if (Upgrading) {
+            return false;
+        }
+
+        int totalSize = 0;
+        HexFileParser hex = new HexFileParser();
+        List<HexFileParser.HexDataBlockInfo> blocks = new ArrayList<>();
+        try {
+            hex.Import(hexFileContent);
+            blocks = hex.ReadToDataBlocks();
+        } finally {
+        }
+
+        synchronized (Driver.getLock()) {
+            try {
+                Upgrading = true;
+                DigitalSensorItem sensor = this;
+                byte[] version = new byte[4];
+                // check status
+                if (!sensor.UpgradeQuery(version)) {
+                    try {
+                        log.debug("Try start device boot");
+                        // unlock first
+                        sensor.Unlock();
+                        // start to bootloader
+                        if (sensor.UpgradeStart(deviceType)) {
+                            log.debug("Call boot done");
+                        } else {
+                            log.debug("Call boot failed, try upgrading directly");
+                        }
+                    } catch (TimeoutException ex) {
+                        // ignore
+                        log.debug("Start boot failed, try upgrading directly");
+                    }
+                }
+                // build default sensor for upgrading
+                sensor = NewDefaultSensor(Driver, Group);
+                // handshake
+                while (Upgrading) {
+                    if (sensor.UpgradeQuery(version)) {
+                        break;
+                    }
+                }
+                boolean hasError = false;
+                // send blocks
+                for (val block : blocks) {
+                    if (!Upgrading) {
+                        break;
+                    }
+
+                    // send head
+                    if (sensor.UpgradeSendHead(block.Address, block.Data.length)) {
+                        byte packNo = (byte) DataPacket.EUpgradePackNo.DataHead;
+                        int offset = 0;
+                        int size = 128;
+
+                        totalSize += block.Data.length;
+                        while (Upgrading) {
+                            byte[] data = new byte[((size + 3) / 4) * 4]; // padding to 4 multiple
+                            if (data.length == 0) {
+                                break;  // no more data
+                            }
+                            for (int pos = size; pos < data.length; pos++) {
+                                data[pos] = (byte) 0xFF;
+                            }
+                            System.arraycopy(data, 0, block.Data, offset, size);
+                            log.debug("Downloading progress {}%", offset * 100 / block.Data.length);
+                            if (p != null) {
+                                p.onProgress(block.Data.length, offset);
+                            }
+
+                            if (sensor.UpgradeSendData(packNo, data)) {
+                                offset += data.length;
+                                packNo++;
+                                if (packNo > (byte) DataPacket.EUpgradePackNo.DataEnd) {
+                                    packNo = (byte) DataPacket.EUpgradePackNo.DataHead;
+                                }
+                            }
+                        }
+                    } else {
+                        hasError = true;
+                    }
+                }
+                if (!Upgrading) {
+                    return false;
+                }
+                if (hasError) {
+                    log.warn("Upgrading Failed");
+                    return false;
+                } else {
+                    // send end
+                    if (sensor.UpgradeSendEnd()) {
+                        // finish upgrading
+                    }
+                    log.debug("Upgrading Finished");
+                    if (p != null) {
+                        p.onProgress(totalSize, totalSize);
+                    }
+                    return true;
+                }
+            } finally {
+                Upgrading = false;
+            }
+        }
+    }
+
+    public void AbortUpgrading() {
+        Upgrading = false;
+    }
+
 }

@@ -95,4 +95,24 @@ public class ByteHelper {
         bytes[7] = (byte) ((data >> 56) & 0xff);
         return bytes;
     }
+
+    public static int hexCharsToInt(String str, int offset, int length)
+    {
+        return Integer.parseUnsignedInt(str.substring(offset, offset + length), 16);
+    }
+
+    public static byte hexCharsToByte(String str, int offset, int length)
+    {
+        return (byte)(Integer.parseUnsignedInt(str.substring(offset, offset + length), 16) & 0xFF);
+    }
+
+    public static int calcSum(byte[] data)
+    {
+        int sum = 0;
+        for (byte b : data)
+        {
+            sum += b & 0xFF;
+        }
+        return sum;
+    }
 }
