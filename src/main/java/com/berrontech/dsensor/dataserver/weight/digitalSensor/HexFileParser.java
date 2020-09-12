@@ -18,7 +18,12 @@ public class HexFileParser {
 
     public void Import(byte[] hexFileContent) {
         String ct = new String(hexFileContent);
-        Lines = ct.split("[\r,\n]");
+        Import(ct);
+    }
+
+    public void Import(String hexFileContent)
+    {
+        Lines = hexFileContent.split("[\r,\n]");
     }
 
     public void Reset() {

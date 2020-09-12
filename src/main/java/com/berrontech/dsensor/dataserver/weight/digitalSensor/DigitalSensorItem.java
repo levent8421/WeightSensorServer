@@ -1692,7 +1692,7 @@ public class DigitalSensorItem {
 
                     // send head
                     if (sensor.UpgradeSendHead(block.Address, block.Data.length)) {
-                        byte packNo = (byte) DataPacket.EUpgradePackNo.DataHead;
+                        int packNo = DataPacket.EUpgradePackNo.DataHead;
                         int offset = 0;
                         int size = 128;
                         byte[] data = new byte[size];
@@ -1718,11 +1718,11 @@ public class DigitalSensorItem {
                                 p.onProgress(block.Data.length, offset);
                             }
 
-                            if (sensor.UpgradeSendData(packNo, data)) {
+                            if (sensor.UpgradeSendData((byte)packNo, data)) {
                                 offset += data.length;
                                 packNo++;
-                                if (packNo > (byte) DataPacket.EUpgradePackNo.DataEnd) {
-                                    packNo = (byte) DataPacket.EUpgradePackNo.DataHead;
+                                if (packNo > DataPacket.EUpgradePackNo.DataEnd) {
+                                    packNo = DataPacket.EUpgradePackNo.DataHead;
                                 }
                             }
                         }
