@@ -404,19 +404,33 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void upgradeFirmware(Integer connectionId, Integer address, FirmwareResource resource, UpgradeFirmwareListener listener) {
-        // TODO 升级固件
         sensorManager.StopReading();
         DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
         if (s == null) {
             log.warn("#{} can not be found", address);
+            return;
         }
 
         try {
-            s.UpgradeSensor(resource.getContent(), (total, current) -> listener.onUpdate(total, current));
-            listener.onSuccess(connectionId, address);
+            if (s.UpgradeSensor(resource.getContent(), listener::onUpdate)) {
+                listener.onSuccess(connectionId, address);
+            } else {
+                listener.onError(connectionId, address, new IllegalStateException("User Aborted"));
+            }
         } catch (Exception ex) {
             log.warn("#{} Upgrade failed: {}", address, ex);
             listener.onError(connectionId, address, ex);
         }
+    }
+
+    @Override
+    public void cancelUpgrade(Integer connectionId, Integer address) {
+        sensorManager.StopReading();
+        DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
+        if (s == null) {
+            log.warn("#{} can not be found", address);
+            return;
+        }
+        s.AbortUpgrading();
     }
 }

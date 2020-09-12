@@ -137,4 +137,12 @@ public interface WeightController {
      * @param listener     监听器
      */
     void upgradeFirmware(Integer connectionId, Integer address, FirmwareResource resource, UpgradeFirmwareListener listener);
+
+    /**
+     * 取消升级
+     *
+     * @param connectionId 连接ID
+     * @param address      物理地址
+     */
+    void cancelUpgrade(Integer connectionId, Integer address);
 }

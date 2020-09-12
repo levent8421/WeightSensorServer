@@ -69,16 +69,16 @@ public class FirmwareController extends AbstractController implements UpgradeFir
 
     @Override
     public void onUpdate(int totalLen, int currentPos) {
-
+        log.debug("Update: [{}/{}]", currentPos, totalLen);
     }
 
     @Override
     public void onSuccess(Integer connectionId, Integer address) {
-
+        log.debug("Success: [{}/{}]", connectionId, address);
     }
 
     @Override
     public void onError(Integer connectionId, Integer address, Throwable error) {
-
+        log.debug("Error: [{}/{}]", connectionId, address, error);
     }
 }
