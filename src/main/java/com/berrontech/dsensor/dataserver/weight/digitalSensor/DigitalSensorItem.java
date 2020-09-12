@@ -1605,7 +1605,7 @@ public class DigitalSensorItem {
 
     protected boolean UpgradeSendData(byte packNo, byte[] data) throws Exception {
         int result = DataPacket.EResult.ErrUnknow;
-        log.debug("#{Params.Address} UpgradeSendData: packNo={packNo}, dataLen={data.Count()}");
+        log.debug("#{} UpgradeSendData: packNo={}, dataLen={}", Params.getAddress(), packNo, data.length);
         DataPacket packet = DataPacket.BuildUpgradeData((byte) Params.getAddress(), packNo, data);
         try {
             packet = UpgradeWriteRead(packet, getWriteParamTimeout());
@@ -1699,27 +1699,32 @@ public class DigitalSensorItem {
 
                         totalSize += block.Data.length;
                         while (Upgrading) {
-                            // padding to 4 multiple
                             int realSize = Math.min(size, block.Data.length - offset);
                             if (realSize <= 0) {
                                 // no more data
                                 break;
                             }
+                            // padding to 4 multiple
+                            int padSize = ((realSize + 3) / 4) * 4;
+                            byte[] tbs = data;
+                            if (data.length != padSize) {
+                                tbs = new byte[padSize];
+                            }
                             try {
-                                System.arraycopy(block.Data, offset, data, 0, realSize);
+                                System.arraycopy(block.Data, offset, tbs, 0, realSize);
                             } catch (Throwable e) {
                                 e.printStackTrace();
                             }
-                            for (int pos = realSize; pos < data.length; pos++) {
-                                data[pos] = (byte) 0xFF;
+                            for (int pos = realSize; pos < tbs.length; pos++) {
+                                tbs[pos] = (byte) 0xFF;
                             }
                             log.debug("Downloading progress {}%", offset * 100 / block.Data.length);
                             if (p != null) {
                                 p.onProgress(block.Data.length, offset);
                             }
 
-                            if (sensor.UpgradeSendData((byte)packNo, data)) {
-                                offset += data.length;
+                            if (sensor.UpgradeSendData((byte) packNo, tbs)) {
+                                offset += tbs.length;
                                 packNo++;
                                 if (packNo > DataPacket.EUpgradePackNo.DataEnd) {
                                     packNo = DataPacket.EUpgradePackNo.DataHead;
