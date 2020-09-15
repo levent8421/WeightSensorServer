@@ -67,8 +67,12 @@ public class TCPConnection extends BasicConnection {
     public void close() {
         try {
             socket.close();
-            in.close();
-            out.close();
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
             isConnected = false;
         } catch (IOException e) {
             e.printStackTrace();
