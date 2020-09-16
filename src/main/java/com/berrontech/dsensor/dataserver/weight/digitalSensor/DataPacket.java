@@ -29,9 +29,12 @@ public class DataPacket {
     public static final byte AddressDefault = 0x00;
     public static final byte AddressBroadcast = (byte) 0xFF;
     public static final byte AddressConditionalBroadcast = (byte) 0xFE;
-    public static final byte AddressMin = 0x01;
-    public static final byte AddressMax = (byte) 0xF0;
-    public static final byte AddressELabelStart = 100;
+    public static final int AddressMin = 0x01;
+    public static final int AddressMax = 0xF0;
+    public static final int AddressELabelStart = 100;
+    public static final int AddressELabelEnd = 199;
+    public static final int AddressXSensorStart = 201;
+    public static final int AddressXSensorEnd = 230;
 
 
     public int GetLength() {
@@ -87,6 +90,7 @@ public class DataPacket {
         byte WriteParam = 'Q';
         byte Calibrate = 'C';
         byte DoZero = 'Z';
+        byte XSensors = 'X';
 
         byte IdBroadcast = 'N';
         byte SetWorkMode = 'M';
@@ -106,6 +110,7 @@ public class DataPacket {
         byte WriteParam = 'q';
         byte Calibrate = 'c';
         byte DoZero = 'z';
+        byte XSensors = 'x';
 
         byte IdBroadcast = 'n';
         byte SetWorkMode = 'm';
@@ -253,6 +258,10 @@ public class DataPacket {
 
     public static DataPacket BuildGetHighResolution(byte address) {
         return Build(address, ESendCmd.HighResolution);
+    }
+
+    public static DataPacket BuildGetXSensors(byte address) {
+        return Build(address, ESendCmd.XSensors);
     }
 
     public static DataPacket BuildSetAddress(byte address, byte newAddress) {

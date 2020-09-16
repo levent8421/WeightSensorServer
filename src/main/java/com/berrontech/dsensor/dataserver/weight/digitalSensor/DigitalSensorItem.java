@@ -690,6 +690,40 @@ public class DigitalSensorItem {
         }
     }
 
+
+    public boolean UpdateXSensors()
+    {
+        try
+        {
+            //Log.D($"#{Params.Address} UpdateXSensors");
+            DataPacket packet = DataPacket.BuildGetXSensors((byte)Params.getAddress());
+            synchronized (Driver.getLock())
+            {
+                packet = Driver.WriteRead(packet, getReadTimeout(), 1);
+            }
+            SetCommResult(true);
+
+            //Log.D($"#{Params.Address} Updated XSensors");
+            List<BigDecimal> lst = new ArrayList<>();
+            for (int pos = 0; pos < packet.getContentLength(); pos += 4)
+            {
+                float str = ByteHelper.bytesToFloat(packet.Content, pos, 4);
+                val v = BigDecimal.valueOf(str);
+                lst.add(v);
+            }
+            Values.setXSensors(lst.toArray(new BigDecimal[lst.size()]));
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            log.warn("#{} Update XSensors failed", Params.getAddress(), ex);
+            SetCommResult(false);
+            return false;
+        }
+    }
+
+
     public void DoZero() throws Exception {
         DoZero(false);
     }
