@@ -26,6 +26,10 @@ public class MemoryTemperatureHumiditySensor implements Serializable {
      */
     private String no;
     /**
+     * 序列号
+     */
+    private String sn;
+    /**
      * 485地址
      */
     private Integer address;
@@ -41,10 +45,6 @@ public class MemoryTemperatureHumiditySensor implements Serializable {
      * 连接对象
      */
     private DeviceConnection connection;
-    /**
-     * 是否存在电子标签
-     */
-    private Boolean hasElabel;
     /**
      * 传感器数据
      */

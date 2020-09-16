@@ -378,7 +378,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     }
 
     @Override
-    public void notifyTemperatureHumidityScanDonw(Collection<MemoryTemperatureHumiditySensor> sensors) {
+    public void notifyTemperatureHumidityScanDone(Collection<MemoryTemperatureHumiditySensor> sensors) {
         // TODO 持久化传感器元数据到数据库
     }
 

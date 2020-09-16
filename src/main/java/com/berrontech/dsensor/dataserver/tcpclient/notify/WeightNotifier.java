@@ -69,7 +69,7 @@ public interface WeightNotifier {
      *
      * @param sensors 传感器
      */
-    void notifyTemperatureHumidityScanDonw(Collection<MemoryTemperatureHumiditySensor> sensors);
+    void notifyTemperatureHumidityScanDone(Collection<MemoryTemperatureHumiditySensor> sensors);
 
     /**
      * 通知温湿度传感器状态变化
