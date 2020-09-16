@@ -30,6 +30,10 @@ public class WeightDataHolder implements Serializable {
      */
     private Map<String, MemorySlot> slotTable;
     /**
+     * 温湿度传感器表
+     */
+    private Map<Integer, MemoryTemperatureHumiditySensor> temperatureHumiditySensorTable;
+    /**
      * Connections
      */
     private List<DeviceConnection> connections;
