@@ -145,4 +145,11 @@ public interface WeightController {
      * @param address      物理地址
      */
     void cancelUpgrade(Integer connectionId, Integer address);
+
+    /**
+     * 开始扫描温湿度传感器
+     *
+     * @param connection 连接
+     */
+    void startScanTemperatureHumiditySensors(DeviceConnection connection);
 }

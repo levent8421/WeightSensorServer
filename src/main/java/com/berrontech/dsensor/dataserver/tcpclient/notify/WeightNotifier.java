@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.tcpclient.notify;
 
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumiditySensor;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 
 import java.util.Collection;
@@ -62,4 +63,18 @@ public interface WeightNotifier {
      * Do notify
      */
     void checkForNotify();
+
+    /**
+     * 通知温湿度传感器扫描结束
+     *
+     * @param sensors 传感器
+     */
+    void notifyTemperatureHumidityScanDonw(Collection<MemoryTemperatureHumiditySensor> sensors);
+
+    /**
+     * 通知温湿度传感器状态变化
+     *
+     * @param sensors 传感器列表
+     */
+    void notifyTemperatureHumiditySensorStateChanged(Collection<MemoryTemperatureHumiditySensor> sensors);
 }

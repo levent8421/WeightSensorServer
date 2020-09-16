@@ -434,4 +434,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         }
         s.AbortUpgrading();
     }
+
+    @Override
+    public void startScanTemperatureHumiditySensors(DeviceConnection connection) {
+        // TODO 开始扫描温湿度传感器
+    }
 }

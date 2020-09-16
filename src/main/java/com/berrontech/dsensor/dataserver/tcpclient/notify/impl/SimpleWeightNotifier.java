@@ -23,6 +23,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SkuVo;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SlotVo;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.WeightDataVo;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumiditySensor;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
@@ -374,5 +375,15 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
             slotService.updateState(slot.getId(), slot.getState());
         }
         sendMessage(message);
+    }
+
+    @Override
+    public void notifyTemperatureHumidityScanDonw(Collection<MemoryTemperatureHumiditySensor> sensors) {
+        // TODO 持久化传感器元数据到数据库
+    }
+
+    @Override
+    public void notifyTemperatureHumiditySensorStateChanged(Collection<MemoryTemperatureHumiditySensor> sensors) {
+        // TODO 更新传感器状态
     }
 }
