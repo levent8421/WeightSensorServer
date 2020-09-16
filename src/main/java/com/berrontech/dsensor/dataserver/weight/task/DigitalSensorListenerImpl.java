@@ -6,10 +6,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorListener;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorValues;
-import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
-import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
-import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
-import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
+import com.berrontech.dsensor.dataserver.weight.holder.*;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
@@ -60,7 +57,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             }
             return true;
         } catch (Exception ex) {
-            log.warn("notify onSensorStateChanged error: {}", ex.getMessage());
+            log.warn("notify onSensorStateChanged error", ex);
             return false;
         }
     }
@@ -92,7 +89,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             weightNotifier.countChange(slots);
             return true;
         } catch (Exception ex) {
-            log.warn("notify onPieceCountChanged error: {}", ex.getMessage());
+            log.warn("notify onPieceCountChanged error", ex);
             return false;
         }
     }
@@ -126,7 +123,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             }
             return true;
         } catch (Exception ex) {
-            log.warn("notify onPieceCountChanged error: {}", ex.getMessage());
+            log.warn("notify onPieceCountChanged error", ex);
             return false;
         }
     }
@@ -134,6 +131,29 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     @Override
     public void onNotifySaveZeroOffset(DigitalSensorItem sensor) {
         sensorService.setZeroReference(sensor.getParams().getId(), (double) sensor.getValues().getZeroOffset());
+    }
+
+    @Override
+    public boolean OnNotifyXSensorTempHumi(DigitalSensorItem sensor) {
+        try {
+            weightDataHolder.getTemperatureHumiditySensorTable().containsKey(sensor.getParams().getAddress());
+            final MemoryTemperatureHumiditySensor slot = weightDataHolder.getTemperatureHumiditySensorTable().get(sensor.getParams().getAddress());
+            if (slot == null) {
+                log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getSubGroup());
+            } else {
+                if (slot.getData() == null) {
+                    slot.setData(new MemoryTemperatureHumidityData());
+                }
+                val data = slot.getData();
+                data.setTemperature(sensor.getValues().getXSensors()[0].doubleValue());
+                data.setHumidity(sensor.getValues().getXSensors()[1].doubleValue());
+                slot.setState(toState(sensor));
+            }
+            return true;
+        } catch (Exception ex) {
+            log.warn("notify OnNotifyXSensorTempHumi error", ex);
+            return false;
+        }
     }
 
     private static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {

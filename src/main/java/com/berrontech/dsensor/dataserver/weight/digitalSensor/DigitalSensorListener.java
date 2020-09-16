@@ -50,4 +50,13 @@ public interface DigitalSensorListener {
      * @param sensor sensor
      */
     void onNotifySaveZeroOffset(DigitalSensorItem sensor);
+
+
+    /**
+     * 通知温度,湿度变化
+     *
+     * @param sensor
+     */
+    boolean OnNotifyXSensorTempHumi(DigitalSensorItem sensor);
+
 }

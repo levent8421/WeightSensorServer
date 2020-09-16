@@ -16,6 +16,7 @@ import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareResource;
 import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumiditySensor;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.Data;
@@ -436,7 +437,75 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void startScanTemperatureHumiditySensors(DeviceConnection connection) {
-        // TODO 开始扫描温湿度传感器
+    public void startScanTemperatureHumiditySensors(DeviceConnection connection) throws IOException {
+        synchronized (scanLock) {
+            if (scanning) {
+                throw new IOException("Scanning is in processing");
+            }
+            scanning = true;
+        }
+
+        log.debug("Notify scan with full addresses");
+        // shutdown connections
+        log.debug("Try shutdown connections");
+        sensorManager.shutdown();
+
+        // build scanner
+        if (scanManager == null) {
+            log.debug("Try build scan manager");
+            scanManager = new DigitalSensorManager();
+        }
+        log.debug("Try build connection");
+        DigitalSensorUtils.buildDigitalSensorGroups(scanManager, Collections.singletonList(connection));
+        scanManager.open();
+        for (val g : scanManager.getGroups()) {
+            log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
+            g.startScanXSensors();
+        }
+        processXSensorScanResult();
+    }
+
+    private void processXSensorScanResult() {
+        createThreadPool().execute(() ->
+        {
+            try {
+                while (scanManager.isOpened()) {
+                    boolean done = true;
+                    for (val g : scanManager.getGroups()) {
+                        if (g.isAddressPrograming()) {
+                            done = false;
+                            break;
+                        }
+                    }
+                    log.debug("Scan done, try build weight sensors");
+                    if (done) {
+                        List<MemoryTemperatureHumiditySensor> sensors = new ArrayList<>();
+                        // convert to MemoryWeightSensor objects
+                        for (val g : scanManager.getGroups()) {
+                            for (val s : g.getScanResult()) {
+                                MemoryTemperatureHumiditySensor sensor = new MemoryTemperatureHumiditySensor();
+                                sensor.setConnectionId(g.getConnectionId());
+                                sensor.setNo(s.getDeviceSn());
+                                sensor.setAddress(s.getAddress());
+                                sensor.setState(MemoryWeightSensor.STATE_ONLINE);
+                                sensors.add(sensor);
+                            }
+                        }
+                        log.debug("Build done, count={}", sensors.size());
+                        weightNotifier.notifyTemperatureHumidityScanDone(sensors);
+                        break;
+                    } else {
+                        Thread.sleep(300);
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Scan failed", ex);
+            } finally {
+                scanManager.shutdown();
+                synchronized (scanLock) {
+                    scanning = false;
+                }
+            }
+        });
     }
 }

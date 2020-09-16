@@ -501,6 +501,8 @@ public class DigitalSensorItem {
     double LastNotifyWeight = -999999;
     boolean LastNotifyStable = false;
     long LastSaveTicks = 0;
+    double LastNotifyTemp = -999999;
+    double LastNotifyHumi = -999999;
 
     public void TryNotifyListener() {
         if (LastSaveTicks <= 0) {
@@ -527,25 +529,37 @@ public class DigitalSensorItem {
                 }
             }
         }
-        if (LastNotifyWeight != Values.getNetWeight().doubleValue() ||
-                LastNotifyStable != Values.isStable()) {
-            if (getGroup().getManager().getSensorListener().onWeightChanged(this)) {
-                LastNotifyWeight = Values.getNetWeight().doubleValue();
-                LastNotifyStable = Values.isStable();
+        if (getParams().isXSensor()) {
+            if (Values.getXSensors() != null && Values.getXSensors().length > 1) {
+                if (LastNotifyTemp != Values.getXSensors()[0].doubleValue() ||
+                        LastNotifyHumi != Values.getXSensors()[1].doubleValue()) {
+                    if (getGroup().getManager().getSensorListener().OnNotifyXSensorTempHumi(this)) {
+                        LastNotifyTemp = Values.getXSensors()[0].doubleValue();
+                        LastNotifyHumi = Values.getXSensors()[1].doubleValue();
+                    }
+                }
             }
-        }
-        if (LastNotifyPCS != Values.getPieceCount() || isAccuracyChangedAndBigEnough()) {
-            if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
-                log.debug("#{} Notified piece count changed (last/new): PCS={}/{}, Accuracy={}/{}, PCSWgt={}/{}, APW={}, Tol={}, TolWgt={}",
-                        Params.getAddress(),
-                        LastNotifyPCS, Values.getPieceCount(),
-                        LastNotifyAccuracy, isCountInAccuracy(),
-                        LastNotifyPCSWeight, Values.getHighNet(),
-                        Values.getAPW(),
-                        getPassenger().getMaterial().getTolerance(), Values.getAPW() * getPassenger().getMaterial().getTolerance());
-                LastNotifyPCS = Values.getPieceCount();
-                LastNotifyAccuracy = isCountInAccuracy();
-                LastNotifyPCSWeight = Values.getHighNet();
+        } else {
+            if (LastNotifyWeight != Values.getNetWeight().doubleValue() ||
+                    LastNotifyStable != Values.isStable()) {
+                if (getGroup().getManager().getSensorListener().onWeightChanged(this)) {
+                    LastNotifyWeight = Values.getNetWeight().doubleValue();
+                    LastNotifyStable = Values.isStable();
+                }
+            }
+            if (LastNotifyPCS != Values.getPieceCount() || isAccuracyChangedAndBigEnough()) {
+                if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
+                    log.debug("#{} Notified piece count changed (last/new): PCS={}/{}, Accuracy={}/{}, PCSWgt={}/{}, APW={}, Tol={}, TolWgt={}",
+                            Params.getAddress(),
+                            LastNotifyPCS, Values.getPieceCount(),
+                            LastNotifyAccuracy, isCountInAccuracy(),
+                            LastNotifyPCSWeight, Values.getHighNet(),
+                            Values.getAPW(),
+                            getPassenger().getMaterial().getTolerance(), Values.getAPW() * getPassenger().getMaterial().getTolerance());
+                    LastNotifyPCS = Values.getPieceCount();
+                    LastNotifyAccuracy = isCountInAccuracy();
+                    LastNotifyPCSWeight = Values.getHighNet();
+                }
             }
         }
     }
@@ -691,22 +705,18 @@ public class DigitalSensorItem {
     }
 
 
-    public boolean UpdateXSensors()
-    {
-        try
-        {
+    public boolean UpdateXSensors() {
+        try {
             //Log.D($"#{Params.Address} UpdateXSensors");
-            DataPacket packet = DataPacket.BuildGetXSensors((byte)Params.getAddress());
-            synchronized (Driver.getLock())
-            {
+            DataPacket packet = DataPacket.BuildGetXSensors((byte) Params.getAddress());
+            synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), 1);
             }
             SetCommResult(true);
 
             //Log.D($"#{Params.Address} Updated XSensors");
             List<BigDecimal> lst = new ArrayList<>();
-            for (int pos = 0; pos < packet.getContentLength(); pos += 4)
-            {
+            for (int pos = 0; pos < packet.getContentLength(); pos += 4) {
                 float str = ByteHelper.bytesToFloat(packet.Content, pos, 4);
                 val v = BigDecimal.valueOf(str);
                 lst.add(v);
@@ -714,9 +724,7 @@ public class DigitalSensorItem {
             Values.setXSensors(lst.toArray(new BigDecimal[lst.size()]));
 
             return true;
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             log.warn("#{} Update XSensors failed", Params.getAddress(), ex);
             SetCommResult(false);
             return false;
