@@ -167,6 +167,10 @@ public class DigitalSensorValues {
         }
     }
 
+
+    private BigDecimal[] XSensors;
+
+
     private double APW = 0;
     private int ReferenceN = 5;
 

@@ -29,6 +29,7 @@ public class DigitalSensorParams {
     private String ELabelPCBASn;
     private String ELabelDeviceSn;
     private String ELabelDeviceModel;
+    private int DeviceType;
     private int Id;
 
     public int ELabelModel = EELabelModel.None;
@@ -38,6 +39,10 @@ public class DigitalSensorParams {
         return Address + DataPacket.AddressELabelStart;
     }
 
+    public boolean isXSensor() {
+        return Address >= DataPacket.AddressXSensorStart;
+        //return DeviceType == EDeviceType.Accelerator || DeviceType == EDeviceType.TempHumi;
+    }
 
     public final static KeyValueList<Double, String> Increments = new KeyValueList<>(
             new Double[]{0.0001, 0.0002, 0.0005,
@@ -86,6 +91,14 @@ public class DigitalSensorParams {
             dist = 200000;
         }
         return (rawCnt - Point1RawCount) * 100 / dist;
+    }
+
+    public interface EDeviceType {
+        int Unknow = 0;
+        int WeightSensor = 1;
+        int ELabel = 1;
+        int Accelerator = 2;
+        int TempHumi = 3;
     }
 
 }

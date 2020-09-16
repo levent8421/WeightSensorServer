@@ -311,12 +311,17 @@ public class DigitalSensorGroup {
 
                         DigitalSensorItem sensor = Sensors.get(idx);
                         if (sensor != null) {
-                            sensor.UpdateRawCount();
-                            sensor.UpdateHighResolution(OnlyShowStable);
+                            if (sensor.getParams().isXSensor()) {
+                                sensor.UpdateXSensors();
+                                sensor.TryNotifyListener();
+                            } else {
+                                sensor.UpdateRawCount();
+                                sensor.UpdateHighResolution(OnlyShowStable);
 
-                            val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
-                            if (s2 != null) {
-                                s2.calc();
+                                val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
+                                if (s2 != null) {
+                                    s2.calc();
+                                }
                             }
                         }
                         Thread.sleep(CommInterval);
@@ -354,15 +359,20 @@ public class DigitalSensorGroup {
                     DigitalSensorItem sensor = Sensors.get(idx);
                     try {
                         if (sensor != null) {
-                            if (sensor.UpdateHighResolution2(OnlyShowStable)) {
-                                //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
-                                sensor.UpdateELabel();
-                                //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
-                                val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
-                                if (s2 != null) {
-                                    s2.calc();
-                                    s2.UpdateELabel();
-                                    s2.TryNotifyListener();
+                            if (sensor.getParams().isXSensor()) {
+                                sensor.UpdateXSensors();
+                                sensor.TryNotifyListener();
+                            } else {
+                                if (sensor.UpdateHighResolution2(OnlyShowStable)) {
+                                    //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
+                                    sensor.UpdateELabel();
+                                    //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
+                                    val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
+                                    if (s2 != null) {
+                                        s2.calc();
+                                        s2.UpdateELabel();
+                                        s2.TryNotifyListener();
+                                    }
                                 }
                             }
                         }
@@ -605,6 +615,10 @@ public class DigitalSensorGroup {
         startScan(DataPacket.AddressMin, DataPacket.AddressELabelStart - 1);
     }
 
+    public void startScanXSensors() {
+        startScan(DataPacket.AddressXSensorStart, DataPacket.AddressXSensorEnd);
+    }
+
     public void startScan(int startAddress, int endAddress) {
         if (isNotOpened() || isAddressPrograming()) {
             return;
@@ -634,10 +648,14 @@ public class DigitalSensorGroup {
                             DigitalSensorParams newp = new DigitalSensorParams();
                             newp.setAddress(addr);
                             newp.setDeviceSn(sn);
+                            if (addr >= DataPacket.AddressXSensorStart) {
+                                log.debug("#{} Set as XSensor", addr);
+                                newp.setDeviceType(DigitalSensorParams.EDeviceType.Accelerator);
+                            }
                             ScanResult.add(newp);
 
-                            // check ELabel
-                            {
+                            if (addr < DataPacket.AddressELabelStart) {
+                                // check ELabel
                                 params.setAddress(addr + DataPacket.AddressELabelStart);
                                 params.setDeviceSn(null);
                                 log.debug("#{} Try scan elabel on this device", addr);
