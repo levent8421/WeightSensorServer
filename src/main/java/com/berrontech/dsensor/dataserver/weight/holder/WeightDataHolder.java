@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.weight.holder;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
+import com.berrontech.dsensor.dataserver.common.entity.TemperatureHumiditySensor;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import lombok.Data;
 import org.springframework.context.annotation.Scope;
@@ -45,4 +46,8 @@ public class WeightDataHolder implements Serializable {
      * 货道列表
      */
     private List<Slot> slots;
+    /**
+     * 温湿度传感器列表
+     */
+    private List<TemperatureHumiditySensor> temperatureHumiditySensors;
 }

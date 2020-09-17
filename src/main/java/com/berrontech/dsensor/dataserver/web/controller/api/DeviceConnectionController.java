@@ -131,4 +131,21 @@ public class DeviceConnectionController extends AbstractEntityController<DeviceC
     public GeneralResult<Boolean> isScanning() {
         return GeneralResult.ok(weightController.isScanning());
     }
+
+    /**
+     * 扫描温湿度传感器设备
+     *
+     * @param id connection id
+     * @return GR
+     */
+    @PostMapping("/{id}/_scan-th-device")
+    public GeneralResult<Void> scanTemperatureHumiditySensors(@PathVariable("id") Integer id) {
+        final DeviceConnection connection = deviceConnectionService.require(id);
+        try {
+            weightController.startScanTemperatureHumiditySensors(connection);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error on scan", e);
+        }
+        return GeneralResult.ok();
+    }
 }

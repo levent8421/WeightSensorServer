@@ -15,24 +15,22 @@ import java.io.*;
  */
 @Slf4j
 public class DeepCopyUtils {
-    private static final ThreadLocal<ObjectCopier> COPIERS = new ThreadLocal<>();
-
     public static <T extends Serializable> T deepCopy(T obj) throws CopyException {
         final long start = System.currentTimeMillis();
-        ObjectCopier copier = COPIERS.get();
-        if (copier == null) {
-            copier = new ObjectCopier();
-            COPIERS.set(copier);
+        final T copy;
+        try (final ObjectCopier copier = new ObjectCopier()) {
+            copy = copier.copy(obj);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error on create objectCopier", e);
         }
         final long useTime = System.currentTimeMillis() - start;
         final String logStr = String.format("Copy object [%s@%s] useTime=[%s]ms!", obj.hashCode(), obj.getClass().getSimpleName(), useTime);
-        System.out.println(logStr);
         log.debug(logStr);
-        return copier.copy(obj);
+        return copy;
     }
 }
 
-class ObjectCopier {
+class ObjectCopier implements Closeable {
     private final ByteArrayOutputStream out;
     private final ObjectOutputStream oos;
 
@@ -71,5 +69,12 @@ class ObjectCopier {
             throw new CopyException("Error on read object !", e);
         }
         return target;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (this.oos != null) {
+            oos.close();
+        }
     }
 }

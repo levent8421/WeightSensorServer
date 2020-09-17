@@ -7,8 +7,10 @@ import com.berrontech.dsensor.dataserver.conf.ApplicationConfiguration;
 import com.berrontech.dsensor.dataserver.conf.SerialConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
+import com.berrontech.dsensor.dataserver.web.vo.DashboardData;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumiditySensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.val;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,6 +57,32 @@ public class DashboardController extends AbstractController {
     @GetMapping("/slot-data")
     public GeneralResult<Map<String, MemorySlot>> slotData() {
         return GeneralResult.ok(weightDataHolder.getSlotTable());
+    }
+
+    /**
+     * 温斯底传感器数据
+     *
+     * @return GR
+     */
+    @GetMapping("/_th-data")
+    public GeneralResult<Map<Integer, MemoryTemperatureHumiditySensor>> temperatureHumiditySensorData() {
+        final Map<Integer, MemoryTemperatureHumiditySensor> sensorMap = weightDataHolder.getTemperatureHumiditySensorTable();
+        return GeneralResult.ok(sensorMap);
+    }
+
+    /**
+     * 数据看板界面需要的数据
+     *
+     * @return GR
+     */
+    @GetMapping("/_data")
+    public GeneralResult<DashboardData> dashboardData() {
+        final Map<String, MemorySlot> slotData = weightDataHolder.getSlotTable();
+        final Map<Integer, MemoryTemperatureHumiditySensor> temperatureHumidityData = weightDataHolder.getTemperatureHumiditySensorTable();
+        final DashboardData dashboardData = new DashboardData();
+        dashboardData.setSlotData(slotData);
+        dashboardData.setTemperatureHumidityData(temperatureHumidityData);
+        return GeneralResult.ok(dashboardData);
     }
 
     /**

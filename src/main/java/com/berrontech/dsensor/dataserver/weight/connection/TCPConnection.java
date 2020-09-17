@@ -1,6 +1,8 @@
 package com.berrontech.dsensor.dataserver.weight.connection;
 
 
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -81,6 +83,9 @@ public class TCPConnection extends BasicConnection {
 
     @Override
     public void writeBuf(byte[] buf, int offset, int count) {
+        if (out == null) {
+            throw new InternalServerErrorException("TCP not READY!");
+        }
         try {
             out.flush();
             out.write(buf, offset, count);

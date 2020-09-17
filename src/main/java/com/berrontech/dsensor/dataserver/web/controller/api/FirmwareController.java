@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.web.controller.api;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
+import com.berrontech.dsensor.dataserver.web.vo.FirmwareUpgradeProgress;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareLoader;
@@ -10,10 +11,7 @@ import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareResource;
 import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Create By Levent8421
@@ -32,6 +30,9 @@ public class FirmwareController extends AbstractController implements UpgradeFir
     private final FirmwareLoader firmwareLoader;
     private final WeightSensorService weightSensorService;
     private final WeightController weightController;
+    private final FirmwareUpgradeProgress upgradeProgress = new FirmwareUpgradeProgress();
+    private Integer upgradeConnectionId = null;
+    private Integer upgradeAddress = null;
 
     public FirmwareController(FirmwareLoader firmwareLoader,
                               WeightSensorService weightSensorService,
@@ -63,22 +64,61 @@ public class FirmwareController extends AbstractController implements UpgradeFir
     public GeneralResult<Void> upgrade(@PathVariable("id") Integer sensorId) {
         final WeightSensor sensor = weightSensorService.require(sensorId);
         final FirmwareResource resource = firmwareLoader.loadResource().getFirmwareResource();
+        tryAbortFirmwareUpgrade();
+        upgradeProgress.setState(FirmwareUpgradeProgress.STATE_INIT);
+        upgradeProgress.setCurrent(0);
+        upgradeProgress.setTotal(0);
+        upgradeProgress.setAddress(sensor.getAddress());
         weightController.upgradeFirmware(sensor.getConnectionId(), sensor.getAddress(), resource, this);
+        return GeneralResult.ok();
+    }
+
+    private void tryAbortFirmwareUpgrade() {
+        if (upgradeConnectionId != null && upgradeAddress != null) {
+            weightController.cancelUpgrade(upgradeConnectionId, upgradeAddress);
+        }
+        upgradeConnectionId = null;
+        upgradeAddress = null;
+    }
+
+    /**
+     * 固件升级进程
+     *
+     * @return GR
+     */
+    @GetMapping("/_upgrade-progress")
+    public GeneralResult<FirmwareUpgradeProgress> upgradeProgress() {
+        return GeneralResult.ok(upgradeProgress);
+    }
+
+    /**
+     * 取消升级
+     *
+     * @return GR
+     */
+    @PostMapping("/_abort-upgrade")
+    public GeneralResult<Void> abortUpgrade() {
+        tryAbortFirmwareUpgrade();
         return GeneralResult.ok();
     }
 
     @Override
     public void onUpdate(int totalLen, int currentPos) {
         log.debug("Update: [{}/{}]", currentPos, totalLen);
+        upgradeProgress.setState(FirmwareUpgradeProgress.STATE_PROGRESS);
+        upgradeProgress.setTotal(totalLen);
+        upgradeProgress.setCurrent(currentPos);
     }
 
     @Override
     public void onSuccess(Integer connectionId, Integer address) {
         log.debug("Success: [{}/{}]", connectionId, address);
+        upgradeProgress.setState(FirmwareUpgradeProgress.STATE_SUCCESS);
     }
 
     @Override
     public void onError(Integer connectionId, Integer address, Throwable error) {
         log.debug("Error: [{}/{}]", connectionId, address, error);
+        upgradeProgress.setState(FirmwareUpgradeProgress.STATE_FAIL);
     }
 }

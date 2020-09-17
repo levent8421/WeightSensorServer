@@ -150,6 +150,7 @@ public interface WeightController {
      * 开始扫描温湿度传感器
      *
      * @param connection 连接
+     * @throws IOException error
      */
-    void startScanTemperatureHumiditySensors(DeviceConnection connection);
+    void startScanTemperatureHumiditySensors(DeviceConnection connection) throws IOException;
 }

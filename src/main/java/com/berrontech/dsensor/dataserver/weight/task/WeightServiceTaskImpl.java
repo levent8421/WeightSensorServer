@@ -290,8 +290,8 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                             break;
                         }
                     }
-                    log.debug("Scan done, try build weight sensors");
                     if (done) {
+                        log.debug("Scan done, try build weight sensors");
                         List<MemoryWeightSensor> sensors = new ArrayList<>();
                         // convert to MemoryWeightSensor objects
                         for (val g : scanManager.getGroups()) {
@@ -477,15 +477,15 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                             break;
                         }
                     }
-                    log.debug("Scan done, try build weight sensors");
                     if (done) {
+                        log.debug("Scan done, try build weight sensors");
                         List<MemoryTemperatureHumiditySensor> sensors = new ArrayList<>();
                         // convert to MemoryWeightSensor objects
                         for (val g : scanManager.getGroups()) {
                             for (val s : g.getScanResult()) {
                                 MemoryTemperatureHumiditySensor sensor = new MemoryTemperatureHumiditySensor();
                                 sensor.setConnectionId(g.getConnectionId());
-                                sensor.setNo(s.getDeviceSn());
+                                sensor.setSn(s.getDeviceSn());
                                 sensor.setAddress(s.getAddress());
                                 sensor.setState(MemoryWeightSensor.STATE_ONLINE);
                                 sensors.add(sensor);

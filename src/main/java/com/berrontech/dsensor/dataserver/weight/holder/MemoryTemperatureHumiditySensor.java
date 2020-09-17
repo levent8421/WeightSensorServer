@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.holder;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.common.entity.TemperatureHumiditySensor;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -17,6 +18,17 @@ import java.io.Serializable;
  */
 @Data
 public class MemoryTemperatureHumiditySensor implements Serializable {
+    public static MemoryTemperatureHumiditySensor of(TemperatureHumiditySensor sensor) {
+        final MemoryTemperatureHumiditySensor memorySensor = new MemoryTemperatureHumiditySensor();
+        memorySensor.setSn(sensor.getDeviceSn());
+        memorySensor.setNo(sensor.getNo());
+        memorySensor.setId(sensor.getId());
+        memorySensor.setAddress(sensor.getAddress());
+        memorySensor.setState(sensor.getState());
+        memorySensor.setConnectionId(sensor.getConnectionId());
+        return memorySensor;
+    }
+
     /**
      * Row ID
      */

@@ -1,19 +1,14 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
-import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
-import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
-import com.berrontech.dsensor.dataserver.common.entity.Slot;
-import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.entity.*;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
+import com.berrontech.dsensor.dataserver.service.general.TemperatureHumiditySensorService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.dto.SystemError;
-import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
-import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
-import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
-import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
+import com.berrontech.dsensor.dataserver.weight.holder.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +34,7 @@ public class SensorMetaDataService implements ThreadFactory {
     private final DeviceConnectionService deviceConnectionService;
     private final WeightSensorService weightSensorService;
     private final SlotService slotService;
+    private final TemperatureHumiditySensorService temperatureHumiditySensorService;
     private final WeightController weightController;
     private final BlockingQueue<Runnable> threadQueue;
 
@@ -46,7 +42,8 @@ public class SensorMetaDataService implements ThreadFactory {
                                  DeviceConnectionService deviceConnectionService,
                                  WeightSensorService weightSensorService,
                                  SlotService slotService,
-                                 WeightController weightController) {
+                                 WeightController weightController,
+                                 TemperatureHumiditySensorService temperatureHumiditySensorService) {
         this.weightDataHolder = weightDataHolder;
         this.deviceConnectionService = deviceConnectionService;
         this.weightSensorService = weightSensorService;
@@ -54,6 +51,7 @@ public class SensorMetaDataService implements ThreadFactory {
         this.weightController = weightController;
         this.threadQueue = new LinkedBlockingDeque<>();
         this.threadPool = buildThreadPool();
+        this.temperatureHumiditySensorService = temperatureHumiditySensorService;
     }
 
     private ExecutorService buildThreadPool() {
@@ -77,7 +75,12 @@ public class SensorMetaDataService implements ThreadFactory {
 
         final List<Slot> slots = slotService.all();
         weightDataHolder.setSlots(slots);
+
+        final List<TemperatureHumiditySensor> temperatureHumiditySensors = temperatureHumiditySensorService.all();
+        weightDataHolder.setTemperatureHumiditySensors(temperatureHumiditySensors);
+
         this.buildMemorySlotTable();
+        this.buildTemperatureHumiditySensorTable();
         weightController.onMetaDataChanged();
     }
 
@@ -107,6 +110,16 @@ public class SensorMetaDataService implements ThreadFactory {
                 .peek(slot -> slot.setData(new MemoryWeightData()))
                 .forEach(slot -> putSlotIntoSlotTable(slotTable, slot));
         weightDataHolder.setSlotTable(slotTable);
+    }
+
+    private void buildTemperatureHumiditySensorTable() {
+        final Map<Integer, MemoryTemperatureHumiditySensor> temperatureHumiditySensorMap = weightDataHolder
+                .getTemperatureHumiditySensors()
+                .stream()
+                .map(MemoryTemperatureHumiditySensor::of)
+                .peek(sensor -> sensor.setData(new MemoryTemperatureHumidityData()))
+                .collect(Collectors.toMap(MemoryTemperatureHumiditySensor::getId, v -> v));
+        weightDataHolder.setTemperatureHumiditySensorTable(temperatureHumiditySensorMap);
     }
 
     private void putSlotIntoSlotTable(Map<String, MemorySlot> slotTable, MemorySlot slot) {

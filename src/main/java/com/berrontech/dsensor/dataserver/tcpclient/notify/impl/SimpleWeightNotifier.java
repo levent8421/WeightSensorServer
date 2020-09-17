@@ -5,10 +5,12 @@ import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.DateTimeUtils;
 import com.berrontech.dsensor.dataserver.conf.ApplicationConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
+import com.berrontech.dsensor.dataserver.service.general.TemperatureHumiditySensorService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListener;
@@ -82,6 +84,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     private SensorMetaDataService sensorMetaDataService;
     private ApplicationContext applicationContext;
     private final ApplicationConfiguration applicationConfiguration;
+    private final TemperatureHumiditySensorService temperatureHumiditySensorService;
     private final DistinctObjectBuffer<MemorySlot> weightChangedEventBuffer = new DistinctObjectBuffer<>();
     private final DistinctObjectBuffer<MemorySlot> stateChangedEventBuffer = new DistinctObjectBuffer<>();
 
@@ -89,12 +92,14 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
                                 WeightSensorService weightSensorService,
                                 SlotService slotService,
                                 ApplicationConfigService applicationConfigService,
-                                ApplicationConfiguration applicationConfiguration) {
+                                ApplicationConfiguration applicationConfiguration,
+                                TemperatureHumiditySensorService temperatureHumiditySensorService) {
         this.apiClient = apiClient;
         this.weightSensorService = weightSensorService;
         this.slotService = slotService;
         this.applicationConfigService = applicationConfigService;
         this.applicationConfiguration = applicationConfiguration;
+        this.temperatureHumiditySensorService = temperatureHumiditySensorService;
     }
 
     @Override
@@ -379,7 +384,13 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void notifyTemperatureHumidityScanDone(Collection<MemoryTemperatureHumiditySensor> sensors) {
-        // TODO 持久化传感器元数据到数据库
+        if (CollectionUtils.isEmpty(sensors)) {
+            log.info("Notify Empty SensorCollection TemperatureHumiditySensor Done! ");
+            return;
+        }
+        log.info("Notify [{}] TemperatureHumiditySensor Done! ", sensors.size());
+        temperatureHumiditySensorService.createOrUpdateSensors(sensors);
+        sensorMetaDataService.refreshSlotTable();
     }
 
     @Override
