@@ -23,6 +23,7 @@ public class DigitalSensorUtils {
         for (DeviceConnection conn : weightDataHolder.getConnections()) {
             try {
                 int count = (int) weightDataHolder.getWeightSensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
+                count += (int) weightDataHolder.getTemperatureHumiditySensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
                 if (count <= 0) {
                     continue;
                 }
@@ -97,6 +98,18 @@ public class DigitalSensorUtils {
                                 setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
                             }
                         }
+                    }
+                }
+                for (val sen : weightDataHolder.getTemperatureHumiditySensors()) {
+                    if (Objects.equals(sen.getConnectionId(), conn.getId())) {
+                        log.debug("Config XSensor: conn={}, sen={}", conn, sen);
+                        val sensor = group.getSensors().get(pos++);
+                        val params = sensor.getParams();
+                        params.setId(sen.getId());
+                        params.setAddress(sen.getAddress());
+                        params.setDeviceSn(sen.getDeviceSn());
+                        params.setDeviceType(DigitalSensorParams.EDeviceType.TempHumi);
+                        sensor.setSubGroup(sen.getNo());
                     }
                 }
 
