@@ -137,7 +137,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     public boolean OnNotifyXSensorTempHumi(DigitalSensorItem sensor) {
         try {
             weightDataHolder.getTemperatureHumiditySensorTable().containsKey(sensor.getParams().getAddress());
-            final MemoryTemperatureHumiditySensor slot = weightDataHolder.getTemperatureHumiditySensorTable().get(sensor.getParams().getAddress());
+            final MemoryTemperatureHumiditySensor slot = weightDataHolder.getTemperatureHumiditySensorTable().get(sensor.getParams().getId());
             if (slot == null) {
                 log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getSubGroup());
             } else {

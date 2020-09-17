@@ -390,7 +390,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
         }
         log.info("Notify [{}] TemperatureHumiditySensor Done! ", sensors.size());
         temperatureHumiditySensorService.createOrUpdateSensors(sensors);
-        sensorMetaDataService.refreshSlotTable();
+        obtainSensorMetaDataService().refreshSlotTable();
     }
 
     @Override

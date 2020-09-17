@@ -30,6 +30,7 @@ public class AccessTokenInterceptor implements HandlerInterceptor {
     private void initIgnorePathTable() {
         // 忽略Dashboard 轮询刷新日志
         ignoreLogPathTable.put("/api/dashboard/slot-data", Boolean.TRUE);
+        ignoreLogPathTable.put("/api/dashboard/_data", Boolean.TRUE);
     }
 
     @Override
