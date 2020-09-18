@@ -18,6 +18,10 @@ import java.io.Serializable;
  */
 @Data
 public class MemoryTemperatureHumiditySensor implements Serializable {
+    public static final int STATE_OVERLOAD = 0x01;
+    public static final int STATE_UNDER_LOAD = 0x02;
+    public static final int STATE_OK = 0x03;
+
     public static MemoryTemperatureHumiditySensor of(TemperatureHumiditySensor sensor) {
         final MemoryTemperatureHumiditySensor memorySensor = new MemoryTemperatureHumiditySensor();
         memorySensor.setSn(sensor.getDeviceSn());
@@ -26,6 +30,10 @@ public class MemoryTemperatureHumiditySensor implements Serializable {
         memorySensor.setAddress(sensor.getAddress());
         memorySensor.setState(sensor.getState());
         memorySensor.setConnectionId(sensor.getConnectionId());
+        memorySensor.setMaxTemperature(sensor.getMaxTemperature());
+        memorySensor.setMinTemperature(sensor.getMinTemperature());
+        memorySensor.setMaxHumidity(sensor.getMaxHumidity());
+        memorySensor.setMinHumidity(sensor.getMinHumidity());
         return memorySensor;
     }
 
@@ -61,4 +69,28 @@ public class MemoryTemperatureHumiditySensor implements Serializable {
      * 传感器数据
      */
     private MemoryTemperatureHumidityData data;
+    /**
+     * 温度上限
+     */
+    private Double maxTemperature;
+    /**
+     * 温度下限
+     */
+    private Double minTemperature;
+    /**
+     * 湿度上限
+     */
+    private Double maxHumidity;
+    /**
+     * 湿度下限
+     */
+    private Double minHumidity;
+    /**
+     * 温度状态
+     */
+    private int temperatureState;
+    /**
+     * 湿度状态
+     */
+    private int humidityState;
 }

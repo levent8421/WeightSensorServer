@@ -26,6 +26,11 @@ import java.util.List;
 @Slf4j
 @Service
 public class TemperatureHumiditySensorServiceImpl extends AbstractServiceImpl<TemperatureHumiditySensor> implements TemperatureHumiditySensorService {
+    public static final double DEFAULT_MAX_TEMPERATURE = 5;
+    public static final double DEFAULT_MIN_TEMPERATURE = 0;
+    public static final double DEFAULT_MAX_HUMIDITY = 100;
+    public static final double DEFAULT_MIN_HUMIDITY = 0;
+
     private final TemperatureHumiditySensorMapper temperatureHumiditySensorMapper;
 
     public TemperatureHumiditySensorServiceImpl(TemperatureHumiditySensorMapper temperatureHumiditySensorMapper) {
@@ -59,6 +64,10 @@ public class TemperatureHumiditySensorServiceImpl extends AbstractServiceImpl<Te
         sensorMetaData.setConnectionId(sensor.getConnectionId());
         sensorMetaData.setNo(String.format("#%d-%d", sensor.getConnectionId(), sensor.getAddress()));
         sensorMetaData.setDeviceSn(sensor.getSn());
+        sensorMetaData.setMinTemperature(DEFAULT_MIN_TEMPERATURE);
+        sensorMetaData.setMaxTemperature(DEFAULT_MAX_TEMPERATURE);
+        sensorMetaData.setMinHumidity(DEFAULT_MIN_HUMIDITY);
+        sensorMetaData.setMaxHumidity(DEFAULT_MAX_HUMIDITY);
         return save(sensorMetaData);
     }
 
