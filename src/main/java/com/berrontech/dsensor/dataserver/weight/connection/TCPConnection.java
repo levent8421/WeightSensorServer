@@ -19,6 +19,13 @@ public class TCPConnection extends BasicConnection {
     private int Port;
     private Thread recvThread;
 
+
+    private boolean watchDogRunning = false;
+    private Thread watchDogThread;
+    private int watchDogInterval = 300;
+    private int reopenCounter = 0;
+    private int reopenInvertal = 3000;
+
     public TCPConnection() {
     }
 
@@ -50,35 +57,75 @@ public class TCPConnection extends BasicConnection {
                         if (read > 0) {
                             getRecvBuffer().push(recv, 0, read);
                             notifyReceived();
+                        } else if (read < 0) {
+                            throw new IOException("Connection is closed");
                         }
                         Thread.sleep(30);
                     } catch (Exception e) {
-                        close();
+                        cleanup();
                         e.printStackTrace();
                     }
                 }
             });
             recvThread.start();
         } catch (IOException e) {
-            close();
+            cleanup();
             e.printStackTrace();
+        }
+    }
+
+    public void openWithWatchDog() {
+        if (!watchDogRunning) {
+            watchDogRunning = true;
+            watchDogThread = new Thread(() -> {
+                long ms = 0;
+                while (watchDogRunning) {
+                    if (!isConnected) {
+                        if (ms == 0) {
+                            ms = System.currentTimeMillis() + reopenInvertal;
+                        } else if (ms <= System.currentTimeMillis()) {
+                            ms = 0;
+                            reopenCounter++;
+                            open();
+                        }
+                    } else {
+                        // connected do nothing
+                    }
+                    try {
+                        Thread.sleep(watchDogInterval);
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+            watchDogThread.start();
+        }
+    }
+
+    private void cleanup() {
+        try {
+            isConnected = false;
+            if (socket != null) {
+                socket.close();
+                socket = null;
+            }
+            if (in != null) {
+                in.close();
+                in = null;
+            }
+            if (out != null) {
+                out.close();
+                out = null;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
     @Override
     public void close() {
-        try {
-            socket.close();
-            if (in != null) {
-                in.close();
-            }
-            if (out != null) {
-                out.close();
-            }
-            isConnected = false;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        watchDogRunning = false;
+        cleanup();
     }
 
     @Override
@@ -100,5 +147,9 @@ public class TCPConnection extends BasicConnection {
                 "IP='" + IP + '\'' +
                 ", Port=" + Port +
                 '}';
+    }
+
+    public int getReopenCounter() {
+        return reopenCounter;
     }
 }

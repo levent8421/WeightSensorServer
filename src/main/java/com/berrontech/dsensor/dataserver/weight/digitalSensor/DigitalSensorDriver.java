@@ -32,8 +32,9 @@ public class DigitalSensorDriver {
 
     public void OpenNet(String address, int port) {
         try {
-            setConnection(new TCPConnection().setParam(address, port));
-            connection.open();
+            TCPConnection conn = new TCPConnection().setParam(address, port);
+            setConnection(conn);
+            conn.openWithWatchDog();
         } catch (Exception ex) {
             log.error("Open net[{}:{}] failed", address, port, ex);
         }
