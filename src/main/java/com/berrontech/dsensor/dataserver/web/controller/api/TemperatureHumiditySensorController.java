@@ -50,7 +50,7 @@ public class TemperatureHumiditySensorController extends AbstractController {
      */
     @PostMapping("/{id}/_range")
     public GeneralResult<TemperatureHumiditySensor> setRange(@PathVariable("id") Integer id,
-                                                             TemperatureHumiditySensor param) {
+                                                             @RequestBody TemperatureHumiditySensor param) {
         final TemperatureHumiditySensor sensor = temperatureHumiditySensorService.require(id);
         checkAndCopySetRangeParam(sensor, param);
         final TemperatureHumiditySensor res = temperatureHumiditySensorService.updateById(sensor);

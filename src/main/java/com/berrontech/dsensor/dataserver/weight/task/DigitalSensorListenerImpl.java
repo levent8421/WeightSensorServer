@@ -144,12 +144,13 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                 if (slot.getData() == null) {
                     slot.setData(new MemoryTemperatureHumidityData());
                 }
+                slot.setState(toState(sensor));
+
                 val data = slot.getData();
                 data.setTemperature(sensor.getValues().getXSensors()[0].doubleValue());
                 data.setHumidity(sensor.getValues().getXSensors()[1].doubleValue());
                 data.setTemperatureState(toState(DigitalSensorItem.toFlatStatus(sensor.isOnline(), sensor.getParams().isDisabled(), sensor.getValues().getXSensorStatus()[0])));
                 data.setHumidityState(toState(DigitalSensorItem.toFlatStatus(sensor.isOnline(), sensor.getParams().isDisabled(), sensor.getValues().getXSensorStatus()[1])));
-                slot.setState(toState(sensor));
             }
             return true;
         } catch (Exception ex) {

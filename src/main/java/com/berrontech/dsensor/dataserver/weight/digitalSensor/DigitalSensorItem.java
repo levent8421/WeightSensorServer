@@ -723,8 +723,9 @@ public class DigitalSensorItem {
             for (int pos = 0; pos < packet.getContentLength(); pos += 4) {
                 float str = ByteHelper.bytesToFloat(packet.Content, pos, 4);
                 val v = BigDecimal.valueOf(str);
-                if (pos <= Values.getXSensors().length) {
-                    Values.getXSensors()[pos] = v;
+                int idx = pos / 4;
+                if (idx < Values.getXSensors().length) {
+                    Values.getXSensors()[idx] = v;
                 }
             }
             Values.CheckStatus(0, Params.getXSensorLowers()[0], Params.getXSensorUppers()[0]);

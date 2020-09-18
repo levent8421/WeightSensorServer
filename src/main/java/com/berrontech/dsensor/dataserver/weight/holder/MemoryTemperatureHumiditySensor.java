@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.weight.holder;
 
+import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.TemperatureHumiditySensor;
 import lombok.Data;
@@ -18,10 +19,6 @@ import java.io.Serializable;
  */
 @Data
 public class MemoryTemperatureHumiditySensor implements Serializable {
-    public static final int STATE_OVERLOAD = 0x01;
-    public static final int STATE_UNDER_LOAD = 0x02;
-    public static final int STATE_OK = 0x03;
-
     public static MemoryTemperatureHumiditySensor of(TemperatureHumiditySensor sensor) {
         final MemoryTemperatureHumiditySensor memorySensor = new MemoryTemperatureHumiditySensor();
         memorySensor.setSn(sensor.getDeviceSn());
@@ -85,12 +82,4 @@ public class MemoryTemperatureHumiditySensor implements Serializable {
      * 湿度下限
      */
     private Double minHumidity;
-    /**
-     * 温度状态
-     */
-    private int temperatureState;
-    /**
-     * 湿度状态
-     */
-    private int humidityState;
 }
