@@ -167,8 +167,20 @@ public class DigitalSensorValues {
         }
     }
 
+    public void CheckStatus(int sensorIdx, double lower, double upper) {
+        double val = XSensors[sensorIdx].doubleValue();
+        if (val > upper) {
+            XSensorStatus[sensorIdx] = EStatus.OverLoad;
+        } else if (val < lower) {
+            XSensorStatus[sensorIdx] = EStatus.UnderLoad;
+        } else {
+            XSensorStatus[sensorIdx] = EStatus.Stable;
+        }
+    }
 
-    private BigDecimal[] XSensors;
+
+    private BigDecimal[] XSensors = {BigDecimal.ZERO, BigDecimal.ZERO};
+    private EStatus[] XSensorStatus = {EStatus.Unknow, EStatus.Unknow};
 
 
     private double APW = 0;

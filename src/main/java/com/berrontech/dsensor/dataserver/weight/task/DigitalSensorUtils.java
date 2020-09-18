@@ -10,6 +10,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
@@ -109,6 +110,11 @@ public class DigitalSensorUtils {
                         params.setAddress(sen.getAddress());
                         params.setDeviceSn(sen.getDeviceSn());
                         params.setDeviceType(DigitalSensorParams.EDeviceType.TempHumi);
+                        params.getXSensorLowers()[0] = sen.getMinTemperature();
+                        params.getXSensorLowers()[1] = sen.getMinHumidity();
+                        params.getXSensorUppers()[0] = sen.getMaxTemperature();
+                        params.getXSensorUppers()[1] = sen.getMaxHumidity();
+                        params.setIncrement(new BigDecimal("0.1"));
                         sensor.setSubGroup(sen.getNo());
                     }
                 }

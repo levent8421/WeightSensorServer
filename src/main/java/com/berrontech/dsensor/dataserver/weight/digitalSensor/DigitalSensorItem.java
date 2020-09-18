@@ -165,18 +165,23 @@ public class DigitalSensorItem {
         Overload,
     }
 
-    public EFlatStatus getFlatStatus() {
-        if (!isOnline()) {
+    public static EFlatStatus toFlatStatus(boolean online, boolean disable, DigitalSensorValues.EStatus status)
+    {
+        if (!online) {
             return EFlatStatus.Offline;
-        } else if (Params.isDisabled()) {
+        } else if (disable) {
             return EFlatStatus.Disabled;
-        } else if (Values.isUnderLoad()) {
+        } else if (status == DigitalSensorValues.EStatus.UnderLoad) {
             return EFlatStatus.Underload;
-        } else if (Values.isOverLoad()) {
+        } else if (status == DigitalSensorValues.EStatus.OverLoad) {
             return EFlatStatus.Overload;
         } else {
             return EFlatStatus.Normal;
         }
+    }
+
+    public EFlatStatus getFlatStatus() {
+        return toFlatStatus(isOnline(), Params.isDisabled(), Values.getStatus());
     }
 
     private void SetCommResult(boolean ok) {
@@ -715,13 +720,15 @@ public class DigitalSensorItem {
             SetCommResult(true);
 
             //Log.D($"#{Params.Address} Updated XSensors");
-            List<BigDecimal> lst = new ArrayList<>();
             for (int pos = 0; pos < packet.getContentLength(); pos += 4) {
                 float str = ByteHelper.bytesToFloat(packet.Content, pos, 4);
                 val v = BigDecimal.valueOf(str);
-                lst.add(v);
+                if (pos <= Values.getXSensors().length) {
+                    Values.getXSensors()[pos] = v;
+                }
             }
-            Values.setXSensors(lst.toArray(new BigDecimal[lst.size()]));
+            Values.CheckStatus(0, Params.getXSensorLowers()[0], Params.getXSensorUppers()[0]);
+            Values.CheckStatus(1, Params.getXSensorLowers()[1], Params.getXSensorUppers()[1]);
 
             return true;
         } catch (Exception ex) {

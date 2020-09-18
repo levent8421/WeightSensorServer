@@ -30,6 +30,8 @@ public class DigitalSensorParams {
     private String ELabelDeviceSn;
     private String ELabelDeviceModel;
     private int DeviceType;
+    private double[] XSensorLowers = {0, 0};
+    private double[] XSensorUppers = {60, 100};
     private int Id;
 
     public int ELabelModel = EELabelModel.None;
