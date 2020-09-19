@@ -352,49 +352,60 @@ public class DigitalSensorGroup {
         {
             try {
                 int idx = 0;
+                boolean lastConnected = false;
                 while (isReading()) {
+                    if (lastConnected != Driver.getConnection().isConnected()) {
+                        lastConnected = Driver.getConnection().isConnected();
+                        if (Driver.getConnection().isConnected()) {
+                            log.info("Conn={} Connected", ConnectionId);
+                        } else {
+                            log.warn("Conn={} DISCONNECTED", ConnectionId);
+                        }
+                    }
                     if (idx >= Sensors.size()) {
                         idx = 0;
                     }
-                    DigitalSensorItem sensor = Sensors.get(idx);
-                    try {
-                        if (sensor != null) {
-                            if (sensor.getParams().isXSensor()) {
-                                sensor.UpdateXSensors();
-                                sensor.TryNotifyListener();
-                            } else {
-                                if (sensor.UpdateHighResolution2(OnlyShowStable)) {
-                                    //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
-                                    sensor.UpdateELabel();
-                                    //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
-                                    val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
-                                    if (s2 != null) {
-                                        s2.calc();
-                                        s2.UpdateELabel();
-                                        s2.TryNotifyListener();
+                    if (lastConnected) {
+                        DigitalSensorItem sensor = Sensors.get(idx);
+                        try {
+                            if (sensor != null) {
+                                if (sensor.getParams().isXSensor()) {
+                                    sensor.UpdateXSensors();
+                                    sensor.TryNotifyListener();
+                                } else {
+                                    if (sensor.UpdateHighResolution2(OnlyShowStable)) {
+                                        //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
+                                        sensor.UpdateELabel();
+                                        //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
+                                        val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
+                                        if (s2 != null) {
+                                            s2.calc();
+                                            s2.UpdateELabel();
+                                            s2.TryNotifyListener();
+                                        }
                                     }
                                 }
                             }
+                        } catch (TimeoutException ex) {
+                            log.debug("#{} Packet Lost", sensor.getParams().getAddress());
+                        } catch (IOException ex) {
+                            // port closed
+                            try {
+                                // try release port
+                                Close();
+                            } catch (Exception ex2) {
+                                // Ignore
+                            }
+                            for (DigitalSensorItem s : Sensors) {
+                                s.setOnline(false);
+                                s.TryNotifyListener();
+                            }
+                            log.info("Port is closed");
+                            break;
+                        } catch (Exception ex) {
+                            // unexpected error
+                            log.warn("Error in StartReading2 ", ex);
                         }
-                    } catch (TimeoutException ex) {
-                        log.debug("#{} Packet Lost", sensor.getParams().getAddress());
-                    } catch (IOException ex) {
-                        // port closed
-                        try {
-                            // try release port
-                            Close();
-                        } catch (Exception ex2) {
-                            // Ignore
-                        }
-                        for (DigitalSensorItem s : Sensors) {
-                            s.setOnline(false);
-                            s.TryNotifyListener();
-                        }
-                        log.info("Port is closed");
-                        break;
-                    } catch (Exception ex) {
-                        // unexpected error
-                        log.warn("Error in StartReading2 ", ex);
                     }
                     Thread.sleep(CommInterval);
                     idx++;

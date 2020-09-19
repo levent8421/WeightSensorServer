@@ -78,7 +78,7 @@ public class TCPConnection extends BasicConnection {
         if (!watchDogRunning) {
             watchDogRunning = true;
             watchDogThread = new Thread(() -> {
-                long ms = 0;
+                long ms = System.currentTimeMillis();
                 while (watchDogRunning) {
                     if (!isConnected) {
                         if (ms == 0) {
@@ -125,6 +125,14 @@ public class TCPConnection extends BasicConnection {
     @Override
     public void close() {
         watchDogRunning = false;
+        if (watchDogThread != null) {
+            try {
+                watchDogThread.join(watchDogInterval + 3000);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            watchDogThread = null;
+        }
         cleanup();
     }
 
