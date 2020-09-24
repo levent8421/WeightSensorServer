@@ -114,3 +114,23 @@ create table t_temperature_humidity_sensor
   charset utf8;
 
 
+drop table if exists t_temp_humidity_log;
+
+create table t_temp_humidity_log
+(
+    id                int(10)       not null auto_increment primary key comment 'Row id',
+    sensor_id         int(10)       not null comment 't_temperature)humidity_sensor.id',
+    humidity          decimal(6, 3) not null comment 'Log humidity value',
+    humidity_state    int(2)        not null comment 'Humidity state code',
+    max_humidity      decimal(6, 3) not null comment 'Max humidity',
+    min_humidity      decimal(6, 3) not null comment 'Min humidity',
+    temperature       decimal(6, 3) not null comment 'Log temperature',
+    temperature_state int(2)        not null comment 'Temperature state code',
+    max_temperature   decimal(6, 3) not null comment 'Max temperature',
+    min_temperature   decimal(6, 3) not null comment 'Min temperature',
+    create_time       datetime      not null comment 'Row Create time',
+    update_time       datetime      not null comment 'Row Update time',
+    deleted           bit(1)        not null comment 'Delete flag'
+) engine = 'Innodb'
+  default charset utf8
+  collate utf8_general_ci;
