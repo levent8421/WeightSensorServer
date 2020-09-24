@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Create By Lastnika
@@ -44,15 +45,14 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     public boolean onSensorStateChanged(DigitalSensorItem sensor) {
         log.debug("#{} Notify onSensorStateChanged", sensor.getParams().getAddress());
         try {
-            WeightSensor s1 = weightDataHolder.getWeightSensors().stream()
-                    .filter(s -> Objects.equals(s.getAddress(), sensor.getParams().getAddress()))
-                    .findFirst()
-                    .orElse(null);
-            if (s1 != null) {
-                MemoryWeightSensor s2 = MemoryWeightSensor.of(s1);
+            MemoryWeightSensor s = tryLookupMemorySensor(sensor, weightDataHolder);
+            if (s == null) {
+                log.warn("#{} Can not find memory weight sensor", sensor.getParams().getAddress());
+            }
+            else {
                 int state = toState(sensor);
-                s2.setState(state);
-                Collection<MemoryWeightSensor> sensors = Collections.singleton(s2);
+                s.setState(state);
+                Collection<MemoryWeightSensor> sensors = Collections.singleton(s);
                 weightNotifier.sensorStateChanged(sensors);
             }
             return true;
@@ -161,6 +161,15 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     private static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
         return weightDataHolder.getSlotTable().get(sensor.getSubGroup());
+    }
+
+    private static MemoryWeightSensor tryLookupMemorySensor(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
+        MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
+        if (slot != null) {
+            val s1 = slot.getSensors().stream().filter(s -> s.getAddress485() == sensor.getParams().getAddress()).findFirst().orElse(null);
+            return s1;
+        }
+        return null;
     }
 
     private static int toState(DigitalSensorItem sensor) {
