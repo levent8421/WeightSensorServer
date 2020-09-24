@@ -208,7 +208,7 @@ public class DigitalSensorItem {
         }
     }
 
-    public static DigitalSensorItem NewSensor(byte address, DigitalSensorDriver driver, DigitalSensorGroup group) {
+    public static DigitalSensorItem NewSensor(int address, DigitalSensorDriver driver, DigitalSensorGroup group) {
         DigitalSensorItem item = new DigitalSensorItem();
         item.Params = new DigitalSensorParams();
         item.Params.setAddress(address);
@@ -1686,6 +1686,10 @@ public class DigitalSensorItem {
         return DoUpgrade(hexFileContent, DataPacket.EDeviceType.DigitalSensor, p);
     }
 
+    public boolean UpgradeELabel(byte[] hexFileContent, OnUpgradeProgress p) throws Exception {
+        return DoUpgrade(hexFileContent, DataPacket.EDeviceType.ELabel, p);
+    }
+
     public boolean DoUpgrade(byte[] hexFileContent, int deviceType, OnUpgradeProgress p) throws Exception {
         if (p != null) {
             p.onProgress(0, 0);
@@ -1706,7 +1710,22 @@ public class DigitalSensorItem {
         synchronized (Driver.getLock()) {
             try {
                 Upgrading = true;
-                DigitalSensorItem sensor = this;
+                int addr = 0;
+                switch (deviceType)
+                {
+                    default:
+                    case DataPacket.EDeviceType.DigitalSensor:
+                    {
+                        addr = Params.getAddress();
+                        break;
+                    }
+                    case DataPacket.EDeviceType.ELabel:
+                    {
+                        addr = Params.getELabelAddress();
+                        break;
+                    }
+                }
+                DigitalSensorItem sensor = NewSensor(addr, Driver, Group);
                 byte[] version = new byte[4];
                 // check status
                 if (!sensor.UpgradeQuery(version)) {
