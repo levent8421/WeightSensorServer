@@ -143,17 +143,24 @@ public class SensorMetaDataService implements ThreadFactory {
                 continue;
             }
 
-            int slotState = AbstractDevice485.STATE_ONLINE;
+            int slotState = slot.getState();
+            int errorState = slotState;
+            boolean error = false;
             for (MemoryWeightSensor sensor : slotSensors) {
                 if (sensorMap.containsKey(sensor.getId())) {
                     final MemoryWeightSensor targetStateSensor = sensorMap.get(sensor.getId());
                     sensor.setState(targetStateSensor.getState());
+                    slotState = targetStateSensor.getState();
                     if (!Objects.equals(targetStateSensor.getState(), AbstractDevice485.STATE_ONLINE)) {
-                        slotState = targetStateSensor.getState();
+                        errorState = targetStateSensor.getState();
+                        error = true;
                     }
                 }
             }
             slot.setState(slotState);
+            if (error) {
+                slot.setState(errorState);
+            }
         }
     }
 

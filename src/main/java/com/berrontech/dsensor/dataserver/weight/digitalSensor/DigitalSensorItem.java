@@ -518,10 +518,10 @@ public class DigitalSensorItem {
             LastSaveTicks = System.currentTimeMillis();
             getGroup().getManager().getSensorListener().onNotifySaveZeroOffset(this);
         }
-        if (isSlotChild()) {
-            // does not notify if it is a child slot
-            return;
-        }
+//        if (isSlotChild()) {
+//            // does not notify if it is a child slot
+//            return;
+//        }
         if (TextUtils.isTrimedEmpty(getSubGroup())) {
             // does not notify is slot is empty
             return;
@@ -547,13 +547,13 @@ public class DigitalSensorItem {
         } else {
             if (LastNotifyWeight != Values.getNetWeight().doubleValue() ||
                     LastNotifyStable != Values.isStable()) {
-                if (getGroup().getManager().getSensorListener().onWeightChanged(this)) {
+                if (isSlotChild() || getGroup().getManager().getSensorListener().onWeightChanged(this)) {
                     LastNotifyWeight = Values.getNetWeight().doubleValue();
                     LastNotifyStable = Values.isStable();
                 }
             }
             if (LastNotifyPCS != Values.getPieceCount() || isAccuracyChangedAndBigEnough()) {
-                if (getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
+                if (isSlotChild() || getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
                     log.debug("#{} Notified piece count changed (last/new): PCS={}/{}, Accuracy={}/{}, PCSWgt={}/{}, APW={}, Tol={}, TolWgt={}",
                             Params.getAddress(),
                             LastNotifyPCS, Values.getPieceCount(),

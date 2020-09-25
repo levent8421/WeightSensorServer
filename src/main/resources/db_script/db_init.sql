@@ -101,15 +101,19 @@ drop table if exists t_temperature_humidity_sensor;
 
 create table t_temperature_humidity_sensor
 (
-    id            int(10)      not null auto_increment primary key comment 'Row ID',
-    connection_id int(10)      not null comment 'connection id',
-    no            varchar(100) null comment 'number',
-    device_sn     varchar(100) not null comment 'device sn',
-    address       int(4)       not null comment 'device address',
-    state         int(2)       not null comment 'device state',
-    create_time   datetime     not null comment 'create time',
-    update_time   datetime     not null comment 'update time',
-    deleted       bit(1)       not null comment 'Delete flag'
+    id              int(10)       not null auto_increment primary key comment 'Row ID',
+    connection_id   int(10)       not null comment 'connection id',
+    no              varchar(100)  null comment 'number',
+    device_sn       varchar(100)  not null comment 'device sn',
+    address         int(4)        not null comment 'device address',
+    state           int(2)        not null comment 'device state',
+    max_temperature decimal(6, 3) not null comment 'Max Temperature',
+    min_temperature decimal(6, 3) not null comment 'Min Temperature',
+    max_humidity    decimal(6, 3) not null comment 'Max humidity',
+    min_humidity    decimal(6, 3) not null comment 'Min humidity',
+    create_time     datetime      not null comment 'create time',
+    update_time     datetime      not null comment 'update time',
+    deleted         bit(1)        not null comment 'Delete flag'
 ) engine = 'Innodb'
   charset utf8;
 
