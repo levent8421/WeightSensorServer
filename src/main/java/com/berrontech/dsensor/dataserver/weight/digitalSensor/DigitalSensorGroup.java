@@ -13,8 +13,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+/**
+ * Create By Levent8421
+ * Create Time: 2020/9/25 10:19
+ * Class Name: DigitalSensorGroup
+ * Author: Lastnika
+ * Description:
+ *
+ * @author Lastnika
+ */
 @Slf4j
 @Data
+@SuppressWarnings("unused")
 public class DigitalSensorGroup {
     private DigitalSensorManager Manager;
     private String Title = "G";
@@ -24,9 +34,21 @@ public class DigitalSensorGroup {
         return Title + Id;
     }
 
+    /**
+     * 连接类型
+     */
     public enum ECommMode {
+        /**
+         * 未知
+         */
         None,
+        /**
+         * 串口
+         */
         Com,
+        /**
+         * TCP网络
+         */
         Net,
     }
 
@@ -96,9 +118,7 @@ public class DigitalSensorGroup {
     private void BuildClusterSensors() {
         List<DigitalSensorCluster> clusters = new ArrayList<>();
         val clus = Sensors.stream().filter(s -> s.getSubGroupPosition() > 0).collect(Collectors.groupingBy(DigitalSensorItem::getSubGroup));
-        val it = clus.entrySet().iterator();
-        while (it.hasNext()) {
-            val itItem = it.next();
+        for (Map.Entry<String, List<DigitalSensorItem>> itItem : clus.entrySet()) {
             val group = itItem.getKey();
             val item = new DigitalSensorCluster();
             item.setChildren(itItem.getValue());
@@ -113,7 +133,7 @@ public class DigitalSensorGroup {
     }
 
     private void BuildMergedSensors() {
-        List<DigitalSensorItem> sensors = new ArrayList<DigitalSensorItem>();
+        List<DigitalSensorItem> sensors = new ArrayList<>();
         val lst1 = Sensors.stream().filter(s -> s.getSubGroupPosition() == 0).collect(Collectors.toList());
         sensors.addAll(lst1);
         sensors.addAll(ClusterSensors);
@@ -238,7 +258,7 @@ public class DigitalSensorGroup {
     }
 
     public static List<String> removeDuplicate(List<String> list) {
-        Set set = new LinkedHashSet<>(list);
+        Set<String> set = new LinkedHashSet<>(list);
         list.clear();
         list.addAll(set);
         return list;
@@ -318,10 +338,7 @@ public class DigitalSensorGroup {
                                 sensor.UpdateRawCount();
                                 sensor.UpdateHighResolution(OnlyShowStable);
 
-                                val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
-                                if (s2 != null) {
-                                    s2.calc();
-                                }
+                                ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().ifPresent(DigitalSensorCluster::calc);
                             }
                         }
                         Thread.sleep(CommInterval);
@@ -542,7 +559,7 @@ public class DigitalSensorGroup {
                                 log.debug("#{} Wait DeviceSn Broadcast", s.getParams().getAddress());
                                 int type = 0;
                                 String sn = "";
-                                Map<String, Object> map = new HashMap<>();
+                                Map<String, Object> map = new HashMap<>(16);
                                 if (DigitalSensorItem.TryReadDeviceSnBroadcast(Driver, map, ReadTimeout)) {
                                     type = (int) map.getOrDefault("type", 0);
                                     sn = (String) map.getOrDefault("sn", "");
@@ -613,11 +630,7 @@ public class DigitalSensorGroup {
         }
         AddressPrograming = false;
         log.debug("Stop programing addresses");
-        try {
-            Thread.sleep(1000);
-        } catch (Exception ex) {
-
-        }
+        ThreadUtils.trySleep(1000);
     }
 
     private List<DigitalSensorParams> ScanResult;
@@ -701,7 +714,6 @@ public class DigitalSensorGroup {
         stopAddressPrograming();
     }
 
-
     public void ClearAllAddresses() {
         if (isNotOpened()) {
             return;
@@ -729,5 +741,4 @@ public class DigitalSensorGroup {
         }
         DigitalSensorItem.SetAllZeroCapture(Driver, value);
     }
-
 }

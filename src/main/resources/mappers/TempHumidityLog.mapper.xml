@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.berrontech.dsensor.dataserver.repository.mapper.TempHumidityLogMapper">
+    <sql id="columns">
+        thl.id                as thl_id,
+        thl.sensor_id         as thl_sensor_id,
+        thl.humidity          as thl_humidity,
+        thl.humidity_state    as thl_humidity_state,
+        thl.max_humidity      as thl_max_humidity,
+        thl.min_humidity      as thl_min_humidity,
+        thl.temperature       as thl_temperature,
+        thl.temperature_state as thl_temperature_state,
+        thl.max_temperature   as thl_max_temperature,
+        thl.min_temperature   as thl_min_temperature,
+        thl.create_time       as thl_create_time,
+        thl.update_time       as thl_update_time,
+        thl.deleted           as thl_deleted
+    </sql>
+    <sql id="select">
+        select
+        <include refid="columns"/>
+        from t_temp_humidity_log as thl
+        where thl.deleted = false
+    </sql>
+    <resultMap id="rm_base" type="com.berrontech.dsensor.dataserver.common.entity.TempHumidityLog"
+               extends="com.berrontech.dsensor.dataserver.repository.AbstractMapper.rm_base">
+        <id column="thl_id" property="id"/>
+        <result column="thl_sensor_id" property="sensorId"/>
+        <result column="thl_humidity" property="humidity"/>
+        <result column="thl_humidity_state" property="humidityState"/>
+        <result column="thl_max_humidity" property="maxHumidity"/>
+        <result column="thl_min_humidity" property="minHumidity"/>
+        <result column="thl_temperature" property="temperature"/>
+        <result column="thl_temperature_state" property="temperatureState"/>
+        <result column="thl_max_temperature" property="maxTemperature"/>
+        <result column="thl_min_temperature" property="minTemperature"/>
+        <result column="thl_create_time" property="createTime"/>
+        <result column="thl_update_time" property="updateTime"/>
+        <result column="thl_deleted" property="deleted"/>
+    </resultMap>
+    <update id="cleanLog">
+        delete
+        from t_temp_humidity_log
+        where hour(timediff(now(), create_time)) > #{logRetentionHours}
+    </update>
+</mapper>
