@@ -165,8 +165,7 @@ public class DigitalSensorItem {
         Overload,
     }
 
-    public static EFlatStatus toFlatStatus(boolean online, boolean disable, DigitalSensorValues.EStatus status)
-    {
+    public static EFlatStatus toFlatStatus(boolean online, boolean disable, DigitalSensorValues.EStatus status) {
         if (!online) {
             return EFlatStatus.Offline;
         } else if (disable) {
@@ -490,7 +489,8 @@ public class DigitalSensorItem {
         int pcs = values.getPieceCount();
         double apw = values.getAPW();
         double apwTolerance = apw * tolerance;
-        double error = Math.abs(values.getHighNet() - apw * pcs);
+        final float netWeight = values.getNetWeight().floatValue();
+        double error = Math.abs(netWeight - apw * pcs);
         if (pcs <= 0) {
             pcs = 1;
         }
@@ -1711,16 +1711,13 @@ public class DigitalSensorItem {
             try {
                 Upgrading = true;
                 int addr = 0;
-                switch (deviceType)
-                {
+                switch (deviceType) {
                     default:
-                    case DataPacket.EDeviceType.DigitalSensor:
-                    {
+                    case DataPacket.EDeviceType.DigitalSensor: {
                         addr = Params.getAddress();
                         break;
                     }
-                    case DataPacket.EDeviceType.ELabel:
-                    {
+                    case DataPacket.EDeviceType.ELabel: {
                         addr = Params.getELabelAddress();
                         break;
                     }

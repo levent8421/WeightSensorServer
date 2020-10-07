@@ -201,8 +201,8 @@ public class DigitalSensorValues {
         double apw = APW;
         if (apw > 0) {
             synchronized (lock) {
-                PieceCount = (int) Math.round(HighGross / APW);
-                PieceCountAccuracy = calcPieceCountAccuracy(PieceCount, apw, getHighNet());
+                PieceCount = (int) Math.round(getHighNet() / APW);
+                PieceCountAccuracy = calcPieceCountAccuracy(PieceCount, apw, getNetWeight().floatValue());
             }
         }
     }

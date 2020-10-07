@@ -6,6 +6,7 @@ import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorExc
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper;
+import com.berrontech.dsensor.dataserver.repository.mapper.WeightSensorMapper;
 import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
@@ -30,10 +31,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotService {
     private final SlotMapper slotMapper;
+    private final WeightSensorMapper weightSensorMapper;
 
-    public SlotServiceImpl(SlotMapper slotMapper) {
+    public SlotServiceImpl(SlotMapper slotMapper,
+                           WeightSensorMapper weightSensorMapper) {
         super(slotMapper);
         this.slotMapper = slotMapper;
+        this.weightSensorMapper = weightSensorMapper;
     }
 
     @Override
@@ -138,5 +142,48 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
         }
         final int rows = slotMapper.deleteByAddress(addressList);
         log.warn("Delete Slot[{}] By Address{}.", rows, addressList);
+    }
+
+    @Override
+    public List<Slot> allWithSensors() {
+        final List<WeightSensor> sensors = weightSensorMapper.selectAllWithSlot();
+        final Map<Integer, List<WeightSensor>> sensorsMap = new HashMap<>(64);
+        final Map<Integer, Slot> slotMap = new HashMap<>(64);
+        final Slot noBindSlot = new Slot();
+        noBindSlot.setId(-1);
+        noBindSlot.setSlotNo("NoBind");
+        for (WeightSensor sensor : sensors) {
+            Slot slot = sensor.getSlot();
+            if (slot == null) {
+                slot = noBindSlot;
+            }
+            slotMap.put(slot.getId(), slot);
+            final List<WeightSensor> slotSensors = sensorsMap.computeIfAbsent(slot.getId(), k -> new ArrayList<>());
+            slotSensors.add(sensor);
+            sensor.setSlot(null);
+        }
+        final List<Slot> slots = new ArrayList<>(slotMap.size());
+        for (Slot slot : slotMap.values()) {
+            slot.setSensors(sensorsMap.get(slot.getId()));
+            slots.add(slot);
+        }
+        return slots;
+    }
+
+    @Override
+    public List<Slot> findByIds(List<Integer> slotIds) {
+        return slotMapper.selectByIds(CollectionUtils.join(slotIds.stream(), ","));
+    }
+
+    @Override
+    public int mergeSlots(List<Slot> slots) {
+        Slot minAddSlot = slots.get(0);
+        for (Slot slot : slots) {
+            if (slot.getAddress() < minAddSlot.getAddress()) {
+                minAddSlot = slot;
+            }
+        }
+        final List<Integer> slotsIds = slots.stream().map(Slot::getId).collect(Collectors.toList());
+        return weightSensorMapper.updateSlotIdBySlotIds(slotsIds, minAddSlot.getId());
     }
 }

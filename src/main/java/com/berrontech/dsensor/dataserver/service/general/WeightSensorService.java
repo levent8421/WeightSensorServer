@@ -127,4 +127,12 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @return sensor list with all inner objects
      */
     List<WeightSensor> dumpAll();
+
+    /**
+     * 重置传感器绑定的货道ID
+     *
+     * @param slotIds 货道ID
+     * @return 重置的传感器数量
+     */
+    int resetSlotIdBySlotIds(List<Integer> slotIds);
 }

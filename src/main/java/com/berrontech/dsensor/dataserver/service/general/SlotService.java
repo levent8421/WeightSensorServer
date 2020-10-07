@@ -89,4 +89,27 @@ public interface SlotService extends AbstractService<Slot> {
      * @param addressList address List
      */
     void deleteByAddressList(List<Integer> addressList);
+
+    /**
+     * find all slots with inner sensor
+     *
+     * @return slots
+     */
+    List<Slot> allWithSensors();
+
+    /**
+     * Find slot by ids
+     *
+     * @param slotIds ids
+     * @return Slots
+     */
+    List<Slot> findByIds(List<Integer> slotIds);
+
+    /**
+     * 合并糊货道
+     *
+     * @param slots 货道列表
+     * @return 合并传感器数量
+     */
+    int mergeSlots(List<Slot> slots);
 }

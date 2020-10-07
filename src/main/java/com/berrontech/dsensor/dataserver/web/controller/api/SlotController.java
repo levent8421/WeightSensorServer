@@ -9,6 +9,8 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.CompensationStateParam;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
+import com.berrontech.dsensor.dataserver.web.vo.ResetSlotSensorsParam;
+import com.berrontech.dsensor.dataserver.web.vo.SlotMergeParam;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -37,6 +39,7 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
 @RestController
 @RequestMapping("/api/slot")
 public class SlotController extends AbstractEntityController<Slot> {
+    private static final int MIN_MERGE_SLOTS = 2;
     private static final int MAX_SKU_NO_LENGTH = 9;
     private static final String COMPOSE_SKU_NO_FEATURES = "#";
     private final SlotService slotService;
@@ -61,6 +64,17 @@ public class SlotController extends AbstractEntityController<Slot> {
     public GeneralResult<List<Slot>> all() {
         val res = slotService.all();
         return GeneralResult.ok(res);
+    }
+
+    /**
+     * find all slots with inner sensor
+     *
+     * @return GR
+     */
+    @GetMapping("/_with-sensor")
+    public GeneralResult<List<Slot>> listAllWithSensors() {
+        final List<Slot> slots = slotService.allWithSensors();
+        return GeneralResult.ok(slots);
     }
 
     /**
@@ -224,5 +238,37 @@ public class SlotController extends AbstractEntityController<Slot> {
         }
         slots.add(defaultSlot);
         return GeneralResult.ok(slots);
+    }
+
+    /**
+     * 个兵货道
+     *
+     * @param param params
+     * @return GR
+     */
+    @PostMapping("/_merge")
+    public GeneralResult<Integer> mergeSensor(@RequestBody SlotMergeParam param) {
+        notNull(param, BadRequestException.class, "no Params");
+        notNull(param.getSlotIds(), BadRequestException.class, "No Slot IDs!");
+        if (param.getSlotIds().size() < MIN_MERGE_SLOTS) {
+            throw new BadRequestException("Require 2 or more slots!");
+        }
+        final List<Slot> slots = slotService.findByIds(param.getSlotIds());
+        final int sensorNum = slotService.mergeSlots(slots);
+        return GeneralResult.ok(sensorNum);
+    }
+
+    /**
+     * 拆分货道
+     *
+     * @param param 参数
+     * @return GR
+     */
+    @PostMapping("/_reset-slot-sensors")
+    public GeneralResult<Integer> resetSlotSensors(@RequestBody ResetSlotSensorsParam param) {
+        notNull(param, BadRequestException.class, "no Params");
+        notEmpty(param.getSlotIds(), BadRequestException.class, "No Slot IDs!");
+        final int sensorNum = weightSensorService.resetSlotIdBySlotIds(param.getSlotIds());
+        return GeneralResult.ok(sensorNum);
     }
 }

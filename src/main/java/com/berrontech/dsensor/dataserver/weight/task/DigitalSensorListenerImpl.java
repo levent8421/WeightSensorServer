@@ -13,8 +13,6 @@ import lombok.val;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Create By Lastnika
@@ -48,8 +46,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             MemoryWeightSensor s = tryLookupMemorySensor(sensor, weightDataHolder);
             if (s == null) {
                 log.warn("#{} Can not find memory weight sensor", sensor.getParams().getAddress());
-            }
-            else {
+            } else {
                 int state = toState(sensor);
                 s.setState(state);
                 Collection<MemoryWeightSensor> sensors = Collections.singleton(s);
@@ -97,7 +94,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     private int toTolerance(DigitalSensorValues values) {
         final double apw = values.getAPW() * 1000;
         final double toleranceRate = 1 - values.getPieceCountAccuracy();
-        return (int) (apw * toleranceRate);
+        return (int) Math.round(apw * toleranceRate);
     }
 
     @Override
@@ -130,13 +127,18 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     @Override
     public void onNotifySaveZeroOffset(DigitalSensorItem sensor) {
-        sensorService.setZeroReference(sensor.getParams().getId(), (double) sensor.getValues().getZeroOffset());
+        final int id = sensor.getParams().getId();
+        if (id <= 0) {
+            final int address = sensor.getParams().getAddress();
+            log.debug("Skip save zeroOffset form sensor [{}], id=[{}]", address, id);
+            return;
+        }
+        sensorService.setZeroReference(id, (double) sensor.getValues().getZeroOffset());
     }
 
     @Override
     public boolean OnNotifyXSensorTempHumi(DigitalSensorItem sensor) {
         try {
-            weightDataHolder.getTemperatureHumiditySensorTable().containsKey(sensor.getParams().getAddress());
             final MemoryTemperatureHumiditySensor slot = weightDataHolder.getTemperatureHumiditySensorTable().get(sensor.getParams().getId());
             if (slot == null) {
                 log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getSubGroup());
@@ -166,8 +168,10 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     private static MemoryWeightSensor tryLookupMemorySensor(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
         MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
         if (slot != null) {
-            val s1 = slot.getSensors().stream().filter(s -> s.getAddress485() == sensor.getParams().getAddress()).findFirst().orElse(null);
-            return s1;
+            return slot.getSensors().stream()
+                    .filter(s -> s.getAddress485() == sensor.getParams().getAddress())
+                    .findFirst()
+                    .orElse(null);
         }
         return null;
     }

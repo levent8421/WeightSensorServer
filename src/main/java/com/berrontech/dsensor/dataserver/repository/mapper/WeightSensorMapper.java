@@ -112,4 +112,21 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return sensor list with all inner objects
      */
     List<WeightSensor> dumpAll();
+
+    /**
+     * 更新传感器绑定货道ID
+     *
+     * @param slotsIds   要更新的原货道ID
+     * @param newSlotsId 新货道ID
+     * @return 更新行数
+     */
+    int updateSlotIdBySlotIds(@Param("slotsIds") List<Integer> slotsIds, @Param("newSlotId") Integer newSlotsId);
+
+    /**
+     * 重置传感器绑定的货道ID
+     *
+     * @param slotIds 货道ID列表
+     * @return sensors num
+     */
+    int resetSlotIdBySlotIds(@Param("slotIds") List<Integer> slotIds);
 }

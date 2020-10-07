@@ -189,4 +189,9 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     public List<WeightSensor> dumpAll() {
         return weightSensorMapper.dumpAll();
     }
+
+    @Override
+    public int resetSlotIdBySlotIds(List<Integer> slotIds) {
+        return weightSensorMapper.resetSlotIdBySlotIds(slotIds);
+    }
 }

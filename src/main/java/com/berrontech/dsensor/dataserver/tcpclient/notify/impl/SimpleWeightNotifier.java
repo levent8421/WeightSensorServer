@@ -68,7 +68,6 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
      * Action 上报货道列表
      */
     private static final String ACTION_BALANCE_LIST = "notify.balance.list";
-    private String dbVersion;
     /**
      * API客户端引用
      */
@@ -194,14 +193,11 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
      * @return 版本
      */
     private String getDbVersion() {
-        if (this.dbVersion == null) {
-            final ApplicationConfig config = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION_NAME);
-            if (config == null) {
-                throw new InternalServerErrorException("No DbVersion Set!");
-            }
-            this.dbVersion = config.getValue();
+        final ApplicationConfig config = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION_NAME);
+        if (config == null) {
+            throw new InternalServerErrorException("No DbVersion Set!");
         }
-        return this.dbVersion;
+        return config.getValue();
     }
 
     @Override
