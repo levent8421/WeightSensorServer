@@ -672,12 +672,20 @@ public class DigitalSensorItem {
                 LastWeight = wgt;
                 SetELabelCommResult(true);
             }
-            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != isCountInAccuracy()) {
+//            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != isCountInAccuracy()) {
+//                SetELabelPieceCount(pcs);
+//                LastPCS = pcs;
+//                LastAccuracy = isCountInAccuracy();
+//                SetELabelCommResult(true);
+//            }
+            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != LastNotifyAccuracy) {
+                // use notify accuracy
                 SetELabelPieceCount(pcs);
                 LastPCS = pcs;
-                LastAccuracy = isCountInAccuracy();
+                LastAccuracy = LastNotifyAccuracy;
                 SetELabelCommResult(true);
             }
+
         } catch (Exception ex) {
             SetELabelCommResult(false);
             throw ex;
