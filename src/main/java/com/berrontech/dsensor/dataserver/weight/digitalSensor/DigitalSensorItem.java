@@ -678,10 +678,11 @@ public class DigitalSensorItem {
 //                LastAccuracy = isCountInAccuracy();
 //                SetELabelCommResult(true);
 //            }
-            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != LastNotifyAccuracy) {
+            String pcs2 = String.format("%d", LastNotifyPCS);
+            if (!Objects.equals(LastPCS, pcs2) || LastAccuracy != LastNotifyAccuracy) {
                 // use notify accuracy
-                SetELabelPieceCount(pcs);
-                LastPCS = pcs;
+                SetELabelPieceCount(pcs2);
+                LastPCS = pcs2;
                 LastAccuracy = LastNotifyAccuracy;
                 SetELabelCommResult(true);
             }
