@@ -5,11 +5,11 @@ import com.berrontech.dsensor.dataserver.common.io.IOUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.List;
 @Slf4j
 public class FirmwareLoader {
     private static final String PASSWORD = "monolithiot";
-    private static final String RESOURCE_NAME = "classpath:firmware/firmware.zip";
+    private static final String RESOURCE_NAME = "firmware/firmware.zip";
     private boolean ready;
     private final FirmwareResource firmwareResource = new FirmwareResource();
 
@@ -41,18 +41,36 @@ public class FirmwareLoader {
                 return this;
             }
             try {
-                final File resourceFile = ResourceUtils.getFile(RESOURCE_NAME);
-                this.doLoadResource(resourceFile);
-            } catch (FileNotFoundException e) {
-                throw new InternalServerErrorException("Error ron load Firmware file!", e);
+                final ClassPathResource resource = new ClassPathResource(RESOURCE_NAME);
+                this.doLoadResource(resource.getInputStream());
+            } catch (IOException e) {
+                throw new InternalServerErrorException("Error on get resource stream!", e);
             }
             ready = true;
         }
         return this;
     }
 
-    private void doLoadResource(File resourceFile) {
+    private File copyFirmware2File(InputStream source) throws IOException {
+        final File file = new File("./firmware.zip");
+        if (file.exists()) {
+            if (!file.delete()) {
+                throw new IOException("Error on delete tmp file!");
+            }
+        }
+        try (final FileOutputStream target = new FileOutputStream(file)) {
+            int len = 0;
+            final byte[] buffer = new byte[1024];
+            while ((len = source.read(buffer)) > 0) {
+                target.write(buffer, 0, len);
+            }
+        }
+        return file;
+    }
+
+    private void doLoadResource(InputStream resourceStream) {
         try {
+            final File resourceFile = copyFirmware2File(resourceStream);
             final ZipFile zipFile = new ZipFile(resourceFile);
             if (!zipFile.isValidZipFile()) {
                 throw new InternalServerErrorException("Invalidate firmware zip file!");
