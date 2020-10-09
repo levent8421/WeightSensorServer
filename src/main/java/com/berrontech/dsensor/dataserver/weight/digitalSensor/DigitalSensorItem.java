@@ -1331,8 +1331,8 @@ public class DigitalSensorItem {
         }
     }
 
-    public void SetELabelStatus(int value) throws Exception {
-        WriteELabelStatus(value);
+    public boolean SetELabelStatus(int value) throws Exception {
+        return WriteELabelStatus(value);
     }
 
     public int GetELabelStatus() throws Exception {
@@ -1417,7 +1417,7 @@ public class DigitalSensorItem {
                     newStatus &= (~DataPacket.EELabelStatusBits.LongPressedMark);
                 }
                 if (status != newStatus) {
-                    SetELabelStatus(newStatus);
+                    return SetELabelStatus(newStatus);
                 }
                 return true;
             } catch (Exception ex) {
@@ -1454,8 +1454,9 @@ public class DigitalSensorItem {
         return ReadELabelAsInt((byte) DataPacket.EELabelCmdID.ReadStatus, (byte) 0, (byte) 1);
     }
 
-    public void WriteELabelStatus(int status) throws Exception {
-        OperateELabel((byte) DataPacket.EELabelCmdID.WriteStatus, (byte) 0, (byte) 1, ByteHelper.intToBytes(status));
+    public boolean WriteELabelStatus(int status) throws Exception {
+        DataPacket packet = OperateELabel((byte) DataPacket.EELabelCmdID.WriteStatus, (byte) 0, (byte) 1, ByteHelper.intToBytes(status));
+        return packet.Content[0] == DataPacket.EResult.OK;
     }
 
 
