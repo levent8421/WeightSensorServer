@@ -5,11 +5,11 @@ import com.berrontech.dsensor.dataserver.common.io.IOUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.List;
 @Slf4j
 public class FirmwareLoader {
     private static final String PASSWORD = "monolithiot";
-    private static final String RESOURCE_NAME = "firmware/firmware.zip";
+    private static final String RESOURCE_NAME = "classpath:firmware/firmware.zip";
     private boolean ready;
     private final FirmwareResource firmwareResource = new FirmwareResource();
 
@@ -40,15 +40,19 @@ public class FirmwareLoader {
             if (ready) {
                 return this;
             }
-            final Resource resource = new ClassPathResource(RESOURCE_NAME);
-            this.doLoadResource(resource);
+            try {
+                final File resourceFile = ResourceUtils.getFile(RESOURCE_NAME);
+                this.doLoadResource(resourceFile);
+            } catch (FileNotFoundException e) {
+                throw new InternalServerErrorException("Error ron load Firmware file!", e);
+            }
+            ready = true;
         }
         return this;
     }
 
-    private void doLoadResource(Resource resource) {
+    private void doLoadResource(File resourceFile) {
         try {
-            final File resourceFile = resource.getFile();
             final ZipFile zipFile = new ZipFile(resourceFile);
             if (!zipFile.isValidZipFile()) {
                 throw new InternalServerErrorException("Invalidate firmware zip file!");

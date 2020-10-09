@@ -79,7 +79,7 @@ public class DigitalSensorGroup {
     private int CommInterval = 10;
     private int CommLongInterval = 50;
 
-    private int ReadTimeout = 1000;
+    private int ReadTimeout = 100;
     private boolean OnlyShowStable = false;
 
     private List<DigitalSensorItem> Sensors = new ArrayList<>();
