@@ -1,5 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.dto;
 
+import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import lombok.Data;
 
 /**
@@ -22,6 +24,18 @@ public class SystemError {
      * 类型： 电子标签错误
      */
     public static final int TYPE_ELABEL_ERROR = 0x02;
+
+    public static SystemError of(MemorySlot slot, MemoryWeightSensor sensor, int type, String message) {
+        final SystemError error = new SystemError();
+        error.setType(type);
+        error.setSensorState(sensor.getState());
+        error.setSensorAddress(sensor.getAddress485());
+        error.setSlotState(slot.getState());
+        error.setSlotNo(slot.getSlotNo());
+        error.setMessage(message);
+        return error;
+    }
+
     /**
      * 错误类型
      */

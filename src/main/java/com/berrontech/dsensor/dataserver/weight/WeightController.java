@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.weight;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
+import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareResource;
 import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener;
@@ -153,4 +154,13 @@ public interface WeightController {
      * @throws IOException error
      */
     void startScanTemperatureHumiditySensors(DeviceConnection connection) throws IOException;
+
+    /**
+     * 获取设备状态
+     *
+     * @param connectionId 连接ID
+     * @param address      设备地址
+     * @return 设备状态对象
+     */
+    DeviceState getDeviceState(Integer connectionId, Integer address);
 }

@@ -12,6 +12,7 @@ import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
+import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareResource;
 import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener;
@@ -507,5 +508,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 }
             }
         });
+    }
+
+    @Override
+    public DeviceState getDeviceState(Integer connectionId, Integer address) {
+        // TODO 获取设备状态 若设备不存在则返回null
+
+        return null;
     }
 }

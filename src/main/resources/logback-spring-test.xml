@@ -15,7 +15,7 @@
     </appender>
     <appender name="debugFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>/mnt/hd0/scada_wsa/log/weight-slot-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>/opt/weight_slot/log/weight-slot-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>365</maxHistory>
         </rollingPolicy>
         <encoder>

@@ -7,6 +7,7 @@ import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.TemperatureHumiditySensorService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SystemError;
 import com.berrontech.dsensor.dataserver.weight.holder.*;
 import lombok.extern.slf4j.Slf4j;
@@ -178,27 +179,27 @@ public class SensorMetaDataService implements ThreadFactory {
                 continue;
             }
             for (MemoryWeightSensor sensor : sensors) {
-                final SystemError err = tryReadError(sensor, slot);
-                if (err != null) {
-                    errors.add(err);
-                }
+                tryReadErrors(sensor, slot, errors);
             }
         }
         return errors;
     }
 
-    private SystemError tryReadError(MemoryWeightSensor sensor, MemorySlot slot) {
-        if (!Objects.equals(sensor.getState(), AbstractDevice485.STATE_OFFLINE)) {
-            return null;
+    private void tryReadErrors(MemoryWeightSensor sensor, MemorySlot slot, List<SystemError> context) {
+        final DeviceState state = weightController.getDeviceState(sensor.getConnectionId(), sensor.getAddress485());
+        if (state == null) {
+            log.error("Can not get device state for connection [{}] and address [{}]",
+                    sensor.getConnectionId(), sensor.getAddress485());
+            return;
         }
-        final SystemError error = new SystemError();
-        error.setType(SystemError.TYPE_SENSOR_ERROR);
-        error.setSensorAddress(sensor.getAddress485());
-        error.setSensorState(sensor.getState());
-        error.setSlotNo(slot.getSlotNo());
-        error.setSlotState(slot.getState());
-        error.setMessage("传感器离线");
-        return error;
+        if (Objects.equals(state.getDeviceState(), AbstractDevice485.STATE_OFFLINE)) {
+            final SystemError error = SystemError.of(slot, sensor, SystemError.TYPE_SENSOR_ERROR, "传感器离线");
+            context.add(error);
+        }
+        if (state.isHasElabel() && Objects.equals(state.getELabelState(), AbstractDevice485.STATE_OFFLINE)) {
+            final SystemError error = SystemError.of(slot, sensor, SystemError.TYPE_ELABEL_ERROR, "电子标签离线");
+            context.add(error);
+        }
     }
 
     @Override

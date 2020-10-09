@@ -13,7 +13,7 @@ tcp-api:
   ip: 127.0.0.1
   port: 8100
 serial:
-  lib-path: /opt/weightslot/so/libserial_port.so
+  lib-path: /opt/weight_slot/so/libserial_port.so
 logging:
   config: classpath:logback-spring-dev.xml
 db-upgrade:
