@@ -633,8 +633,7 @@ public class DigitalSensorItem {
                     // inited
                     // get enable mark
                     Params.setEnabled((status & DataPacket.EELabelStatusBits.Enabled) != 0);
-                    if ((status & DataPacket.EELabelStatusBits.LongPressedMark) != 0)
-                    {
+                    if ((status & DataPacket.EELabelStatusBits.LongPressedMark) != 0) {
                         // long pressed
                         // clear long pressed mark
                         if (SetLongPressedMark(false)) {
@@ -960,7 +959,7 @@ public class DigitalSensorItem {
             throw ex;
         } catch (Exception ex) {
             // read error used default
-            log.debug("#{} ReadParamAsBytes failed: {}", Params.getAddress(), ex.getMessage());
+            log.debug("#{} ReadParamAsBytes failed.", Params.getAddress(), ex);
             return defaultValue;
         }
     }

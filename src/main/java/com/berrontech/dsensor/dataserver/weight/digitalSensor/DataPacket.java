@@ -59,7 +59,7 @@ public class DataPacket {
         byte[] bts = new byte[1 + 1 + 1 + GetLength()];
         bts[0] = Head1;
         bts[1] = Head2;
-        bts[2] = (byte) GetLength();
+        bts[2] = (byte) (GetLength() & 0xFF);
         bts[3] = getVersion();
         bts[4] = getAddress();
         bts[5] = getCmd();
@@ -275,7 +275,7 @@ public class DataPacket {
 
     public static DataPacket BuildReadParam(byte address, int param) {
         byte[] content = new byte[]{
-                (byte) param,
+                (byte) (param & 0xFF),
         };
         return Build(address, ESendCmd.ReadParam, content);
     }
@@ -312,7 +312,7 @@ public class DataPacket {
 
     public static DataPacket BuildWriteParam(byte address, int param, byte[] value) {
         byte[] content = new byte[value.length + 1];
-        content[0] = (byte) param;
+        content[0] = (byte) (param & 0xFF);
         System.arraycopy(value, 0, content, 1, value.length);
         return Build(address, ESendCmd.WriteParam, content);
     }
@@ -320,7 +320,7 @@ public class DataPacket {
     public static DataPacket BuildCalibrate(byte address, int point, float weight) {
         byte[] val = ByteHelper.floatToBytes(weight);
         byte[] content = new byte[val.length + 1];
-        content[0] = (byte) point;
+        content[0] = (byte) (point & 0xFF);
         System.arraycopy(val, 0, content, 1, val.length);
         return Build(address, ESendCmd.Calibrate, content);
     }
@@ -342,7 +342,7 @@ public class DataPacket {
 
     public static DataPacket BuildSetWorkMode(byte address, int mode) {
         byte[] content = new byte[]{
-                (byte) mode,
+                (byte) (mode & 0xFF),
         };
         return Build(address, ESendCmd.SetWorkMode, content);
     }
@@ -354,7 +354,7 @@ public class DataPacket {
         byte[] bts = Charset.forName(DefaultCharsetName).encode(sn).array();
         byte[] content = new byte[bts.length + 2];
         content[0] = newAddress;
-        content[1] = (byte) EParam.DeviceSn;
+        content[1] = (byte) (EParam.DeviceSn & 0xFF);
         System.arraycopy(bts, 0, content, 2, bts.length);
         return Build(AddressConditionalBroadcast, ESendCmd.ConditionalSetAddress, content);
     }
@@ -380,7 +380,7 @@ public class DataPacket {
     }
 
     public static DataPacket BuildUpgradeEnd(byte address) {
-        return BuildUpgrade(address, (byte) EUpgradePackNo.End, null);
+        return BuildUpgrade(address, (byte) (EUpgradePackNo.End & 0xFF), null);
     }
 
     public static DataPacket BuildUpgradeData(byte address, byte packNo, byte[] data) {
@@ -388,7 +388,7 @@ public class DataPacket {
     }
 
     public static DataPacket BuildUpgradeQuery(byte address) {
-        return BuildUpgrade(address, (byte) EUpgradePackNo.Query, null);
+        return BuildUpgrade(address, (byte) (EUpgradePackNo.Query & 0xFF), null);
     }
 
     public static DataPacket BuildUpgradeStart(byte address, byte deviceType, int delay) {
@@ -396,7 +396,7 @@ public class DataPacket {
         byte[] content = new byte[bts.length + 1];
         content[0] = deviceType;
         System.arraycopy(bts, 0, content, 1, bts.length);
-        return BuildUpgrade(address, (byte) EUpgradePackNo.Start, content);
+        return BuildUpgrade(address, (byte) (EUpgradePackNo.Start & 0xFF), content);
     }
 
     public static DataPacket BuildELabelCmd(byte address, int cmd, byte page, byte totalPage, byte[] data) {
