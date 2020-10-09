@@ -622,6 +622,8 @@ public class DigitalSensorItem {
                 if (isSlotZombieChild()) {
                     // always enable zombie slot
                     int newStatus = status | DataPacket.EELabelStatusBits.Enabled;
+                    // clear long press status
+                    newStatus &= (~DataPacket.EELabelStatusBits.LongPressedMark);
                     if (newStatus != status) {
                         log.debug("#{} Slot({}) is zombie, reset to enable", Params.getAddress(), getSubGroup());
                         SetELabelStatus(newStatus);
@@ -631,6 +633,15 @@ public class DigitalSensorItem {
                     // inited
                     // get enable mark
                     Params.setEnabled((status & DataPacket.EELabelStatusBits.Enabled) != 0);
+                    if ((status & DataPacket.EELabelStatusBits.LongPressedMark) != 0)
+                    {
+                        // long pressed
+                        // clear long pressed mark
+                        if (SetLongPressedMark(false)) {
+                            // do zero after mark is cleared
+                            DoZero(true);
+                        }
+                    }
                 }
             }
 
@@ -1379,8 +1390,9 @@ public class DigitalSensorItem {
                 int newStatus = status;
                 if (enable) {
                     newStatus |= (int) DataPacket.EELabelStatusBits.Enabled;
-                } else
+                } else {
                     newStatus &= (~(int) DataPacket.EELabelStatusBits.Enabled);
+                }
                 if (status != newStatus) {
                     SetELabelStatus(newStatus);
                 }
@@ -1389,6 +1401,30 @@ public class DigitalSensorItem {
             }
         }
         Params.setEnabled(enable);
+    }
+
+    public boolean SetLongPressedMark(boolean mark) {
+        if (getParams().hasELabel()) {
+            try {
+                int status = GetELabelStatus();
+                if (status == -1) {
+                    return false;
+                }
+                int newStatus = status;
+                if (mark) {
+                    newStatus |= DataPacket.EELabelStatusBits.LongPressedMark;
+                } else {
+                    newStatus &= (~DataPacket.EELabelStatusBits.LongPressedMark);
+                }
+                if (status != newStatus) {
+                    SetELabelStatus(newStatus);
+                }
+                return true;
+            } catch (Exception ex) {
+                log.warn("WriteELabelLongPressedMark failed:{}", ex.getMessage());
+            }
+        }
+        return false;
     }
 
     public DataPacket OperateELabel(byte cmd, byte page, byte totalPage, byte[] data) throws Exception {
