@@ -951,9 +951,9 @@ public class DigitalSensorItem {
     public byte[] ReadParamAsBytes(int param, byte[] defaultValue) throws IOException {
         try {
             DataPacket packet = ReadParam(param);
+            log.info("#{} ReadParamAsBytes: name={}, counts={}", Params.getAddress(), param, packet.getContentLength());
             byte[] value = new byte[packet.getContentLength()];
             System.arraycopy(packet.Content, 1, value, 0, packet.getContentLength());
-            log.info("#{} ReadParamAsBytes: name={}, counts={}", Params.getAddress(), param, value.length);
             return value;
         } catch (IOException ex) {
             throw ex;
