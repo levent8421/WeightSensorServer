@@ -165,6 +165,8 @@ public class DataPacket {
         int Inited = 0x01;
         int Enabled = 0x02;
         int Highlight = 0x04;
+        int PowerSave = 0x08;
+        int LongPressedMark = 0x10;
     }
 
     public interface EWorkMode {
