@@ -952,8 +952,8 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = ReadParam(param);
             log.info("#{} ReadParamAsBytes: name={}, counts={}", Params.getAddress(), param, packet.getContentLength());
-            byte[] value = new byte[packet.getContentLength()];
-            System.arraycopy(packet.Content, 1, value, 0, packet.getContentLength());
+            byte[] value = new byte[packet.getContentLength() - 1];
+            System.arraycopy(packet.Content, 1, value, 0, value.length);
             return value;
         } catch (IOException ex) {
             throw ex;
@@ -967,9 +967,9 @@ public class DigitalSensorItem {
     public byte[] ReadELabelParamAsBytes(int param, byte[] defaultValue, int retries) throws IOException {
         try {
             DataPacket packet = ReadELabelParam(param, retries);
-            byte[] value = new byte[packet.getContentLength()];
-            System.arraycopy(packet.Content, 1, value, 0, packet.getContentLength());
-            log.info("#{} ReadELabelParamAsBytes: name={}, counts={}", packet.getAddress(), param, value.length);
+            log.info("#{} ReadELabelParamAsBytes: name={}, counts={}", packet.getAddress(), param, packet.getContentLength());
+            byte[] value = new byte[packet.getContentLength() - 1];
+            System.arraycopy(packet.Content, 1, value, 0, value.length);
             return value;
         } catch (IOException ex) {
             throw ex;
