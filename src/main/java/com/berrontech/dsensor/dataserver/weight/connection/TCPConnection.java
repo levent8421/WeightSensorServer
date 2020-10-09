@@ -11,7 +11,6 @@ import java.net.Socket;
 import java.net.SocketAddress;
 
 public class TCPConnection extends BasicConnection {
-    private boolean isConnected = false;
     private InputStream in = null;
     private OutputStream out = null;
     private Socket socket;
@@ -25,6 +24,7 @@ public class TCPConnection extends BasicConnection {
     private int watchDogInterval = 300;
     private int reopenCounter = 0;
     private int reopenInvertal = 3000;
+    private int connectTimeout = 5000;
 
     public TCPConnection() {
     }
@@ -36,21 +36,16 @@ public class TCPConnection extends BasicConnection {
     }
 
     @Override
-    public boolean isConnected() {
-        return isConnected;
-    }
-
-    @Override
     public void open() {
         try {
             socket = new Socket();
             SocketAddress address = new InetSocketAddress(IP, Port);
-            socket.connect(address);
+            socket.connect(address, connectTimeout);
             in = socket.getInputStream();
             out = socket.getOutputStream();
-            isConnected = true;
+            setConnected(true);
             recvThread = new Thread(() -> {
-                while (isConnected) {
+                while (isConnected()) {
                     try {
                         byte[] recv = new byte[2014];
                         int read = in.read(recv);
@@ -80,7 +75,7 @@ public class TCPConnection extends BasicConnection {
             watchDogThread = new Thread(() -> {
                 long ms = System.currentTimeMillis();
                 while (watchDogRunning) {
-                    if (!isConnected) {
+                    if (!isConnected()) {
                         if (ms == 0) {
                             ms = System.currentTimeMillis() + reopenInvertal;
                         } else if (ms <= System.currentTimeMillis()) {
@@ -104,7 +99,7 @@ public class TCPConnection extends BasicConnection {
 
     private void cleanup() {
         try {
-            isConnected = false;
+            setConnected(false);
             if (socket != null) {
                 socket.close();
                 socket = null;

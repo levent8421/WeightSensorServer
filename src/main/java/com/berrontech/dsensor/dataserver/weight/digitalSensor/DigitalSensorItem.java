@@ -138,6 +138,7 @@ public class DigitalSensorItem {
     private long TotalErrors;
     private long TotalSuccess;
     private int ContinueErrors;
+    public static final int OfflineContinueErrorThreshold = 2;
     private long ELabelTotalErrors;
     private long ELabelTotalSuccess;
     private int ELabelContinueErrors;
@@ -191,7 +192,7 @@ public class DigitalSensorItem {
         } else {
             TotalErrors++;
             ContinueErrors++;
-            if (ContinueErrors > 2) {
+            if (ContinueErrors > OfflineContinueErrorThreshold) {
                 setOnlineAndNotify(false);
             }
         }

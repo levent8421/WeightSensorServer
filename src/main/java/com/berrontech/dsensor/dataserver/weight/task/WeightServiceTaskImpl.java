@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
+import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.util.OSUtils;
@@ -9,8 +10,7 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.NativeLibraryLoader;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
@@ -513,6 +513,56 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public DeviceState getDeviceState(Integer connectionId, Integer address) {
         // TODO 获取设备状态 若设备不存在则返回null
+        if (address < DataPacket.AddressELabelStart) {
+            // is sensor
+            DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
+            if (s != null) {
+                val state = new DeviceState();
+                state.setConnectionId(connectionId);
+                state.setAddress(address);
+                state.setHasElabel(s.getParams().hasELabel());
+                if (!s.isOnline()) {
+                    state.setDeviceState(AbstractDevice485.STATE_OFFLINE);
+                } else if (s.getParams().isDisabled()) {
+                    state.setDeviceState(AbstractDevice485.STATE_DISABLE);
+                } else {
+                    state.setDeviceState(AbstractDevice485.STATE_ONLINE);
+                }
+                return state;
+            }
+        } else if (address < DataPacket.AddressXSensorStart) {
+            // is e-label
+            DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address - DataPacket.AddressXSensorStart);
+            if (s != null && s.getParams().hasELabel()) {
+                val state = new DeviceState();
+                state.setConnectionId(connectionId);
+                state.setAddress(address);
+                state.setHasElabel(s.getParams().hasELabel());
+                if (s.getELabelContinueErrors() > DigitalSensorItem.OfflineContinueErrorThreshold) {
+                    state.setDeviceState(AbstractDevice485.STATE_OFFLINE);
+                } else {
+                    state.setDeviceState(AbstractDevice485.STATE_ONLINE);
+                }
+                return state;
+            }
+        } else if (address < DataPacket.AddressXSensorEnd) {
+            // is x-sensor
+            DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
+            if (s != null) {
+                val state = new DeviceState();
+                state.setConnectionId(connectionId);
+                state.setAddress(address);
+                state.setHasElabel(s.getParams().hasELabel());
+                if (!s.isOnline()) {
+                    state.setDeviceState(AbstractDevice485.STATE_OFFLINE);
+                } else if (s.getParams().isDisabled()) {
+                    state.setDeviceState(AbstractDevice485.STATE_DISABLE);
+                } else {
+                    state.setDeviceState(AbstractDevice485.STATE_ONLINE);
+                }
+                return state;
+            }
+        }
 
         return null;
     }
