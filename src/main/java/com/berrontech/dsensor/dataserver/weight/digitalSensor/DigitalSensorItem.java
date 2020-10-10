@@ -636,6 +636,7 @@ public class DigitalSensorItem {
                     if ((status & DataPacket.EELabelStatusBits.LongPressedMark) != 0) {
                         // long pressed
                         // clear long pressed mark
+                        log.info("ELabel long press, address=[{}]", getParams().getAddress());
                         if (SetLongPressedMark(false)) {
                             // do zero after mark is cleared
                             DoZero(true);
