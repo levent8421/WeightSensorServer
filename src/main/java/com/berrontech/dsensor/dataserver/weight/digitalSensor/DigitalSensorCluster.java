@@ -39,7 +39,6 @@ public class DigitalSensorCluster extends DigitalSensorItem {
 
         float fSum;
         BigDecimal sum;
-        sum = BigDecimal.ZERO;
         getValues().setUnit(firstSensor.getValues().getUnit());
         fSum = 0f;
         for (DigitalSensorItem c : Children) {
@@ -56,6 +55,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         for (DigitalSensorItem c : Children) {
             fSum += c.getTotalSuccess();
         }
+        sum = BigDecimal.ZERO;
         for (DigitalSensorItem c : Children) {
             sum = sum.add(c.getValues().getGrossWeight());
         }
@@ -90,7 +90,8 @@ public class DigitalSensorCluster extends DigitalSensorItem {
             name = getPassenger().getMaterial().Name;
             bin = getSubGroup();
             wgt = getValues().getNetWeight() + " " + getValues().getUnit();
-            pcs = String.valueOf(getValues().getPieceCount());
+            //pcs = String.valueOf(getValues().getPieceCount());
+            pcs = String.format("%d", LastNotifyPCS);
         } else {
             number = " ";
             name = " ";

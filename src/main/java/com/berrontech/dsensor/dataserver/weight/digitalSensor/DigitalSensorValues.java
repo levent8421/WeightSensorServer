@@ -12,6 +12,12 @@ public class DigitalSensorValues {
     private int Ramp;
 
     private BigDecimal GrossWeight = BigDecimal.ZERO;
+    private SimpleDecimalFilter grossFilter = new SimpleDecimalFilter();
+
+    public void setGrossWeight(BigDecimal gross)
+    {
+        GrossWeight = grossFilter.push(gross);
+    }
 
     public String getGrossWeightStr() {
         return GrossWeight.toString();
@@ -19,18 +25,19 @@ public class DigitalSensorValues {
 
     public void setGrossWeightStr(String value) {
         try {
-            GrossWeight = new BigDecimal(value.trim());
+            setGrossWeight(new BigDecimal(value.trim()));
         } catch (Exception ex) {
-            GrossWeight = BigDecimal.ZERO;
+            setGrossWeight(BigDecimal.ZERO);
         }
     }
 
     private String Unit = "kg";
 
     private float HighGross;
+    private SimpleFilter highGrossFilter = new SimpleFilter();
 
     public void setHighGross(float value) {
-        HighGross = value;
+        HighGross = (float)highGrossFilter.push(value);
         CalcCounting();
     }
 

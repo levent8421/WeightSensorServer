@@ -1,0 +1,88 @@
+package com.berrontech.dsensor.dataserver.weight.digitalSensor;
+
+
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+/**
+ * @author lastn
+ */
+@Data
+public class SimpleDecimalFilter {
+    BigDecimal[] buffer;
+    int bufferPos = 0;
+    int peakDepth = 1;
+    int averageDepth = 3;
+
+    int calcBufferLength() {
+        return peakDepth * 2 + averageDepth;
+    }
+
+    void prepareBuffer() {
+        BigDecimal[] newBuffer = null;
+        if (buffer == null || buffer.length != calcBufferLength()) {
+            newBuffer = new BigDecimal[calcBufferLength()];
+        }
+        if (newBuffer != null) {
+            if (buffer == null) {
+                buffer = newBuffer;
+            } else {
+                if (buffer.length < newBuffer.length) {
+                    // buf: 3, newbuf: 5
+                    System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
+                    bufferPos = buffer.length;
+                } else {
+                    // buf: 5, newbuf: 3
+                    System.arraycopy(buffer, newBuffer.length - buffer.length, newBuffer, 0, newBuffer.length);
+                    bufferPos = newBuffer.length;
+                }
+            }
+        }
+    }
+
+    BigDecimal calcResult() {
+        if (bufferPos > 0) {
+            BigDecimal min, max;
+            BigDecimal total = BigDecimal.ZERO;
+            min = buffer[0];
+            max = min;
+            for (int pos = 0; pos < bufferPos && pos < buffer.length; pos++) {
+                BigDecimal v = buffer[pos];
+                if (v.compareTo(min) < 0) {
+                    min = v;
+                }
+                if (v.compareTo(max) > 0) {
+                    max = v;
+                }
+                total.add(v);
+            }
+            int count = bufferPos;
+            if (bufferPos < calcBufferLength()) {
+                // buffer is not full, only calc as average
+            } else {
+                // buffer is full
+                total.subtract(min);
+                total.subtract(max);
+                count = count - 2;
+            }
+            return total.divide(BigDecimal.valueOf(count));
+        }
+        return BigDecimal.ZERO;
+    }
+
+    public BigDecimal push(BigDecimal val) {
+        prepareBuffer();
+        if (bufferPos >= buffer.length) {
+            bufferPos = buffer.length;
+            // remove old value
+            System.arraycopy(buffer, 1, buffer, 0, buffer.length - 1);
+            // set new value to end
+            buffer[buffer.length - 1] = val;
+        } else {
+            // set new value to end
+            buffer[bufferPos++] = val;
+        }
+        return calcResult();
+    }
+}

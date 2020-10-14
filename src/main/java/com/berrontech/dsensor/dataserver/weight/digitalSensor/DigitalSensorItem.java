@@ -684,21 +684,20 @@ public class DigitalSensorItem {
                 LastWeight = wgt;
                 SetELabelCommResult(true);
             }
-//            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != isCountInAccuracy()) {
-//                SetELabelPieceCount(pcs);
-//                LastPCS = pcs;
-//                LastAccuracy = isCountInAccuracy();
-//                SetELabelCommResult(true);
-//            }
-            String pcs2 = String.format("%d", LastNotifyPCS);
-            if (!Objects.equals(LastPCS, pcs2) || LastAccuracy != LastNotifyAccuracy) {
-                // use notify accuracy
-                SetELabelPieceCount(pcs2);
-                LastPCS = pcs2;
-                LastAccuracy = LastNotifyAccuracy;
+            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != isCountInAccuracy()) {
+                SetELabelPieceCount(pcs);
+                LastPCS = pcs;
+                LastAccuracy = isCountInAccuracy();
                 SetELabelCommResult(true);
             }
-
+//            String pcs2 = String.format("%d", LastNotifyPCS);
+//            if (!Objects.equals(LastPCS, pcs2) || LastAccuracy != LastNotifyAccuracy) {
+//                // use notify accuracy
+//                SetELabelPieceCount(pcs2);
+//                LastPCS = pcs2;
+//                LastAccuracy = LastNotifyAccuracy;
+//                SetELabelCommResult(true);
+//            }
         } catch (Exception ex) {
             SetELabelCommResult(false);
             throw ex;
@@ -716,7 +715,8 @@ public class DigitalSensorItem {
             name = Passenger.getMaterial().getName();
             bin = getSubGroup();
             wgt = Values.getNetWeight() + " " + Values.getUnit();
-            pcs = String.valueOf(Values.getPieceCount());
+            //pcs = String.valueOf(Values.getPieceCount());
+            pcs = String.format("%d", LastNotifyPCS);
         } else {
             number = null;
             name = null;
