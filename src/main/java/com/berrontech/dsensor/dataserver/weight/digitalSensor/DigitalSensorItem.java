@@ -463,10 +463,19 @@ public class DigitalSensorItem {
                     return false;
                 } else {
                     HighResCounter = counter;
+                    float highgross = Values.getHighGross();
+                    byte stableMark = packet.Content[1];
                     Values.setGrossWeightStr(new String(packet.Content, 2, 8));
                     Values.setHighGross(ByteHelper.bytesToFloat(packet.Content, 10, 4));
                     Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 14, 4));
-                    Values.CheckStatus(packet.Content[1], Params.getCapacity(), Params.getIncrement());
+                    ////// valuate stable manually //////
+                    if (Math.abs(highgross - Values.getHighGross()) > Params.getIncrement().floatValue() * 2) {
+                        stableMark = DigitalSensorValues.DynamicMark;
+                    } else {
+                        stableMark = DigitalSensorValues.StableMark;
+                    }
+                    /////////////////////////////////////
+                    Values.CheckStatus(stableMark, Params.getCapacity(), Params.getIncrement());
                     if (Passenger.getMaterial().getAPW() > 0) {
                         // apw from passenger will replace local apw
                         Values.setAPW(Passenger.getMaterial().getAPW());
@@ -674,8 +683,7 @@ public class DigitalSensorItem {
                 LastPartName = name;
                 SetELabelCommResult(true);
             }
-            if (!Objects.equals(LastBinNo, bin))
-            {
+            if (!Objects.equals(LastBinNo, bin)) {
                 SetELabelBinNo(bin);
                 LastBinNo = bin;
                 SetELabelCommResult(true);
