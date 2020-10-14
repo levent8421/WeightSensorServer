@@ -674,7 +674,8 @@ public class DigitalSensorItem {
                 LastPartName = name;
                 SetELabelCommResult(true);
             }
-            if (!Objects.equals(LastBinNo, bin)) {
+            //if (!Objects.equals(LastBinNo, bin))
+            {
                 SetELabelBinNo(bin);
                 LastBinNo = bin;
                 SetELabelCommResult(true);
