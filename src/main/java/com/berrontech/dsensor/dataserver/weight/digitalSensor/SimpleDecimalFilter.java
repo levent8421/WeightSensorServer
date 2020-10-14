@@ -2,12 +2,16 @@ package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 /**
  * @author lastn
  */
+@Slf4j
 @Data
 public class SimpleDecimalFilter {
     BigDecimal[] buffer;
@@ -44,10 +48,11 @@ public class SimpleDecimalFilter {
     BigDecimal calcResult() {
         if (bufferPos > 0) {
             BigDecimal min, max;
-            BigDecimal total = BigDecimal.ZERO;
+            BigDecimal total;
             min = buffer[0];
             max = min;
-            for (int pos = 0; pos < bufferPos && pos < buffer.length; pos++) {
+            total = min;
+            for (int pos = 1; pos < bufferPos && pos < buffer.length; pos++) {
                 BigDecimal v = buffer[pos];
                 if (v.compareTo(min) < 0) {
                     min = v;
@@ -55,34 +60,39 @@ public class SimpleDecimalFilter {
                 if (v.compareTo(max) > 0) {
                     max = v;
                 }
-                total.add(v);
+                total = total.add(v);
             }
             int count = bufferPos;
             if (bufferPos < calcBufferLength()) {
                 // buffer is not full, only calc as average
             } else {
                 // buffer is full
-                total.subtract(min);
-                total.subtract(max);
+                total = total.subtract(min);
+                total = total.subtract(max);
                 count = count - 2;
             }
-            return total.divide(BigDecimal.valueOf(count));
+            return total.divide(BigDecimal.valueOf(count), RoundingMode.HALF_UP);
         }
         return BigDecimal.ZERO;
     }
 
     public BigDecimal push(BigDecimal val) {
-        prepareBuffer();
-        if (bufferPos >= buffer.length) {
-            bufferPos = buffer.length;
-            // remove old value
-            System.arraycopy(buffer, 1, buffer, 0, buffer.length - 1);
-            // set new value to end
-            buffer[buffer.length - 1] = val;
-        } else {
-            // set new value to end
-            buffer[bufferPos++] = val;
+        try {
+            prepareBuffer();
+            if (bufferPos >= buffer.length) {
+                bufferPos = buffer.length;
+                // remove old value
+                System.arraycopy(buffer, 1, buffer, 0, buffer.length - 1);
+                // set new value to end
+                buffer[buffer.length - 1] = val;
+            } else {
+                // set new value to end
+                buffer[bufferPos++] = val;
+            }
+            return calcResult();
+        } catch (Exception ex) {
+            log.warn("push decimal value({}) error", val, ex);
         }
-        return calcResult();
+        return BigDecimal.ZERO;
     }
 }

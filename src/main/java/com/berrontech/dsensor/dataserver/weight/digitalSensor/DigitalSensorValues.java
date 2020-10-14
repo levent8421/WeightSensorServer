@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Data
 public class DigitalSensorValues {
@@ -77,9 +78,8 @@ public class DigitalSensorValues {
 
     public static BigDecimal BuildRoundValue(int step, int points) {
         BigDecimal d = BigDecimal.valueOf(step);
-        BigDecimal rate10 = BigDecimal.valueOf(10);
         for (int n = 0; n < points; n++) {
-            d.divide(rate10);
+            d = d.divide(BigDecimal.TEN, d.scale() + 1, RoundingMode.HALF_UP);
         }
         return d;
     }

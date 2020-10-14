@@ -1,10 +1,12 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author lastn
  */
+@Slf4j
 @Data
 public class SimpleFilter {
     double[] buffer;
@@ -41,10 +43,11 @@ public class SimpleFilter {
     double calcResult() {
         if (bufferPos > 0) {
             double min, max;
-            double total = 0;
+            double total;
             min = buffer[0];
             max = min;
-            for (int pos = 0; pos < bufferPos && pos < buffer.length; pos++) {
+            total = min;
+            for (int pos = 1; pos < bufferPos && pos < buffer.length; pos++) {
                 double v = buffer[pos];
                 min = Math.min(min, v);
                 max = Math.max(max, v);
@@ -65,18 +68,25 @@ public class SimpleFilter {
     }
 
     public double push(double val) {
-        prepareBuffer();
-        if (bufferPos >= buffer.length) {
-            bufferPos = buffer.length;
-            // remove old value
-            System.arraycopy(buffer, 1, buffer, 0, buffer.length - 1);
-            // set new value to end
-            buffer[buffer.length - 1] = val;
-        } else {
-            // set new value to end
-            buffer[bufferPos++] = val;
+        try {
+            prepareBuffer();
+            if (bufferPos >= buffer.length) {
+                bufferPos = buffer.length;
+                // remove old value
+                System.arraycopy(buffer, 1, buffer, 0, buffer.length - 1);
+                // set new value to end
+                buffer[buffer.length - 1] = val;
+            } else {
+                // set new value to end
+                buffer[bufferPos++] = val;
+            }
+            return calcResult();
         }
-        return calcResult();
+        catch (Exception ex)
+        {
+            log.warn("push double value({}) error", val, ex);
+        }
+        return 0;
     }
 }
 
