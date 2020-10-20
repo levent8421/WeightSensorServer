@@ -60,9 +60,14 @@ public interface WeightNotifier {
     void sensorStateChanged(Collection<MemoryWeightSensor> sensors);
 
     /**
-     * Do notify
+     * 状态变化通知
      */
-    void checkForNotify();
+    void checkForStateChangedNotify();
+
+    /**
+     * 重量变化通知
+     */
+    void checkForWeightChangedNotify();
 
     /**
      * 通知温湿度传感器扫描结束

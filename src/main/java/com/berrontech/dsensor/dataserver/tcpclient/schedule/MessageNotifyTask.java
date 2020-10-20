@@ -18,8 +18,23 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class MessageNotifyTask {
-    private static final int TASK_INITIAL_DELAY = 30 * 1000;
-    private static final int TASK_INTERVAL = 2 * 60 * 1000;
+    /**
+     * 重量变化通知启动延时
+     */
+    private static final long WEIGHT_CHANGED_NOTIFY_DELAY = 30 * 1000;
+    /**
+     * 重量变化通知频率
+     */
+    private static final long WEIGHT_CHANGED_NOTIFY_INTERVAL = 2 * 60 * 1000;
+    /**
+     * 状态变化通知启动延时
+     */
+    private static final long STATE_CHANGED_NOTIFY_DELAY = 15 * 1000;
+    /**
+     * 状态变化通知频率
+     */
+    private static final long STATE_CHANGED_NOTIFY_INTERVAL = 30 * 1000;
+
     private final WeightNotifier weightNotifier;
 
     public MessageNotifyTask(WeightNotifier weightNotifier) {
@@ -27,14 +42,22 @@ public class MessageNotifyTask {
     }
 
     /**
-     * 调度方法
+     * 重量变化调度任务
      */
-    @Scheduled(fixedRate = TASK_INTERVAL, initialDelay = TASK_INITIAL_DELAY)
-    public void checkForNotify() {
-        final long startTime = System.currentTimeMillis();
-        log.info("Check notify start......");
-        weightNotifier.checkForNotify();
-        final long useTime = System.currentTimeMillis() - startTime;
-        log.info("Check notify end! use time [{}]", useTime);
+    @Scheduled(initialDelay = WEIGHT_CHANGED_NOTIFY_DELAY, fixedRate = WEIGHT_CHANGED_NOTIFY_INTERVAL)
+    public void notifyWeightChanged() {
+        final long start = System.currentTimeMillis();
+        weightNotifier.checkForWeightChangedNotify();
+        log.debug("Check for weightChangedNotify complete, time=[{}]", (System.currentTimeMillis() - start));
+    }
+
+    /**
+     * 状态变化调度任务
+     */
+    @Scheduled(initialDelay = STATE_CHANGED_NOTIFY_DELAY, fixedRate = STATE_CHANGED_NOTIFY_INTERVAL)
+    public void notifyStateChanged() {
+        final long start = System.currentTimeMillis();
+        weightNotifier.checkForStateChangedNotify();
+        log.debug("Check for stateChangedNotify complete, time=[{}]", (System.currentTimeMillis() - start));
     }
 }

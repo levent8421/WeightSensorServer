@@ -9,6 +9,7 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -197,12 +198,15 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
 
     @Override
     public void updateSn(Integer id, String sensorSn, String elabelSn) {
+        if (StringUtils.isBlank(sensorSn) && StringUtils.isBlank(elabelSn)) {
+            return;
+        }
         final WeightSensor sensor = require(id);
-        if (sensorSn != null) {
+        if (StringUtils.isNotBlank(sensorSn)) {
             sensor.setSensorSn(sensorSn);
             log.debug("Set sensorSn [{}] for id=[{}],address=[{}]", sensorSn, sensor.getId(), sensor.getAddress());
         }
-        if (elabelSn != null) {
+        if (StringUtils.isNotBlank(elabelSn)) {
             sensor.setElabelSn(elabelSn);
             log.debug("Set eLabelSn [{}] for id=[{}],address=[{}]", elabelSn, sensor.getId(), sensor.getAddress());
         }

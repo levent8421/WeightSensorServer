@@ -16,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notEmpty;
@@ -254,8 +251,29 @@ public class SlotController extends AbstractEntityController<Slot> {
             throw new BadRequestException("Require 2 or more slots!");
         }
         final List<Slot> slots = slotService.findByIds(param.getSlotIds());
+        checkMergeSlotAddress(slots);
         final int sensorNum = slotService.mergeSlots(slots);
         return GeneralResult.ok(sensorNum);
+    }
+
+    private void checkMergeSlotAddress(List<Slot> slots) {
+        final Map<Integer, Boolean> addressMap = new HashMap<>(16);
+        Integer minAddress = Integer.MAX_VALUE;
+        for (Slot slot : slots) {
+            final Integer address = slot.getAddress();
+            if (address < minAddress) {
+                minAddress = address;
+            }
+            addressMap.put(slot.getAddress(), Boolean.TRUE);
+        }
+        addressMap.remove(minAddress);
+        while (addressMap.size() > 0) {
+            minAddress += 1;
+            if (!addressMap.containsKey(minAddress)) {
+                throw new BadRequestException("地址不连续的货道不允许合并！地址不连续处为：" + (minAddress - 1));
+            }
+            addressMap.remove(minAddress);
+        }
     }
 
     /**

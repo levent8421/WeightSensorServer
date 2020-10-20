@@ -337,20 +337,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     }
 
     @Override
-    public void checkForNotify() {
-        long offset = System.currentTimeMillis();
-        log.info("Check For State Changed Notify Start");
-        checkForStateChangedNotify();
-        long end = System.currentTimeMillis();
-        log.info("Check for State Changed Notify End, time=[{}]", (end - offset));
-        offset = end;
-        log.info("Check For Weight Changed Notify Start");
-        checkForWeightChangedNotify();
-        end = System.currentTimeMillis();
-        log.info("Check for State Changed Notify End, time=[{}]", (end - offset));
-    }
-
-    private void checkForWeightChangedNotify() {
+    public void checkForWeightChangedNotify() {
         final List<MemorySlot> events = weightChangedEventBuffer.copyEventAndClean();
         if (events.isEmpty()) {
             log.info("WeightChanged Notify Buffer size=0,Skip Notify!");
@@ -363,7 +350,8 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
         sendMessage(message);
     }
 
-    private void checkForStateChangedNotify() {
+    @Override
+    public void checkForStateChangedNotify() {
         final Collection<MemorySlot> slots = stateChangedEventBuffer.copyEventAndClean();
         if (slots.size() <= 0) {
             log.info("StateChanged Notify Buffer size=0,Skip Notify!");

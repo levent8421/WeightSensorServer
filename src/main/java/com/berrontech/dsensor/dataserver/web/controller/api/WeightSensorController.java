@@ -168,4 +168,31 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         final WeightSensor sensor = weightSensorService.require(id);
         return GeneralResult.ok(sensor);
     }
+
+    /**
+     * 恢复电子标签地址
+     *
+     * @param id id
+     * @return GR
+     */
+    @PostMapping("/{id}/_recovery-elabel-address")
+    public GeneralResult<WeightSensor> recoveryElabelAddress(@PathVariable("id") Integer id) {
+        final WeightSensor sensor = weightSensorService.require(id);
+        final int eLabelAddress = sensor.getAddress() + WeightSensor.ELABEL_ADDRESS_OFFSET;
+        weightController.setElabelAddressForSn(sensor.getConnectionId(), sensor.getElabelSn(), eLabelAddress);
+        return GeneralResult.ok(sensor);
+    }
+
+    /**
+     * 恢复传感器地址
+     *
+     * @param id id
+     * @return GR
+     */
+    @PostMapping("/{id}/_recovery-sensor-address")
+    public GeneralResult<WeightSensor> recoverySensorAddress(@PathVariable("id") Integer id) {
+        final WeightSensor sensor = weightSensorService.require(id);
+        weightController.setSensorAddressForSn(sensor.getConnectionId(), sensor.getSensorSn(), sensor.getAddress());
+        return GeneralResult.ok(sensor);
+    }
 }
