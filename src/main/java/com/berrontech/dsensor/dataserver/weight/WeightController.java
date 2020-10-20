@@ -163,4 +163,22 @@ public interface WeightController {
      * @return 设备状态对象
      */
     DeviceState getDeviceState(Integer connectionId, Integer address);
+
+    /**
+     * 对指定连接下指定SN的传感器编址
+     *
+     * @param connectionId 连接ID
+     * @param sn           sn
+     * @param address      地址
+     */
+    void setSensorAddressForSn(Integer connectionId, String sn, Integer address);
+
+    /**
+     * 对指定连接下指定SN的电子标签编址
+     *
+     * @param connectionId 连接ID
+     * @param sn           sn
+     * @param address      地址
+     */
+    void setElabelAddressForSn(Integer connectionId, String sn, Integer address);
 }

@@ -48,4 +48,14 @@ public class WeightSensor extends AbstractDevice485 {
      */
     @Column(name = "has_elabel", nullable = false, length = 1)
     private Boolean hasElabel;
+    /**
+     * 传感器SN
+     */
+    @Column(name = "sensor_sn", length = 10)
+    private String sensorSn;
+    /**
+     * 电子标签SN
+     */
+    @Column(name = "elabel_sn", length = 100)
+    private String elabelSn;
 }

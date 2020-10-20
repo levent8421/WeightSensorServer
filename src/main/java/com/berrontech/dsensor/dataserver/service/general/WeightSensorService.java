@@ -135,4 +135,13 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @return 重置的传感器数量
      */
     int resetSlotIdBySlotIds(List<Integer> slotIds);
+
+    /**
+     * 跟新设备序列号，非null时更新，为null时保持原数据
+     *
+     * @param id       设备ID
+     * @param sensorSn 传感器SN
+     * @param elabelSn 电子标签SN
+     */
+    void updateSn(Integer id, String sensorSn, String elabelSn);
 }

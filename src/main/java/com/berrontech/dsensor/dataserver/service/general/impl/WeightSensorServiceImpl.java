@@ -194,4 +194,18 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     public int resetSlotIdBySlotIds(List<Integer> slotIds) {
         return weightSensorMapper.resetSlotIdBySlotIds(slotIds);
     }
+
+    @Override
+    public void updateSn(Integer id, String sensorSn, String elabelSn) {
+        final WeightSensor sensor = require(id);
+        if (sensorSn != null) {
+            sensor.setSensorSn(sensorSn);
+            log.debug("Set sensorSn [{}] for id=[{}],address=[{}]", sensorSn, sensor.getId(), sensor.getAddress());
+        }
+        if (elabelSn != null) {
+            sensor.setElabelSn(elabelSn);
+            log.debug("Set eLabelSn [{}] for id=[{}],address=[{}]", elabelSn, sensor.getId(), sensor.getAddress());
+        }
+        updateById(sensor);
+    }
 }

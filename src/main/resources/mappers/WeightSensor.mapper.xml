@@ -6,6 +6,8 @@
         ws.connection_id as ws_connection_id,
         ws.address       as ws_address,
         ws.device_sn     as ws_device_sn,
+        ws.sensor_sn as ws_sensor_sn,
+        ws.elabel_sn as ws_elabel_sn,
         ws.state         as ws_state,
         ws.zero_reference as ws_zero_reference,
         ws.config_str     as ws_config_str,
@@ -27,6 +29,8 @@
         <result column="ws_connection_id" property="connectionId"/>
         <result column="ws_address" property="address"/>
         <result column="ws_device_sn" property="deviceSn"/>
+        <result column="ws_sensor_sn" property="sensorSn"/>
+        <result column="ws_elabel_sn" property="elabelSn"/>
         <result column="ws_state" property="state"/>
         <result column="ws_zero_reference" property="zeroReference"/>
         <result column="ws_config_str" property="configStr"/>

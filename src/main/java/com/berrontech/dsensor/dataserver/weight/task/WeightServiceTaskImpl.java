@@ -10,7 +10,9 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.NativeLibraryLoader;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.DataPacket;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
@@ -563,7 +565,16 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 return state;
             }
         }
-
         return null;
+    }
+
+    @Override
+    public void setElabelAddressForSn(Integer connectionId, String sn, Integer address) {
+        // TODO 编址电子标签
+    }
+
+    @Override
+    public void setSensorAddressForSn(Integer connectionId, String sn, Integer address) {
+        // TODO 编址传感器
     }
 }

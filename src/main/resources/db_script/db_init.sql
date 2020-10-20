@@ -81,18 +81,20 @@ DROP TABLE IF EXISTS `t_weight_sensor`;
 
 CREATE TABLE `t_weight_sensor`
 (
-    `id`             int(10)     NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    `connection_id`  int(10)     NOT NULL COMMENT 'connection ref',
-    `address`        int(10)     NOT NULL COMMENT 'hardware address for 485',
-    `device_sn`      varchar(50) NOT NULL COMMENT 'device SerialNumber',
-    `state`          int(2)      NOT NULL COMMENT 'state for this sensor',
-    `zero_reference` double      NOT NULL DEFAULT '0' COMMENT 'weight zero offset',
-    `config_str`     varchar(255)         DEFAULT NULL COMMENT 'config string for hardware',
-    `slot_id`        int(10)              DEFAULT NULL COMMENT 'slot ref',
-    `has_elabel`     bit(1)      NOT NULL DEFAULT b'0' COMMENT 'enable eLabel flag',
-    `create_time`    datetime    NOT NULL COMMENT 'time of create',
-    `update_time`    datetime    NOT NULL COMMENT 'time of last update',
-    `deleted`        bit(1)      NOT NULL COMMENT 'delete flag',
+    `id`             int(10)      NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `connection_id`  int(10)      NOT NULL COMMENT 'connection ref',
+    `address`        int(10)      NOT NULL COMMENT 'hardware address for 485',
+    `device_sn`      varchar(50)  NOT NULL COMMENT 'device SerialNumber',
+    sensor_sn        varchar(100) null comment 'Sensor SN',
+    elabel_sn        varchar(100) null comment 'ELabel SN',
+    `state`          int(2)       NOT NULL COMMENT 'state for this sensor',
+    `zero_reference` double       NOT NULL DEFAULT '0' COMMENT 'weight zero offset',
+    `config_str`     varchar(255)          DEFAULT NULL COMMENT 'config string for hardware',
+    `slot_id`        int(10)               DEFAULT NULL COMMENT 'slot ref',
+    `has_elabel`     bit(1)       NOT NULL DEFAULT b'0' COMMENT 'enable eLabel flag',
+    `create_time`    datetime     NOT NULL COMMENT 'time of create',
+    `update_time`    datetime     NOT NULL COMMENT 'time of last update',
+    `deleted`        bit(1)       NOT NULL COMMENT 'delete flag',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDb
   DEFAULT CHARSET = utf8;
