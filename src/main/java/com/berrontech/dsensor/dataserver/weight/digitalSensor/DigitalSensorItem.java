@@ -34,6 +34,7 @@ public class DigitalSensorItem {
         return Group.getManager();
     }
 
+    public int SubGroupId = 0;
     public String SubGroup = "";
     public int SubGroupPosition = 0;
     public String Cluster = "";
@@ -138,7 +139,7 @@ public class DigitalSensorItem {
     private long TotalErrors;
     private long TotalSuccess;
     private int ContinueErrors;
-    public static final int OfflineContinueErrorThreshold = 2;
+    public static final int OfflineContinueErrorThreshold = 10;
     private long ELabelTotalErrors;
     private long ELabelTotalSuccess;
     private int ELabelContinueErrors;

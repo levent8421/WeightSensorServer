@@ -5,6 +5,7 @@ import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
+import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class DigitalSensorUtils {
                 }
                 DigitalSensorGroup group = sensorManager.NewGroup();
                 switch (conn.getType()) {
-                //switch (2) {
+                    //switch (2) {
                     default: {
                         log.info("Unknow connection type: {}", conn.getType());
                         break;
@@ -79,25 +80,24 @@ public class DigitalSensorUtils {
 //                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
                             params.setELabelModel(DigitalSensorParams.EELabelModel.V4);
                         }
+                        sensor.getValues().setFilterDepth(weightDataHolder.getSoftFilterLevel());
 
-                        Slot slot = weightDataHolder.getSlots().stream().filter(a -> a.getId().equals(sen.getSlotId())).findFirst().orElse(null);
-                        if (slot != null) {
-                            val ms = weightDataHolder.getSlotTable().get(slot.getSlotNo());
-                            if (ms != null) {
-                                sensor.setSubGroup(ms.getSlotNo());
-                                if (ms.getSensors().size() > 1) {
-                                    // reg combine slot info
-                                    val ss = ms.getSensors().stream().sorted(Comparator.comparing(MemoryWeightSensor::getAddress485)).collect(Collectors.toList());
-                                    for (int idx = 0; idx < ss.size(); idx++) {
-                                        if (ss.get(idx).getAddress485() == sensor.getParams().getAddress()) {
-                                            // sub group position of a combined slot always start from 1
-                                            sensor.setSubGroupPosition(idx + 1);
-                                            break;
-                                        }
+                        val ms = DigitalSensorUtils.tryLookupMemorySlot(sen.getSlotId(), weightDataHolder);
+                        if (ms != null) {
+                            sensor.setSubGroupId(ms.getId());
+                            sensor.setSubGroup(ms.getSlotNo());
+                            if (ms.getSensors().size() > 1) {
+                                // reg combine slot info
+                                val ss = ms.getSensors().stream().sorted(Comparator.comparing(MemoryWeightSensor::getAddress485)).collect(Collectors.toList());
+                                for (int idx = 0; idx < ss.size(); idx++) {
+                                    if (ss.get(idx).getAddress485() == sensor.getParams().getAddress()) {
+                                        // sub group position of a combined slot always start from 1
+                                        sensor.setSubGroupPosition(idx + 1);
+                                        break;
                                     }
                                 }
-                                setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
                             }
+                            setSkuToSensor(ms.getSku(), sensor.getPassenger().getMaterial());
                         }
                     }
                 }
@@ -115,6 +115,7 @@ public class DigitalSensorUtils {
                         params.getXSensorUppers()[0] = sen.getMaxTemperature();
                         params.getXSensorUppers()[1] = sen.getMaxHumidity();
                         params.setIncrement(new BigDecimal("0.1"));
+                        //sensor.setSubGroupId(sen.getSlotId());
                         sensor.setSubGroup(sen.getNo());
                     }
                 }
@@ -179,5 +180,28 @@ public class DigitalSensorUtils {
         }
     }
 
+
+    public static MemorySlot tryLookupMemorySlot(int slotId, WeightDataHolder weightDataHolder) {
+        MemorySlot slot = weightDataHolder.getSlotTable().values().stream()
+                .filter(s -> s.getId() == slotId)
+                .findFirst()
+                .orElse(null);
+        return slot;
+    }
+
+    public static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
+        return tryLookupMemorySlot(sensor.getSubGroupId(), weightDataHolder);
+    }
+
+    public static MemoryWeightSensor tryLookupMemorySensor(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
+        MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
+        if (slot != null) {
+            return slot.getSensors().stream()
+                    .filter(s -> s.getId() == sensor.getParams().getId())
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
+    }
 
 }

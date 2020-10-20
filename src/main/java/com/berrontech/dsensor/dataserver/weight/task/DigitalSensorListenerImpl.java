@@ -43,7 +43,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     public boolean onSensorStateChanged(DigitalSensorItem sensor) {
         log.debug("#{} Notify onSensorStateChanged", sensor.getParams().getAddress());
         try {
-            MemoryWeightSensor s = tryLookupMemorySensor(sensor, weightDataHolder);
+            MemoryWeightSensor s = DigitalSensorUtils.tryLookupMemorySensor(sensor, weightDataHolder);
             if (s == null) {
                 log.warn("#{} Can not find memory weight sensor", sensor.getParams().getAddress());
             } else {
@@ -69,7 +69,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         }
 
         try {
-            final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
+            final MemorySlot slot = DigitalSensorUtils.tryLookupMemorySlot(sensor, weightDataHolder);
             if (slot == null) {
                 log.debug("#{} Could not found slot ({})", sensor.getParams().getAddress(), sensor.getSubGroup());
                 return false;
@@ -106,7 +106,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     @Override
     public boolean onWeightChanged(DigitalSensorItem sensor) {
         try {
-            final MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
+            final MemorySlot slot = DigitalSensorUtils.tryLookupMemorySlot(sensor, weightDataHolder);
             if (slot == null) {
                 log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getSubGroup());
             } else {
@@ -161,20 +161,6 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         }
     }
 
-    private static MemorySlot tryLookupMemorySlot(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
-        return weightDataHolder.getSlotTable().get(sensor.getSubGroup());
-    }
-
-    private static MemoryWeightSensor tryLookupMemorySensor(DigitalSensorItem sensor, WeightDataHolder weightDataHolder) {
-        MemorySlot slot = tryLookupMemorySlot(sensor, weightDataHolder);
-        if (slot != null) {
-            return slot.getSensors().stream()
-                    .filter(s -> s.getAddress485() == sensor.getParams().getAddress())
-                    .findFirst()
-                    .orElse(null);
-        }
-        return null;
-    }
 
     private static int toState(DigitalSensorItem sensor) {
         return toState(sensor.getFlatStatus());

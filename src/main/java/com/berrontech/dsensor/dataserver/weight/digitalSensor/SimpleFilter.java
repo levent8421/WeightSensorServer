@@ -11,8 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SimpleFilter {
     double[] buffer;
     int bufferPos = 0;
-    int peakDepth = 1;
-    int averageDepth = 3;
+    int peakDepth = 0;
+    int averageDepth = 1;
 
     int calcBufferLength() {
         return peakDepth * 2 + averageDepth;
@@ -54,13 +54,13 @@ public class SimpleFilter {
                 total += buffer[pos];
             }
             int count = bufferPos;
-            if (bufferPos < calcBufferLength()) {
+            if (bufferPos < calcBufferLength() || peakDepth <= 0) {
                 // buffer is not full, only calc as average
             } else {
-                // buffer is full
+                // buffer is full, and has peak filter
                 total -= min;
                 total -= max;
-                count = bufferPos - 2;
+                count -= 2;
             }
             return total / count;
         }
@@ -81,12 +81,20 @@ public class SimpleFilter {
                 buffer[bufferPos++] = val;
             }
             return calcResult();
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             log.warn("push double value({}) error", val, ex);
         }
         return 0;
+    }
+
+    public void setDepth(int depth) {
+        if (depth <= 0) {
+            setPeakDepth(0);
+            setAverageDepth(1);
+        } else {
+            setPeakDepth(1);
+            setAverageDepth(depth);
+        }
     }
 }
 

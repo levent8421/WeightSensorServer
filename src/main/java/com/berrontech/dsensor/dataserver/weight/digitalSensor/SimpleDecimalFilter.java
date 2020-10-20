@@ -63,13 +63,13 @@ public class SimpleDecimalFilter {
                 total = total.add(v);
             }
             int count = bufferPos;
-            if (bufferPos < calcBufferLength()) {
+            if (bufferPos < calcBufferLength() || peakDepth <= 0) {
                 // buffer is not full, only calc as average
             } else {
-                // buffer is full
+                // buffer is full, and has peak filter
                 total = total.subtract(min);
                 total = total.subtract(max);
-                count = count - 2;
+                count -= 2;
             }
             return total.divide(BigDecimal.valueOf(count), RoundingMode.HALF_UP);
         }
@@ -95,4 +95,16 @@ public class SimpleDecimalFilter {
         }
         return BigDecimal.ZERO;
     }
+
+
+    public void setDepth(int depth) {
+        if (depth <= 0) {
+            setPeakDepth(0);
+            setAverageDepth(1);
+        } else {
+            setPeakDepth(1);
+            setAverageDepth(depth);
+        }
+    }
+
 }

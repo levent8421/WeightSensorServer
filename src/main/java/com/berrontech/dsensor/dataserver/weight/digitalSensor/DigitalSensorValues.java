@@ -205,8 +205,8 @@ public class DigitalSensorValues {
     private double PieceCountAccuracy;
 
     private void CalcCounting() {
-        double apw = APW;
-        if (apw > 0) {
+        if (isPieceCounting()) {
+            double apw = APW;
             synchronized (lock) {
                 PieceCount = (int) Math.round(getHighNet() / APW);
                 PieceCountAccuracy = calcPieceCountAccuracy(PieceCount, apw, getNetWeight().floatValue());
@@ -233,5 +233,11 @@ public class DigitalSensorValues {
 
     public boolean isNotHighlight() {
         return !Highlight;
+    }
+
+    public void setFilterDepth(int depth)
+    {
+        grossFilter.setDepth(depth);
+        highGrossFilter.setDepth(depth);
     }
 }
