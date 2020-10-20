@@ -14,6 +14,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -75,11 +76,13 @@ public class BalanceSkuSetHandler implements ActionHandler {
         // ------DATABASE OPERATION START------
         final Slot queryParam = new Slot();
         queryParam.setSlotNo(param.getSlotNo());
-        queryParam.setSkuName(param.getName());
-        queryParam.setSkuNo(param.getSkuNo());
-        queryParam.setSkuApw(param.getApw());
-        queryParam.setSkuTolerance(param.getTolerance());
-        queryParam.setSkuShelfLifeOpenDays(param.getSkuShelfLifeOpenDays());
+        if (StringUtils.isNotBlank(param.getSkuNo())) {
+            queryParam.setSkuName(param.getName());
+            queryParam.setSkuNo(param.getSkuNo());
+            queryParam.setSkuApw(param.getApw());
+            queryParam.setSkuTolerance(param.getTolerance());
+            queryParam.setSkuShelfLifeOpenDays(param.getSkuShelfLifeOpenDays());
+        }
         slotService.updateSkuInfoBySlotNo(queryParam);
         // ------DATABASE OPERATION END------
         // NOTIFY WEIGHT SERVICE SKU CHANGED
@@ -108,9 +111,11 @@ public class BalanceSkuSetHandler implements ActionHandler {
         final Class<BadRequestException> ex = BadRequestException.class;
         notNull(param, ex, "参数不能为空!");
         notEmpty(param.getSlotNo(), ex, "货道号slotNo不能为空!");
-        notEmpty(param.getName(), ex, "SKU名称不能为空!");
-        notNull(param.getApw(), ex, "SKU单重不能为空!");
-        notNull(param.getTolerance(), ex, "SKU允差不能为空!");
-        notEmpty(param.getSkuNo(), ex, "SKU号不能为空!");
+        if (StringUtils.isNotBlank(param.getSkuNo())) {
+            notEmpty(param.getName(), ex, "SKU名称不能为空!");
+            notNull(param.getApw(), ex, "SKU单重不能为空!");
+            notNull(param.getTolerance(), ex, "SKU允差不能为空!");
+            notEmpty(param.getSkuNo(), ex, "SKU号不能为空!");
+        }
     }
 }

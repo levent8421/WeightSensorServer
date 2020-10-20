@@ -41,7 +41,8 @@
         set s.sku_no= #{slot.skuNo},
             s.sku_name=#{slot.skuName},
             s.sku_apw=#{slot.skuApw},
-            s.sku_tolerance=#{slot.skuTolerance}
+            s.sku_tolerance=#{slot.skuTolerance},
+            s.sku_shelf_life_open_days=#{slot.skuShelfLifeOpenDays}
         where s.slot_no = #{slot.slotNo}
     </update>
     <update id="updateSlotNoById">

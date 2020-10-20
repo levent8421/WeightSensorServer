@@ -198,15 +198,17 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
 
     @Override
     public void updateSn(Integer id, String sensorSn, String elabelSn) {
-        if (StringUtils.isBlank(sensorSn) && StringUtils.isBlank(elabelSn)) {
+        final boolean shouldUpdateElabelSn = StringUtils.isNotBlank(elabelSn);
+        final boolean shouldUpdateSensorSn = StringUtils.isNotBlank(sensorSn);
+        if (!(shouldUpdateElabelSn || shouldUpdateSensorSn)) {
             return;
         }
         final WeightSensor sensor = require(id);
-        if (StringUtils.isNotBlank(sensorSn)) {
+        if (shouldUpdateSensorSn) {
             sensor.setSensorSn(sensorSn);
             log.debug("Set sensorSn [{}] for id=[{}],address=[{}]", sensorSn, sensor.getId(), sensor.getAddress());
         }
-        if (StringUtils.isNotBlank(elabelSn)) {
+        if (shouldUpdateElabelSn) {
             sensor.setElabelSn(elabelSn);
             log.debug("Set eLabelSn [{}] for id=[{}],address=[{}]", elabelSn, sensor.getId(), sensor.getAddress());
         }

@@ -50,4 +50,8 @@ public class WeightDataHolder implements Serializable {
      * 温湿度传感器列表
      */
     private List<TemperatureHumiditySensor> temperatureHumiditySensors;
+    /**
+     * 软滤波等级
+     */
+    private Integer softFilterLevel;
 }

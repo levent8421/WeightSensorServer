@@ -29,6 +29,10 @@ public class ApplicationConfig extends AbstractEntity {
      */
     public static final String DB_VERSION_NAME = "application.db_version_name";
     /**
+     * 软件滤波等级
+     */
+    public static final String SOFT_FILTER_LEVEL = "weight.soft_filter_level";
+    /**
      * 开启TabBar
      */
     public static final String ENABLE_TAB_BAR = "application.ui.enable_tabBar";

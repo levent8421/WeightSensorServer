@@ -2,10 +2,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.*;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
-import com.berrontech.dsensor.dataserver.service.general.DeviceConnectionService;
-import com.berrontech.dsensor.dataserver.service.general.SlotService;
-import com.berrontech.dsensor.dataserver.service.general.TemperatureHumiditySensorService;
-import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
+import com.berrontech.dsensor.dataserver.service.general.*;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SystemError;
@@ -38,13 +35,15 @@ public class SensorMetaDataService implements ThreadFactory {
     private final TemperatureHumiditySensorService temperatureHumiditySensorService;
     private final WeightController weightController;
     private final BlockingQueue<Runnable> threadQueue;
+    private final ApplicationConfigService applicationConfigService;
 
     public SensorMetaDataService(WeightDataHolder weightDataHolder,
                                  DeviceConnectionService deviceConnectionService,
                                  WeightSensorService weightSensorService,
                                  SlotService slotService,
                                  WeightController weightController,
-                                 TemperatureHumiditySensorService temperatureHumiditySensorService) {
+                                 TemperatureHumiditySensorService temperatureHumiditySensorService,
+                                 ApplicationConfigService applicationConfigService) {
         this.weightDataHolder = weightDataHolder;
         this.deviceConnectionService = deviceConnectionService;
         this.weightSensorService = weightSensorService;
@@ -53,6 +52,7 @@ public class SensorMetaDataService implements ThreadFactory {
         this.threadQueue = new LinkedBlockingDeque<>();
         this.threadPool = buildThreadPool();
         this.temperatureHumiditySensorService = temperatureHumiditySensorService;
+        this.applicationConfigService = applicationConfigService;
     }
 
     private ExecutorService buildThreadPool() {
@@ -80,6 +80,9 @@ public class SensorMetaDataService implements ThreadFactory {
         final List<TemperatureHumiditySensor> temperatureHumiditySensors = temperatureHumiditySensorService.all();
         weightDataHolder.setTemperatureHumiditySensors(temperatureHumiditySensors);
 
+        final ApplicationConfig softFilterLevelConfig = applicationConfigService.getConfig(ApplicationConfig.SOFT_FILTER_LEVEL);
+        weightDataHolder.setSoftFilterLevel(Integer.parseInt(softFilterLevelConfig.getValue()));
+        
         this.buildMemorySlotTable();
         this.buildTemperatureHumiditySensorTable();
         weightController.onMetaDataChanged();
