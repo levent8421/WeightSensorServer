@@ -212,7 +212,18 @@ public class DigitalSensorUtils {
         return null;
     }
 
-    public static DigitalSensorItem tryLookupSensor(int connectionId, int address) {
+    public static DigitalSensorItem tryLookupSensor(DigitalSensorManager sensorManager, int connectionId, int address) {
+        for (DigitalSensorGroup group : sensorManager.getGroups())
+        {
+            if (group.getId() == connectionId)
+            {
+                for (DigitalSensorItem sensor: group.getSensors())
+                {
+                    if (sensor.getParams().getAddress() == address)
+                        return sensor;
+                }
+            }
+        }
         return null;
     }
 

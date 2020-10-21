@@ -572,9 +572,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public boolean setElabelAddressForSn(Integer connectionId, String sn, Integer address) {
         try {
             log.debug("#{} setElabelAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn);
-            val sensor = DigitalSensorUtils.tryLookupSensor(connectionId, address);
-            log.debug("#{} setSensorAddressForSn: sensor found", address);
+            val sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
             if (sensor != null) {
+                log.debug("#{} setSensorAddressForSn: sensor found", address);
                 val group = sensor.getGroup();
                 log.debug("#{} setElabelAddressForSn: stop programing", address);
                 group.stopAddressPrograming();
@@ -610,9 +610,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public boolean setSensorAddressForSn(Integer connectionId, String sn, Integer address) {
         try {
             log.debug("#{} setSensorAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn);
-            val sensor = DigitalSensorUtils.tryLookupSensor(connectionId, address);
-            log.debug("#{} setSensorAddressForSn: sensor found", address);
+            val sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
             if (sensor != null) {
+                log.debug("#{} setSensorAddressForSn: sensor found", address);
                 val group = sensor.getGroup();
                 log.debug("#{} setSensorAddressForSn: stop programing", address);
                 group.stopAddressPrograming();
