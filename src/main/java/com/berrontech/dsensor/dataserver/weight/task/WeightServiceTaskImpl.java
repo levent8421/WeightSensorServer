@@ -570,11 +570,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public boolean setElabelAddressForSn(Integer connectionId, String sn, Integer address) {
-        // TODO 编址电子标签
         try {
             val sensor = DigitalSensorUtils.tryLookupSensor(connectionId, address);
-            if (sensor != null)
-            {
+            if (sensor != null) {
                 val group = sensor.getGroup();
                 group.stopAddressPrograming();
                 group.stopReading();
@@ -594,9 +592,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 group.startReading2();
                 return true;
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             log.warn("#{} setElabelAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn, ex);
         }
         return false;
@@ -604,11 +600,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public boolean setSensorAddressForSn(Integer connectionId, String sn, Integer address) {
-        // TODO 编址传感器
         try {
             val sensor = DigitalSensorUtils.tryLookupSensor(connectionId, address);
-            if (sensor != null)
-            {
+            if (sensor != null) {
                 val group = sensor.getGroup();
                 group.stopAddressPrograming();
                 group.stopReading();
@@ -628,9 +622,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 group.startReading2();
                 return true;
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             log.warn("#{} setSensorAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn, ex);
         }
         return false;
