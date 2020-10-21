@@ -212,15 +212,21 @@ public class DigitalSensorUtils {
         return null;
     }
 
+    public static DigitalSensorGroup tryLookupGroup(DigitalSensorManager sensorManager, int connectionId) {
+        for (DigitalSensorGroup group : sensorManager.getGroups()) {
+            if (group.getId() == connectionId) {
+                return group;
+            }
+        }
+        return null;
+    }
+
     public static DigitalSensorItem tryLookupSensor(DigitalSensorManager sensorManager, int connectionId, int address) {
-        for (DigitalSensorGroup group : sensorManager.getGroups())
-        {
-            if (group.getId() == connectionId)
-            {
-                for (DigitalSensorItem sensor: group.getSensors())
-                {
-                    if (sensor.getParams().getAddress() == address)
-                        return sensor;
+        DigitalSensorGroup group = tryLookupGroup(sensorManager, connectionId);
+        if (group != null) {
+            for (DigitalSensorItem sensor : group.getSensors()) {
+                if (sensor.getParams().getAddress() == address) {
+                    return sensor;
                 }
             }
         }

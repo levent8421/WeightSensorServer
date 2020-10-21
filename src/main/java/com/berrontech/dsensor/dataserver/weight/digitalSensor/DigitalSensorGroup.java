@@ -741,4 +741,14 @@ public class DigitalSensorGroup {
         }
         DigitalSensorItem.SetAllZeroCapture(Driver, value);
     }
+
+    public void SetAddressByDeviceSn(int address, String sn) throws Exception {
+        log.info("#{} SetAddressByDeviceSn: address={}, sn={}", DataPacket.AddressConditionalBroadcast, address, sn);
+        byte newAddress = (byte) (address & 0xFF);
+        DataPacket packet = DataPacket.BuildSetAddressByDeviceSn(newAddress, sn);
+        synchronized (Driver.getLock()) {
+            Driver.WriteRead(packet, getReadTimeout() + 1000);
+        }
+        log.info("#{} SetAddressByDeviceSn: {} -> {}", DataPacket.AddressConditionalBroadcast, sn, address);
+    }
 }

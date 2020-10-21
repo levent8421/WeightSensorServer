@@ -391,24 +391,20 @@ public class DigitalSensorItem {
 
     public void SetAddressByDeviceSn(int type, String sn) throws Exception {
         try {
-            log.info("#{} SetAddressByDeviceSn", DataPacket.AddressConditionalBroadcast);
             byte newAddress;
             if (type == DataPacket.EDeviceType.ELabel) {
                 newAddress = (byte) Params.getELabelAddress();
             } else {
                 newAddress = (byte) Params.getAddress();
             }
-            DataPacket packet = DataPacket.BuildSetAddressByDeviceSn(newAddress, sn);
-            synchronized (Driver.getLock()) {
-                Driver.WriteRead(packet, getWriteParamTimeout());
-            }
+            Group.SetAddressByDeviceSn(newAddress, sn);
             SetCommResult(true);
-            log.info("#{} SetAddressByDeviceSn: {} -> {}", DataPacket.AddressConditionalBroadcast, sn, Params.getAddress());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
         }
     }
+
 
     public void UpdateRawCount() throws Exception {
         try {
