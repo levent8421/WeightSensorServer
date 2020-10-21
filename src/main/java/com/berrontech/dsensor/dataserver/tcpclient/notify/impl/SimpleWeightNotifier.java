@@ -268,6 +268,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
         final List<MemorySlot> memorySlots = new ArrayList<>();
         for (MemoryWeightSensor sensor : sensors) {
             weightSensorService.updateState(sensor.getId(), sensor.getState());
+            slotService.updateState(sensor.getSlotId(), sensor.getState());
             if (!slotMap.containsKey(sensor.getId())) {
                 val slot = slotService.get(sensor.getSlotId());
                 val ms = MemorySlot.of(slot);
@@ -360,9 +361,6 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
         log.info("StateChanged Notify Buffer size=[{}]", slots.size());
         final List<SlotVo> dataList = memoryObject2SlotVo(slots);
         final Message message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_STATE_CHANGED, dataList);
-        for (MemorySlot slot : slots) {
-            slotService.updateState(slot.getId(), slot.getState());
-        }
         sendMessage(message);
     }
 
