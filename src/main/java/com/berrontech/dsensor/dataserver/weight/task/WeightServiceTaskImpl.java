@@ -575,24 +575,33 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public boolean setElabelAddressForSn(Integer connectionId, String sn, Integer address) {
         try {
-            val sensor = DigitalSensorUtils.tryLookupSensor(connectionId, address);
+            log.debug("#{} setElabelAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn);
+            log.debug("#{} sn={}, length={}", address, sn, sn.length());
+            val sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
             if (sensor != null) {
+                log.debug("#{} setSensorAddressForSn: sensor found", address);
                 val group = sensor.getGroup();
+                log.debug("#{} setElabelAddressForSn: stop programing", address);
                 group.stopAddressPrograming();
+                log.debug("#{} setElabelAddressForSn: stop reading", address);
                 group.stopReading();
 
+                log.debug("#{} setElabelAddressForSn: switch to APM mode", address);
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.APM);
                 Thread.sleep(group.getCommLongInterval());
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.APM);
                 Thread.sleep(group.getCommLongInterval());
 
+                log.debug("#{} setElabelAddressForSn: SetAddressByDeviceSn", address);
                 sensor.SetAddressByDeviceSn(DataPacket.EDeviceType.ELabel, sn);
-
                 Thread.sleep(group.getCommLongInterval());
+
+                log.debug("#{} setElabelAddressForSn: switch to Normal mode", address);
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
                 Thread.sleep(group.getCommLongInterval());
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
 
+                log.debug("#{} setElabelAddressForSn: restart reading", address);
                 group.startReading2();
                 return true;
             }
@@ -605,29 +614,38 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public boolean setSensorAddressForSn(Integer connectionId, String sn, Integer address) {
         try {
-            val sensor = DigitalSensorUtils.tryLookupSensor(connectionId, address);
+            log.debug("#{} setSensorAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn);
+            log.debug("#{} sn={}, length={}", address, sn, sn.length());
+            val sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
             if (sensor != null) {
+                log.debug("#{} setSensorAddressForSn: sensor found", address);
                 val group = sensor.getGroup();
+                log.debug("#{} setSensorAddressForSn: stop programing", address);
                 group.stopAddressPrograming();
+                log.debug("#{} setSensorAddressForSn: stop reading", address);
                 group.stopReading();
 
+                log.debug("#{} setSensorAddressForSn: switch to APM mode", address);
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.APM);
                 Thread.sleep(group.getCommLongInterval());
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.APM);
                 Thread.sleep(group.getCommLongInterval());
 
+                log.debug("#{} setSensorAddressForSn: SetAddressByDeviceSn", address);
                 sensor.SetAddressByDeviceSn(DataPacket.EDeviceType.DigitalSensor, sn);
-
                 Thread.sleep(group.getCommLongInterval());
+
+                log.debug("#{} setSensorAddressForSn: switch to Normal mode", address);
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
                 Thread.sleep(group.getCommLongInterval());
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
 
+                log.debug("#{} setSensorAddressForSn: restart reading", address);
                 group.startReading2();
                 return true;
             }
         } catch (Exception ex) {
-            log.warn("#{} setSensorAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn, ex);
+            log.warn("#{} setSensorAddressForSn", address, ex);
         }
         return false;
     }

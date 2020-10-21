@@ -74,7 +74,7 @@ public class DigitalSensorDriver {
         final byte checkSum = packet.CalcChecksum();
         final boolean valid = packet.getChecksum() == checkSum;
         if (!valid) {
-            log.debug("Checksum error, recv=[{}], calc=[{}]", packet.getChecksum(), checkSum);
+            log.debug("Checksum error, recv=[{}], calc=[{}]", packet.getChecksum() & 0xFF, checkSum & 0xFF);
         }
         return valid;
     }
