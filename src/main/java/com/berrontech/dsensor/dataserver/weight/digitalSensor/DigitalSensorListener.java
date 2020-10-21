@@ -63,12 +63,12 @@ public interface DigitalSensorListener {
      * 通知传感器SN变化
      * @param sensor
      */
-    boolean onNotifySensorSnChanged(DigitalSensorItem sensor);
+    boolean onNotifySensorSnChanged(DigitalSensorItem sensor, String sn);
 
     /**
      * 通知ELabel SN变化
      * @param sensor
      */
-    boolean onNotifyELabelSnChanged(DigitalSensorItem sensor);
+    boolean onNotifyELabelSnChanged(DigitalSensorItem sensor, String sn);
 
 }

@@ -592,6 +592,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
 
                 group.startReading2();
+                return true;
             }
         }
         catch (Exception ex)
@@ -625,6 +626,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
 
                 group.startReading2();
+                return true;
             }
         }
         catch (Exception ex)

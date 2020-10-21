@@ -228,7 +228,7 @@ public class DigitalSensorItem {
             String sn = GetDeviceSn("", 1);
             if (DigitalSensorParams.IsSnInRule(sn)) {
                 if (!Objects.equals(sn, Params.getBackupSensorSn())) {
-                    if (getGroup().getManager().getSensorListener().onNotifySensorSnChanged(this)) {
+                    if (getGroup().getManager().getSensorListener().onNotifySensorSnChanged(this, sn)) {
                         Params.setBackupSensorSn(sn);
                     }
                 }
@@ -245,7 +245,7 @@ public class DigitalSensorItem {
             String sn = GetELabelDeviceSn("", 1);
             if (DigitalSensorParams.IsSnInRule(sn)) {
                 if (!Objects.equals(sn, Params.getBackupELabelSn())) {
-                    if (getGroup().getManager().getSensorListener().onNotifyELabelSnChanged(this)) {
+                    if (getGroup().getManager().getSensorListener().onNotifyELabelSnChanged(this, sn)) {
                         Params.setBackupELabelSn(sn);
                     }
                 }
