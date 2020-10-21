@@ -23,14 +23,17 @@ public class DigitalSensorUtils {
         log.debug("start buildDigitalSensors");
         sensorManager.shutdown();
         sensorManager.getGroups().clear();
+        log.debug("connection count={}", weightDataHolder.getConnections().size());
         for (DeviceConnection conn : weightDataHolder.getConnections()) {
             try {
-                int count = (int) weightDataHolder.getWeightSensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
-                count += (int) weightDataHolder.getTemperatureHumiditySensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
+                int count1 = (int) weightDataHolder.getWeightSensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
+                log.debug("{} WeightSensors in Group({})", count1, conn.getId());
+                int count2 = (int) weightDataHolder.getTemperatureHumiditySensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
+                log.debug("{} TemperatureHumiditySensors in Group({})", count2, conn.getId());
+                int count = count1 + count2;
                 if (count <= 0) {
                     continue;
                 }
-                log.debug("{} sensors in Group({})", count, conn.getId());
 
                 DigitalSensorGroup group = sensorManager.NewGroup();
                 switch (conn.getType()) {
