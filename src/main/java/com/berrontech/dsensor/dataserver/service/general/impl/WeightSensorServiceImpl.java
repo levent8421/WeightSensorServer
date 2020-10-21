@@ -226,6 +226,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     @Override
     public boolean updateElabelSn(Integer id, String sn) {
         if (eLabelSnExists(sn)) {
+            log.warn("Skip update ELabel SN [{}] for id [{}]", sn, id);
             return false;
         }
         final int rows = weightSensorMapper.updateElabelSnById(id, sn);
@@ -236,6 +237,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     @Override
     public boolean updateSensorSn(Integer id, String sn) {
         if (sensorSnExists(sn)) {
+            log.warn("Skip update Sensor SN [{}] for id [{}]!", sn, id);
             return false;
         }
         final int rows = weightSensorMapper.updateSensorSnById(id, sn);
