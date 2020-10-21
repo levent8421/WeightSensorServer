@@ -1529,7 +1529,7 @@ public class DigitalSensorItem {
         if (str == null) {
             str = "";
         }
-        byte[] bts = Charset.forName(DataPacket.DefaultCharsetName).encode(str).array();
+        byte[] bts = str.getBytes(DataPacket.DefaultCharsetName);
         byte[] content = new byte[1 + 4 + bts.length];
         content[0] = (byte) DataPacket.EELabelPalette.Bpp16;
         ByteHelper.intToBytes(color, content, 1);

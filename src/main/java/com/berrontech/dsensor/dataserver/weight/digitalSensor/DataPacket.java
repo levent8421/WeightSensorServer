@@ -301,11 +301,11 @@ public class DataPacket {
         return BuildWriteParam(address, param, value.floatValue());
     }
 
-    public static DataPacket BuildWriteParam(byte address, int param, String value, int maxLen) {
+    public static DataPacket BuildWriteParam(byte address, int param, String value, int maxLen) throws Exception {
         if (value == null) {
             value = "";
         }
-        byte[] bts = Charset.forName(DefaultCharsetName).encode(value).array();
+        byte[] bts = value.getBytes(DefaultCharsetName);
         if (bts.length > maxLen) {
             bts = Arrays.copyOf(bts, maxLen);
         }
@@ -349,11 +349,11 @@ public class DataPacket {
         return Build(address, ESendCmd.SetWorkMode, content);
     }
 
-    public static DataPacket BuildSetAddressByDeviceSn(byte newAddress, String sn) {
+    public static DataPacket BuildSetAddressByDeviceSn(byte newAddress, String sn) throws Exception {
         if (sn == null) {
             sn = "";
         }
-        byte[] bts = Charset.forName(DefaultCharsetName).encode(sn).array();
+        byte[] bts = sn.getBytes(DefaultCharsetName);
         byte[] content = new byte[bts.length + 2];
         content[0] = newAddress;
         content[1] = (byte) (EParam.DeviceSn & 0xFF);
