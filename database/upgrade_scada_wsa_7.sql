@@ -1,3 +1,5 @@
+drop table if exists t_temp_humidity_log;
+
 create table t_temp_humidity_log
 (
     id                int(10)       not null auto_increment primary key comment 'Row id',

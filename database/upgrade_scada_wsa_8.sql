@@ -4,7 +4,7 @@ alter table t_weight_sensor
 
 
 insert into t_application_config(name, value, create_time, update_time, deleted)
-values ('weight.soft_filter_level', '3', now(), now(), false);
+values ('weight.soft_filter_level', '0', now(), now(), false);
 
 # add config application.db_version_name
 update t_application_config

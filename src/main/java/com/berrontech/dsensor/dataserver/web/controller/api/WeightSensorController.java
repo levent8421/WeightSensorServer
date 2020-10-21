@@ -9,6 +9,7 @@ import com.berrontech.dsensor.dataserver.web.vo.MergeSensorsParam;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -179,7 +180,11 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
     public GeneralResult<WeightSensor> recoveryElabelAddress(@PathVariable("id") Integer id) {
         final WeightSensor sensor = weightSensorService.require(id);
         final int eLabelAddress = sensor.getAddress() + WeightSensor.ELABEL_ADDRESS_OFFSET;
-        final boolean success = weightController.setElabelAddressForSn(sensor.getConnectionId(), sensor.getElabelSn(), eLabelAddress);
+        final String eLabelSn = sensor.getElabelSn();
+        if (StringUtils.isBlank(eLabelSn)) {
+            throw new BadRequestException("Can not set address for a empty sn!");
+        }
+        final boolean success = weightController.setElabelAddressForSn(sensor.getConnectionId(), eLabelSn, eLabelAddress);
         if (success) {
             return GeneralResult.ok(sensor);
         }
@@ -195,7 +200,11 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
     @PostMapping("/{id}/_recovery-sensor-address")
     public GeneralResult<WeightSensor> recoverySensorAddress(@PathVariable("id") Integer id) {
         final WeightSensor sensor = weightSensorService.require(id);
-        final boolean success = weightController.setSensorAddressForSn(sensor.getConnectionId(), sensor.getSensorSn(), sensor.getAddress());
+        final String sensorSn = sensor.getSensorSn();
+        if (StringUtils.isBlank(sensorSn)) {
+            throw new BadRequestException("Can not set address for a empty sn!");
+        }
+        final boolean success = weightController.setSensorAddressForSn(sensor.getConnectionId(), sensorSn, sensor.getAddress());
         if (success) {
             return GeneralResult.ok(sensor);
         }

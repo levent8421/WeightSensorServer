@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,13 +23,19 @@ import java.util.List;
  *
  * @author Levent8421
  */
-@Component
 @Slf4j
 public class FirmwareLoader {
-    private static final String PASSWORD = "monolithiot";
-    private static final String RESOURCE_NAME = "firmware/firmware.zip";
+    private final String resourceName;
+    private final String zipPassword;
+    private final String tmpFileName;
     private boolean ready;
     private final FirmwareResource firmwareResource = new FirmwareResource();
+
+    public FirmwareLoader(String resourceName, String zipPassword, String tmpFileName) {
+        this.resourceName = resourceName;
+        this.zipPassword = zipPassword;
+        this.tmpFileName = tmpFileName;
+    }
 
     public FirmwareLoader loadResource() {
         if (ready) {
@@ -41,7 +46,7 @@ public class FirmwareLoader {
                 return this;
             }
             try {
-                final ClassPathResource resource = new ClassPathResource(RESOURCE_NAME);
+                final ClassPathResource resource = new ClassPathResource(resourceName);
                 this.doLoadResource(resource.getInputStream());
             } catch (IOException e) {
                 throw new InternalServerErrorException("Error on get resource stream!", e);
@@ -52,14 +57,14 @@ public class FirmwareLoader {
     }
 
     private File copyFirmware2File(InputStream source) throws IOException {
-        final File file = new File("./firmware.zip");
+        final File file = new File("./" + tmpFileName);
         if (file.exists()) {
             if (!file.delete()) {
                 throw new IOException("Error on delete tmp file!");
             }
         }
         try (final FileOutputStream target = new FileOutputStream(file)) {
-            int len = 0;
+            int len;
             final byte[] buffer = new byte[1024];
             while ((len = source.read(buffer)) > 0) {
                 target.write(buffer, 0, len);
@@ -76,7 +81,7 @@ public class FirmwareLoader {
                 throw new InternalServerErrorException("Invalidate firmware zip file!");
             }
             if (zipFile.isEncrypted()) {
-                zipFile.setPassword(PASSWORD.toCharArray());
+                zipFile.setPassword(zipPassword.toCharArray());
             }
             final List<FileHeader> fileHeaderList = zipFile.getFileHeaders();
             if (fileHeaderList.size() != 1) {

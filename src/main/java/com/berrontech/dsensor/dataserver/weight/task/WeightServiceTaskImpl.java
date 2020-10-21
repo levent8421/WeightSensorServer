@@ -429,6 +429,11 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
+    public void upgradeElabelFirmware(Integer connectionId, Integer address, FirmwareResource resource, UpgradeFirmwareListener listener) {
+        // TODO 电子标签固件升级
+    }
+
+    @Override
     public void cancelUpgrade(Integer connectionId, Integer address) {
         sensorManager.StopReading();
         DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
@@ -514,7 +519,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public DeviceState getDeviceState(Integer connectionId, Integer address) {
-        // TODO 获取设备状态 若设备不存在则返回null
         if (address < DataPacket.AddressELabelStart) {
             // is sensor
             DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);

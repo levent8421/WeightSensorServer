@@ -130,7 +130,7 @@ public interface WeightController {
     DeviceDetails getSensorDetails(Integer connectionId, Integer address);
 
     /**
-     * 烧写固件
+     * 烧写传感器固件
      *
      * @param connectionId 连接ID
      * @param address      物理地址
@@ -138,6 +138,16 @@ public interface WeightController {
      * @param listener     监听器
      */
     void upgradeFirmware(Integer connectionId, Integer address, FirmwareResource resource, UpgradeFirmwareListener listener);
+
+    /**
+     * 烧写电子标签固件
+     *
+     * @param connectionId 连接ID
+     * @param address      物理地址
+     * @param resource     固件资源
+     * @param listener     监听器
+     */
+    void upgradeElabelFirmware(Integer connectionId, Integer address, FirmwareResource resource, UpgradeFirmwareListener listener);
 
     /**
      * 取消升级
