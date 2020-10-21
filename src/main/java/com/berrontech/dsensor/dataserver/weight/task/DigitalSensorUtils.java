@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DigitalSensorUtils {
     public static void buildDigitalSensors(DigitalSensorManager sensorManager, WeightDataHolder weightDataHolder) {
+        log.debug("start buildDigitalSensors");
         sensorManager.shutdown();
         sensorManager.getGroups().clear();
         for (DeviceConnection conn : weightDataHolder.getConnections()) {
@@ -29,6 +30,8 @@ public class DigitalSensorUtils {
                 if (count <= 0) {
                     continue;
                 }
+                log.debug("{} sensors in Group({})", count, conn.getId());
+
                 DigitalSensorGroup group = sensorManager.NewGroup();
                 switch (conn.getType()) {
                     //switch (2) {
