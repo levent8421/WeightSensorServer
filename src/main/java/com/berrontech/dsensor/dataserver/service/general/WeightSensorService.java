@@ -144,4 +144,29 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @param elabelSn 电子标签SN
      */
     void updateSn(Integer id, String sensorSn, String elabelSn);
+
+    /**
+     * 更新电子标签SN
+     *
+     * @param id sensor id
+     * @param sn sn
+     * @return 是否更新
+     */
+    boolean updateElabelSn(Integer id, String sn);
+
+    /**
+     * 更新传感器SN
+     *
+     * @param id sensor id
+     * @param sn sn
+     * @return 是否更新
+     */
+    boolean updateSensorSn(Integer id, String sn);
+
+    /**
+     * 清除备份的SN
+     *
+     * @return rows
+     */
+    int cleanAllBackupSn();
 }

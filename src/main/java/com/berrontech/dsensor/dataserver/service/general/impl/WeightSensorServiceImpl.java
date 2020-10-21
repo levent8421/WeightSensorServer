@@ -214,4 +214,37 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         }
         updateById(sensor);
     }
+
+    private boolean sensorSnExists(String sn) {
+        return weightSensorMapper.sensorSnExists(sn) != null;
+    }
+
+    private boolean eLabelSnExists(String sn) {
+        return weightSensorMapper.eLabelSnExists(sn) != null;
+    }
+
+    @Override
+    public boolean updateElabelSn(Integer id, String sn) {
+        if (eLabelSnExists(sn)) {
+            return false;
+        }
+        final int rows = weightSensorMapper.updateElabelSnById(id, sn);
+        log.info("Update ELabel SN to [{}] for id [{}], rows=[{}]", sn, id, rows);
+        return rows == 1;
+    }
+
+    @Override
+    public boolean updateSensorSn(Integer id, String sn) {
+        if (sensorSnExists(sn)) {
+            return false;
+        }
+        final int rows = weightSensorMapper.updateSensorSnById(id, sn);
+        log.debug("Update sensor SN to [{}] for id [{}], rows=[{}]", sn, id, rows);
+        return rows == 1;
+    }
+
+    @Override
+    public int cleanAllBackupSn() {
+        return weightSensorMapper.cleanAllBackupSn();
+    }
 }

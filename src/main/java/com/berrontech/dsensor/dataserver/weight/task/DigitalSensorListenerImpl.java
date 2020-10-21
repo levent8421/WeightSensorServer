@@ -163,14 +163,12 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     @Override
     public boolean onNotifySensorSnChanged(DigitalSensorItem sensor, String sn) {
-        sensorService.updateSn(sensor.getParams().getId(), sn, null);
-        return true;
+        return sensorService.updateSensorSn(sensor.getParams().getId(), sn);
     }
 
     @Override
     public boolean onNotifyELabelSnChanged(DigitalSensorItem sensor, String sn) {
-        sensorService.updateSn(sensor.getParams().getId(), null, sn);
-        return true;
+        return sensorService.updateElabelSn(sensor.getParams().getId(), sn);
     }
 
 

@@ -129,4 +129,45 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return sensors num
      */
     int resetSlotIdBySlotIds(@Param("slotIds") List<Integer> slotIds);
+
+    /**
+     * 查询传感器SN在数据库中是否存在
+     *
+     * @param sn sn
+     * @return 1 or null
+     */
+    Integer sensorSnExists(@Param("sn") String sn);
+
+    /**
+     * 查询电子标签SN在数据库中是否存在
+     *
+     * @param sn sn
+     * @return 1 or null
+     */
+    Integer eLabelSnExists(@Param("sn") String sn);
+
+    /**
+     * 清空已收集到的SN
+     *
+     * @return 清空数量
+     */
+    int cleanAllBackupSn();
+
+    /**
+     * 更新电子标签SN
+     *
+     * @param id id
+     * @param sn eLabel sn
+     * @return rows
+     */
+    int updateElabelSnById(@Param("id") Integer id, @Param("sn") String sn);
+
+    /**
+     * 更新传感器SN
+     *
+     * @param id id
+     * @param sn sensor sn
+     * @return rows
+     */
+    int updateSensorSnById(@Param("id") Integer id, @Param("sn") String sn);
 }

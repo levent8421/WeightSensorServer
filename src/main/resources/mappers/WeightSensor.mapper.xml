@@ -135,4 +135,32 @@
             </otherwise>
         </choose>
     </update>
+    <select id="sensorSnExists" resultType="integer">
+        select 1
+        from t_weight_sensor as ws
+        where ws.deleted = false
+          and (ws.sensor_sn = #{sn} or ws.device_sn = #{sn})
+    </select>
+    <select id="eLabelSnExists" resultType="integer">
+        select 1
+        from t_weight_sensor as ws
+        where ws.deleted = false
+          and ws.elabel_sn = #{sn}
+    </select>
+    <update id="cleanAllBackupSn">
+        update t_weight_sensor as ws
+        set ws.elabel_sn= null,
+            ws.sensor_sn= null
+        where ws.deleted = false
+    </update>
+    <update id="updateElabelSnById">
+        update t_weight_sensor as ws
+        set ws.elabel_sn=#{sn}
+        where id = #{id}
+    </update>
+    <update id="updateSensorSnById">
+        update t_weight_sensor as ws
+        set ws.sensor_sn=#{sn}
+        where id = #{id}
+    </update>
 </mapper>

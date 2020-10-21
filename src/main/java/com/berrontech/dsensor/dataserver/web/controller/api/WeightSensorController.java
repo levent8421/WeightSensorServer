@@ -170,6 +170,12 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         return GeneralResult.ok(sensor);
     }
 
+    private void checkRecoverySn(String sn) {
+        if (StringUtils.isBlank(sn)) {
+            throw new BadRequestException("Can not set address for a empty sn!");
+        }
+    }
+
     /**
      * 恢复电子标签地址
      *
@@ -181,9 +187,7 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         final WeightSensor sensor = weightSensorService.require(id);
         final int eLabelAddress = sensor.getAddress() + WeightSensor.ELABEL_ADDRESS_OFFSET;
         final String eLabelSn = sensor.getElabelSn();
-        if (StringUtils.isBlank(eLabelSn)) {
-            throw new BadRequestException("Can not set address for a empty sn!");
-        }
+        checkRecoverySn(eLabelSn);
         final boolean success = weightController.setElabelAddressForSn(sensor.getConnectionId(), eLabelSn, eLabelAddress);
         if (success) {
             return GeneralResult.ok(sensor);
@@ -201,13 +205,40 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
     public GeneralResult<WeightSensor> recoverySensorAddress(@PathVariable("id") Integer id) {
         final WeightSensor sensor = weightSensorService.require(id);
         final String sensorSn = sensor.getSensorSn();
-        if (StringUtils.isBlank(sensorSn)) {
-            throw new BadRequestException("Can not set address for a empty sn!");
-        }
+        checkRecoverySn(sensorSn);
         final boolean success = weightController.setSensorAddressForSn(sensor.getConnectionId(), sensorSn, sensor.getAddress());
         if (success) {
             return GeneralResult.ok(sensor);
         }
         return GeneralResult.error("Error on recovery sensor address1");
+    }
+
+    /**
+     * 恢复传感器地址
+     *
+     * @param id id
+     * @return GR
+     */
+    @PostMapping("/{id}/_recovery-sensor-address-with-origin-sn")
+    public GeneralResult<WeightSensor> recoverySensorAddressWithOriginSn(@PathVariable("id") Integer id) {
+        final WeightSensor sensor = weightSensorService.require(id);
+        final String deviceSn = sensor.getDeviceSn();
+        checkRecoverySn(deviceSn);
+        final boolean success = weightController.setSensorAddressForSn(sensor.getConnectionId(), deviceSn, sensor.getAddress());
+        if (success) {
+            return GeneralResult.ok(sensor);
+        }
+        return GeneralResult.error("Error on recovery sensor address1");
+    }
+
+    /**
+     * 清楚备份的SN
+     *
+     * @return GR
+     */
+    @PostMapping("/_clean-backup-sn")
+    public GeneralResult<Integer> cleanAllBackupSn() {
+        final int num = weightSensorService.cleanAllBackupSn();
+        return GeneralResult.ok(num);
     }
 }
