@@ -179,8 +179,11 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
     public GeneralResult<WeightSensor> recoveryElabelAddress(@PathVariable("id") Integer id) {
         final WeightSensor sensor = weightSensorService.require(id);
         final int eLabelAddress = sensor.getAddress() + WeightSensor.ELABEL_ADDRESS_OFFSET;
-        weightController.setElabelAddressForSn(sensor.getConnectionId(), sensor.getElabelSn(), eLabelAddress);
-        return GeneralResult.ok(sensor);
+        final boolean success = weightController.setElabelAddressForSn(sensor.getConnectionId(), sensor.getElabelSn(), eLabelAddress);
+        if (success) {
+            return GeneralResult.ok(sensor);
+        }
+        return GeneralResult.error("Error on recovery eLabel address!");
     }
 
     /**
@@ -192,7 +195,10 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
     @PostMapping("/{id}/_recovery-sensor-address")
     public GeneralResult<WeightSensor> recoverySensorAddress(@PathVariable("id") Integer id) {
         final WeightSensor sensor = weightSensorService.require(id);
-        weightController.setSensorAddressForSn(sensor.getConnectionId(), sensor.getSensorSn(), sensor.getAddress());
-        return GeneralResult.ok(sensor);
+        final boolean success = weightController.setSensorAddressForSn(sensor.getConnectionId(), sensor.getSensorSn(), sensor.getAddress());
+        if (success) {
+            return GeneralResult.ok(sensor);
+        }
+        return GeneralResult.error("Error on recovery sensor address1");
     }
 }

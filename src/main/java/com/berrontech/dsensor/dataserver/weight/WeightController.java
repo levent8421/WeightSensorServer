@@ -170,6 +170,7 @@ public interface WeightController {
      * @param connectionId 连接ID
      * @param sn           sn
      * @param address      地址
+     * @return 是否成功
      */
     boolean setSensorAddressForSn(Integer connectionId, String sn, Integer address);
 
@@ -179,6 +180,7 @@ public interface WeightController {
      * @param connectionId 连接ID
      * @param sn           sn
      * @param address      地址
+     * @return 是否成功
      */
     boolean setElabelAddressForSn(Integer connectionId, String sn, Integer address);
 }
