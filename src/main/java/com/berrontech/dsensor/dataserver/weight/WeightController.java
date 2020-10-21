@@ -171,7 +171,7 @@ public interface WeightController {
      * @param sn           sn
      * @param address      地址
      */
-    void setSensorAddressForSn(Integer connectionId, String sn, Integer address);
+    boolean setSensorAddressForSn(Integer connectionId, String sn, Integer address);
 
     /**
      * 对指定连接下指定SN的电子标签编址
@@ -180,5 +180,5 @@ public interface WeightController {
      * @param sn           sn
      * @param address      地址
      */
-    void setElabelAddressForSn(Integer connectionId, String sn, Integer address);
+    boolean setElabelAddressForSn(Integer connectionId, String sn, Integer address);
 }

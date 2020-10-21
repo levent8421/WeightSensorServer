@@ -569,12 +569,68 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void setElabelAddressForSn(Integer connectionId, String sn, Integer address) {
+    public boolean setElabelAddressForSn(Integer connectionId, String sn, Integer address) {
         // TODO 编址电子标签
+        try {
+            val sensor = DigitalSensorUtils.tryLookupSensor(connectionId, address);
+            if (sensor != null)
+            {
+                val group = sensor.getGroup();
+                group.stopAddressPrograming();
+                group.stopReading();
+
+                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.APM);
+                Thread.sleep(group.getCommLongInterval());
+                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.APM);
+                Thread.sleep(group.getCommLongInterval());
+
+                sensor.SetAddressByDeviceSn(DataPacket.EDeviceType.ELabel, sn);
+
+                Thread.sleep(group.getCommLongInterval());
+                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
+                Thread.sleep(group.getCommLongInterval());
+                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
+
+                group.startReading2();
+            }
+        }
+        catch (Exception ex)
+        {
+            log.warn("#{} setElabelAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn, ex);
+        }
+        return false;
     }
 
     @Override
-    public void setSensorAddressForSn(Integer connectionId, String sn, Integer address) {
+    public boolean setSensorAddressForSn(Integer connectionId, String sn, Integer address) {
         // TODO 编址传感器
+        try {
+            val sensor = DigitalSensorUtils.tryLookupSensor(connectionId, address);
+            if (sensor != null)
+            {
+                val group = sensor.getGroup();
+                group.stopAddressPrograming();
+                group.stopReading();
+
+                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.APM);
+                Thread.sleep(group.getCommLongInterval());
+                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.APM);
+                Thread.sleep(group.getCommLongInterval());
+
+                sensor.SetAddressByDeviceSn(DataPacket.EDeviceType.DigitalSensor, sn);
+
+                Thread.sleep(group.getCommLongInterval());
+                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
+                Thread.sleep(group.getCommLongInterval());
+                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
+
+                group.startReading2();
+            }
+        }
+        catch (Exception ex)
+        {
+            log.warn("#{} setSensorAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn, ex);
+        }
+        return false;
     }
 }

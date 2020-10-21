@@ -149,11 +149,13 @@ public class DigitalSensorItem {
     private boolean CountInAccuracy = true;
     private long HighlightDeadTime = 0;
 
-    public void setOnlineAndNotify(boolean value) {
+    public boolean setOnlineAndNotify(boolean value) {
         if (Online != value) {
             Online = value;
             TryNotifyListener();
+            return true;
         }
+        return false;
     }
 
     public boolean IsCountOutOfAccuracy() {
@@ -188,11 +190,10 @@ public class DigitalSensorItem {
 
     private void SetCommResult(boolean ok) {
         if (ok) {
-            if (!isOnline()) {
+            if (setOnlineAndNotify(true)) {
                 // status from offline -> online
                 CheckSensorSn();
             }
-            setOnlineAndNotify(true);
             TotalSuccess++;
             ContinueErrors = 0;
         } else {
@@ -208,15 +209,15 @@ public class DigitalSensorItem {
         if (ok) {
             if (!isELabelOnline()) {
                 // status from offline -> online
+                setELabelOnline(true);
                 CheckELabelSn();
             }
-            setELabelOnline(true);
             ELabelTotalSuccess++;
             ELabelContinueErrors = 0;
         } else {
             ELabelTotalErrors++;
             ELabelContinueErrors++;
-            if (ContinueErrors > OfflineContinueErrorThreshold){
+            if (ContinueErrors > OfflineContinueErrorThreshold) {
                 setELabelOnline(false);
             }
         }
@@ -231,9 +232,7 @@ public class DigitalSensorItem {
                         Params.setBackupSensorSn(sn);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 log.warn("CheckSensorSn: incorrect sn={}", sn);
             }
         } catch (Exception ex) {
@@ -250,9 +249,7 @@ public class DigitalSensorItem {
                         Params.setBackupELabelSn(sn);
                     }
                 }
-            }
-            else
-            {
+            } else {
                 log.warn("CheckELabelSn: incorrect sn={}", sn);
             }
         } catch (Exception ex) {
@@ -974,7 +971,6 @@ public class DigitalSensorItem {
         synchronized (Driver.getLock()) {
             do {
                 try {
-
                     packet = Driver.WriteRead(packet, getReadTimeout(), retries);
                     if (packet.Content[0] == param) {
                         SetCommResult(true);

@@ -206,4 +206,8 @@ public class DigitalSensorUtils {
         return null;
     }
 
+    public static DigitalSensorItem tryLookupSensor(int connectionId, int address) {
+        return null;
+    }
+
 }
