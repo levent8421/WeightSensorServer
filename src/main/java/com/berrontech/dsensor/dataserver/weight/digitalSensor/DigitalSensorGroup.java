@@ -226,7 +226,7 @@ public class DigitalSensorGroup {
             sensors.remove(sensors.size() - 1);
         }
         while (sensors.size() < count) {
-            sensors.add(DigitalSensorItem.NewSensor((byte) (getMaxSensorAddress(sensors) + 1), Driver, this));
+            sensors.add(DigitalSensorItem.NewSensor(getMaxSensorAddress(sensors) + 1, Driver, this));
         }
         Sensors = sensors;
     }
@@ -237,7 +237,7 @@ public class DigitalSensorGroup {
         }
         List<DigitalSensorItem> sensors = new ArrayList<>();
         while (sensors.size() < count) {
-            sensors.add(DigitalSensorItem.NewSensor((byte) (sensors.size() + 1), Driver, this));
+            sensors.add(DigitalSensorItem.NewSensor(sensors.size() + 1, Driver, this));
         }
         Sensors = sensors;
     }
@@ -744,8 +744,7 @@ public class DigitalSensorGroup {
 
     public void SetAddressByDeviceSn(int address, String sn) throws Exception {
         log.info("#{} SetAddressByDeviceSn: address={}, sn={}", DataPacket.AddressConditionalBroadcast, address, sn);
-        byte newAddress = (byte) (address & 0xFF);
-        DataPacket packet = DataPacket.BuildSetAddressByDeviceSn(newAddress, sn);
+        DataPacket packet = DataPacket.BuildSetAddressByDeviceSn(address, sn);
         synchronized (Driver.getLock()) {
             Driver.WriteRead(packet, getReadTimeout() + 1000);
         }

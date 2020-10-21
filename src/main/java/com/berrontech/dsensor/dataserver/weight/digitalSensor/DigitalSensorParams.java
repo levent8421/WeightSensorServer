@@ -5,6 +5,9 @@ import com.berrontech.dsensor.dataserver.weight.utils.KeyValueList;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -107,20 +110,73 @@ public class DigitalSensorParams {
         int TempHumi = 3;
     }
 
-    public static boolean IsValidSn(String sn, String partNo)
-    {
-        if (sn != null && sn.startsWith(partNo))
-        {
+    public static boolean IsValidSn(String sn, String partNo) {
+        if (sn != null && sn.startsWith(partNo)) {
             return IsSnInRule(sn);
         }
         return false;
     }
 
     static final Pattern SnMatcher = Pattern.compile("^\\d{8}[0-9A-Z]{4}[0-9A-Z]{4}$");
-    public static boolean IsSnInRule(String sn)
-    {
+
+    public static boolean IsSnInRule(String sn) {
         Matcher m = SnMatcher.matcher(sn);
         return m.matches();
+    }
+
+    public static String BuildNewSensorDeviceSn() {
+        return BuildNewSn("80000077");
+    }
+
+    public static String BuildNewELabelDeviceSn() {
+        return BuildNewSn("80000078");
+    }
+
+    private static char IntToCh(int val) {
+        if (val >= 0) {
+            if (val < 10) {
+                return (char) ('0' + val);
+            } else if (val < 10 + 26) {
+                return (char) ('A' + val - 10);
+            } else if (val < 10 + 26 + 26) {
+                return (char) ('a' + val - 10 - 26);
+            }
+            return '?';
+        }
+        return '?';
+    }
+
+    private static String IntToCh(int val, int len)
+    {
+        StringBuilder sb = new StringBuilder();
+        int max = 10 + 16;
+        while (len-- > 0)
+        {
+            sb.insert(0, IntToCh(val % max));
+            val /= max;
+        }
+        return sb.toString();
+    }
+
+
+    public static String BuildNewSn(String partNo) {
+        String bom = partNo;
+        Calendar dt = Calendar.getInstance(TimeZone.getDefault());
+        int year = dt.get(Calendar.YEAR) - 2017;
+        int month = dt.get(Calendar.MONTH);
+        int day = dt.get(Calendar.DAY_OF_MONTH);
+        int hour = dt.get(Calendar.HOUR_OF_DAY);
+        int min = dt.get(Calendar.MINUTE);
+        int sec = dt.get(Calendar.SECOND);
+        int ms = dt.get(Calendar.MILLISECOND);
+        int tms = hour * 60 * 60 * 1000 + min * 60 * 1000 + sec * 1000 + ms;
+        tms /= 200;
+
+        String sn = String.format("%s%c%c%02d%s",
+                bom,
+                IntToCh(year), IntToCh(month), day,
+                IntToCh(tms, 4));
+        return sn;
     }
 
 }
