@@ -140,12 +140,14 @@
         from t_weight_sensor as ws
         where ws.deleted = false
           and (ws.sensor_sn = #{sn} or ws.device_sn = #{sn})
+          and ws.id != #{excludeId}
     </select>
     <select id="eLabelSnExists" resultType="integer">
         select 1
         from t_weight_sensor as ws
         where ws.deleted = false
           and ws.elabel_sn = #{sn}
+          and ws.id != #{excludeId}
     </select>
     <update id="cleanAllBackupSn">
         update t_weight_sensor as ws

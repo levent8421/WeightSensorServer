@@ -133,18 +133,20 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
     /**
      * 查询传感器SN在数据库中是否存在
      *
-     * @param sn sn
+     * @param sn        sn
+     * @param excludeId 不包含的ID
      * @return 1 or null
      */
-    Integer sensorSnExists(@Param("sn") String sn);
+    Integer sensorSnExists(@Param("sn") String sn, @Param("excludeId") Integer excludeId);
 
     /**
      * 查询电子标签SN在数据库中是否存在
      *
-     * @param sn sn
+     * @param sn        sn
+     * @param excludeId 不包含的ID
      * @return 1 or null
      */
-    Integer eLabelSnExists(@Param("sn") String sn);
+    Integer eLabelSnExists(@Param("sn") String sn, @Param("excludeId") Integer excludeId);
 
     /**
      * 清空已收集到的SN
