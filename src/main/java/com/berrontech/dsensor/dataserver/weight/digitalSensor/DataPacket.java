@@ -3,11 +3,13 @@ package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
+@Slf4j
 @Data
 public class DataPacket {
     // 0x02 0xFD len:1 ver:1 cmd:1 content:n checksum:1
@@ -356,6 +358,7 @@ public class DataPacket {
         content[0] = newAddress;
         content[1] = (byte) (EParam.DeviceSn & 0xFF);
         System.arraycopy(bts, 0, content, 2, bts.length);
+        log.debug("BuildSetAddressByDeviceSn: newAddress={}, sn={}, btsLength={}", newAddress, sn, bts.length);
         return Build(AddressConditionalBroadcast, ESendCmd.ConditionalSetAddress, content);
     }
 

@@ -611,6 +611,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public boolean setSensorAddressForSn(Integer connectionId, String sn, Integer address) {
         try {
             log.debug("#{} setSensorAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn);
+            log.debug("#{} sn={}, length={}", address, sn, sn.length());
             val sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
             if (sensor != null) {
                 log.debug("#{} setSensorAddressForSn: sensor found", address);
