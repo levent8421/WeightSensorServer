@@ -57,6 +57,18 @@ public interface DigitalSensorListener {
      *
      * @param sensor
      */
-    boolean OnNotifyXSensorTempHumi(DigitalSensorItem sensor);
+    boolean onNotifyXSensorTempHumi(DigitalSensorItem sensor);
+
+    /**
+     * 通知传感器SN变化
+     * @param sensor
+     */
+    boolean onNotifySensorSnChanged(DigitalSensorItem sensor);
+
+    /**
+     * 通知ELabel SN变化
+     * @param sensor
+     */
+    boolean onNotifyELabelSnChanged(DigitalSensorItem sensor);
 
 }

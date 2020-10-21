@@ -75,6 +75,8 @@ public class DigitalSensorUtils {
                         params.setId(sen.getId());
                         params.setAddress(sen.getAddress());
                         params.setDeviceSn(sen.getDeviceSn());
+                        params.setBackupSensorSn(sen.getSensorSn());
+                        params.setBackupELabelSn(sen.getElabelSn());
                         sensor.getValues().setZeroOffset(sen.getZeroReference() == null ? 0 : sen.getZeroReference().floatValue());
                         if (sen.getHasElabel()) {
 //                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);

@@ -15,8 +15,7 @@ public class DigitalSensorValues {
     private BigDecimal GrossWeight = BigDecimal.ZERO;
     private SimpleDecimalFilter grossFilter = new SimpleDecimalFilter();
 
-    public void setGrossWeight(BigDecimal gross)
-    {
+    public void setGrossWeight(BigDecimal gross) {
         GrossWeight = grossFilter.push(gross);
     }
 
@@ -38,7 +37,7 @@ public class DigitalSensorValues {
     private SimpleFilter highGrossFilter = new SimpleFilter();
 
     public void setHighGross(float value) {
-        HighGross = (float)highGrossFilter.push(value);
+        HighGross = (float) highGrossFilter.push(value);
         CalcCounting();
     }
 
@@ -235,8 +234,10 @@ public class DigitalSensorValues {
         return !Highlight;
     }
 
-    public void setFilterDepth(int depth)
-    {
+    public void setFilterDepth(Integer depth) {
+        if (depth == null) {
+            depth = 0;
+        }
         grossFilter.setDepth(depth);
         highGrossFilter.setDepth(depth);
     }

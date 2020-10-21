@@ -137,7 +137,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     }
 
     @Override
-    public boolean OnNotifyXSensorTempHumi(DigitalSensorItem sensor) {
+    public boolean onNotifyXSensorTempHumi(DigitalSensorItem sensor) {
         try {
             final MemoryTemperatureHumiditySensor slot = weightDataHolder.getTemperatureHumiditySensorTable().get(sensor.getParams().getId());
             if (slot == null) {
@@ -159,6 +159,18 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             log.warn("notify OnNotifyXSensorTempHumi error", ex);
             return false;
         }
+    }
+
+    @Override
+    public boolean onNotifySensorSnChanged(DigitalSensorItem sensor) {
+        sensorService.updateSn(sensor.getParams().getId(), sensor.getParams().getBackupSensorSn(), null);
+        return true;
+    }
+
+    @Override
+    public boolean onNotifyELabelSnChanged(DigitalSensorItem sensor) {
+        sensorService.updateSn(sensor.getParams().getId(), null, sensor.getParams().getBackupELabelSn());
+        return true;
     }
 
 

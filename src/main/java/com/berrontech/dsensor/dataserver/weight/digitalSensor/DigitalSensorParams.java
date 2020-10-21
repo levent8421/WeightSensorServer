@@ -5,6 +5,8 @@ import com.berrontech.dsensor.dataserver.weight.utils.KeyValueList;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Data
@@ -33,6 +35,8 @@ public class DigitalSensorParams {
     private double[] XSensorLowers = {0, 0};
     private double[] XSensorUppers = {60, 100};
     private int Id;
+    private String backupSensorSn;
+    private String backupELabelSn;
 
     public int ELabelModel = EELabelModel.None;
     private boolean Enabled = true;
@@ -101,6 +105,22 @@ public class DigitalSensorParams {
         int ELabel = 1;
         int Accelerator = 2;
         int TempHumi = 3;
+    }
+
+    public static boolean IsValidSn(String sn, String partNo)
+    {
+        if (sn != null && sn.startsWith(partNo))
+        {
+            return IsSnInRule(sn);
+        }
+        return false;
+    }
+
+    static final Pattern SnMatcher = Pattern.compile("^\\d{8}[0-9A-Z]{4}[0-9A-Z]{4}$");
+    public static boolean IsSnInRule(String sn)
+    {
+        Matcher m = SnMatcher.matcher(sn);
+        return m.matches();
     }
 
 }

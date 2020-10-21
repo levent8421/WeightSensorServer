@@ -144,6 +144,7 @@ public class DigitalSensorItem {
     private long ELabelTotalSuccess;
     private int ELabelContinueErrors;
     private boolean Online = false;
+    private boolean ELabelOnline = false;
     private int HighResCounter;
     private boolean CountInAccuracy = true;
     private long HighlightDeadTime = 0;
@@ -187,6 +188,10 @@ public class DigitalSensorItem {
 
     private void SetCommResult(boolean ok) {
         if (ok) {
+            if (!isOnline()) {
+                // status from offline -> online
+                CheckSensorSn();
+            }
             setOnlineAndNotify(true);
             TotalSuccess++;
             ContinueErrors = 0;
@@ -201,11 +206,57 @@ public class DigitalSensorItem {
 
     private void SetELabelCommResult(boolean ok) {
         if (ok) {
+            if (!isELabelOnline()) {
+                // status from offline -> online
+                CheckELabelSn();
+            }
+            setELabelOnline(true);
             ELabelTotalSuccess++;
             ELabelContinueErrors = 0;
         } else {
             ELabelTotalErrors++;
             ELabelContinueErrors++;
+            if (ContinueErrors > OfflineContinueErrorThreshold){
+                setELabelOnline(false);
+            }
+        }
+    }
+
+    private void CheckSensorSn() {
+        try {
+            String sn = GetDeviceSn("", 1);
+            if (DigitalSensorParams.IsSnInRule(sn)) {
+                if (!Objects.equals(sn, Params.getBackupSensorSn())) {
+                    if (getGroup().getManager().getSensorListener().onNotifySensorSnChanged(this)) {
+                        Params.setBackupSensorSn(sn);
+                    }
+                }
+            }
+            else
+            {
+                log.warn("CheckSensorSn: incorrect sn={}", sn);
+            }
+        } catch (Exception ex) {
+            log.warn("CheckSensorSn", ex);
+        }
+    }
+
+    private void CheckELabelSn() {
+        try {
+            String sn = GetELabelDeviceSn("", 1);
+            if (DigitalSensorParams.IsSnInRule(sn)) {
+                if (!Objects.equals(sn, Params.getBackupELabelSn())) {
+                    if (getGroup().getManager().getSensorListener().onNotifyELabelSnChanged(this)) {
+                        Params.setBackupELabelSn(sn);
+                    }
+                }
+            }
+            else
+            {
+                log.warn("CheckELabelSn: incorrect sn={}", sn);
+            }
+        } catch (Exception ex) {
+            log.warn("CheckELabelSn", ex);
         }
     }
 
@@ -549,7 +600,7 @@ public class DigitalSensorItem {
             if (Values.getXSensors() != null && Values.getXSensors().length > 1) {
                 if (LastNotifyTemp != Values.getXSensors()[0].doubleValue() ||
                         LastNotifyHumi != Values.getXSensors()[1].doubleValue()) {
-                    if (getGroup().getManager().getSensorListener().OnNotifyXSensorTempHumi(this)) {
+                    if (getGroup().getManager().getSensorListener().onNotifyXSensorTempHumi(this)) {
                         LastNotifyTemp = Values.getXSensors()[0].doubleValue();
                         LastNotifyHumi = Values.getXSensors()[1].doubleValue();
                     }
@@ -1280,11 +1331,19 @@ public class DigitalSensorItem {
     }
 
     public String GetDeviceSn(int retries) throws Exception {
-        return ReadParamAsString(DataPacket.EParam.DeviceSn, Params.getDeviceSn(), retries);
+        return GetDeviceSn(Params.getDeviceSn(), retries);
+    }
+
+    public String GetDeviceSn(String defaultSn, int retries) throws Exception {
+        return ReadParamAsString(DataPacket.EParam.DeviceSn, defaultSn, retries);
     }
 
     public String GetELabelDeviceSn(int retries) throws Exception {
-        return ReadELabelParamAsString(DataPacket.EParam.DeviceSn, Params.getDeviceSn(), retries);
+        return GetELabelDeviceSn(Params.getDeviceSn(), retries);
+    }
+
+    public String GetELabelDeviceSn(String defaultSn, int retries) throws Exception {
+        return ReadELabelParamAsString(DataPacket.EParam.DeviceSn, defaultSn, retries);
     }
 
     public void SetDeviceModel(String value) throws Exception {
