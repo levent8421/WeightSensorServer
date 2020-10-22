@@ -1146,6 +1146,12 @@ public class DigitalSensorItem {
         return WriteParam(packet);
     }
 
+    public int WriteELabelParam(int param, int value) throws Exception {
+        log.info("#{} WriteELabelParam: name={}, value={}", Params.getELabelAddress(), param, value);
+        DataPacket packet = DataPacket.BuildWriteParam(Params.getELabelAddress(), param, value);
+        return WriteParam(packet);
+    }
+
     public int WriteParam(int param, BigDecimal value) throws Exception {
         log.info("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
         DataPacket packet = DataPacket.BuildWriteParam(Params.getAddress(), param, value);
@@ -1671,6 +1677,10 @@ public class DigitalSensorItem {
     public void Unlock() throws Exception {
         WriteParam(DataPacket.EParam.Locker, 20200505);
     }
+    public void UnlockELabel() throws Exception {
+        WriteELabelParam(DataPacket.EParam.Locker, 20200505);
+    }
+
 
 
     protected DataPacket UpgradeWriteRead(DataPacket packet, int timeout) throws Exception {

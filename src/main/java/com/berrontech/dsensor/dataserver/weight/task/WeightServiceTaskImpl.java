@@ -678,6 +678,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
             if (sensor != null) {
                 sn = DigitalSensorParams.BuildNewELabelDeviceSn();
+                sensor.UnlockELabel();
                 sensor.SetELabelSn(sn);
                 sensor.getParams().setBackupELabelSn(sn);
                 return sn;
@@ -698,6 +699,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
             if (sensor != null) {
                 sn = DigitalSensorParams.BuildNewSensorDeviceSn();
+                sensor.Unlock();
                 sensor.SetDeviceSn(sn);
                 sensor.getParams().setBackupSensorSn(sn);
                 return sn;
