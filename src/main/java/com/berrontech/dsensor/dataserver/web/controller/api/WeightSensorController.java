@@ -189,10 +189,9 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
     @PostMapping("/{id}/_recovery-elabel-address")
     public GeneralResult<WeightSensor> recoveryElabelAddress(@PathVariable("id") Integer id) {
         final WeightSensor sensor = weightSensorService.require(id);
-        final int eLabelAddress = sensor.getAddress() + WeightSensor.ELABEL_ADDRESS_OFFSET;
         final String eLabelSn = sensor.getElabelSn();
         checkRecoverySn(eLabelSn);
-        final boolean success = weightController.setElabelAddressForSn(sensor.getConnectionId(), eLabelSn, eLabelAddress);
+        final boolean success = weightController.setElabelAddressForSn(sensor.getConnectionId(), eLabelSn, sensor.getAddress());
         if (success) {
             return GeneralResult.ok(sensor);
         }

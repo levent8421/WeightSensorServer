@@ -18,7 +18,6 @@ import javax.persistence.Column;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public abstract class AbstractDevice485 extends AbstractEntity {
-    public static final int ELABEL_ADDRESS_OFFSET = 100;
     public static final int STATE_ONLINE = 0x01;
     public static final String STATE_ONLINE_STR = "online";
     public static final int STATE_OFFLINE = 0x02;
