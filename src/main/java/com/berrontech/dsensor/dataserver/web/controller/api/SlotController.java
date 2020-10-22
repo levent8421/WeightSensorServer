@@ -105,7 +105,7 @@ public class SlotController extends AbstractEntityController<Slot> {
      * @return GR
      */
     @PostMapping("/{slotNo}/zero")
-    public GeneralResult<Void> zoZero(@PathVariable("slotNo") String slotNo) {
+    public GeneralResult<Void> doZero(@PathVariable("slotNo") String slotNo) {
         weightController.doZero(slotNo);
         return GeneralResult.ok();
     }

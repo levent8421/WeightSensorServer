@@ -4,7 +4,6 @@ import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.QrCodeUtil;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
-import jdk.nashorn.internal.parser.DateParser;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -565,7 +564,7 @@ public class DigitalSensorItem {
     double LastNotifyTemp = -999999;
     double LastNotifyHumi = -999999;
 
-    public void TryNotifyListener() {
+    private void doTryNotifyListener() {
         if (LastSaveTicks <= 0) {
             LastSaveTicks = System.currentTimeMillis();
         }
@@ -622,6 +621,14 @@ public class DigitalSensorItem {
                     LastNotifyPCSWeight = Values.getHighNet();
                 }
             }
+        }
+    }
+
+    void TryNotifyListener() {
+        try {
+            doTryNotifyListener();
+        } catch (Throwable e) {
+            log.error("Error on TryNotifyListener!", e);
         }
     }
 
@@ -1677,10 +1684,10 @@ public class DigitalSensorItem {
     public void Unlock() throws Exception {
         WriteParam(DataPacket.EParam.Locker, 20200505);
     }
+
     public void UnlockELabel() throws Exception {
         WriteELabelParam(DataPacket.EParam.Locker, 20200505);
     }
-
 
 
     protected DataPacket UpgradeWriteRead(DataPacket packet, int timeout) throws Exception {
