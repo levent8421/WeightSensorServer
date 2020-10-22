@@ -4,6 +4,7 @@ import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.QrCodeUtil;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
+import jdk.nashorn.internal.parser.DateParser;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -1506,10 +1507,10 @@ public class DigitalSensorItem {
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
             do {
-                packet = Driver.WriteRead(packet, getReadTimeout(), 1);
-                if (packet.Content[1] == cmd) {
+                final DataPacket res = Driver.WriteRead(packet, getReadTimeout(), 1);
+                if ((res.Content[1] & 0xFF) == cmd) {
                     //SetCommResult(true);
-                    return packet;
+                    return res;
                 }
             } while (System.currentTimeMillis() <= endTime);
         }
