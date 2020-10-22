@@ -962,7 +962,7 @@ public class DigitalSensorItem {
 
     public DataPacket ReadParam(int param, int retries) throws Exception {
         DataPacket packet = DataPacket.BuildReadParam(Params.getAddress(), param);
-        log.info("#{} ReadParam: name={}, retries={}", (packet.getAddress() & 0xFF), param, retries);
+        log.info("#{} ReadParam: name={}, retries={}", packet.getAddress(), param, retries);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
@@ -1690,7 +1690,7 @@ public class DigitalSensorItem {
         Driver.Write(packet);
         long deadTime = System.currentTimeMillis() + timeout;
         while (System.currentTimeMillis() <= deadTime) {
-            readPack = Driver.Read(packet.getAddress() & 0xFF, DataPacket.ERecvCmd.Upgrade, timeout);
+            readPack = Driver.Read(packet.getAddress(), DataPacket.ERecvCmd.Upgrade, timeout);
             if (readPack.Content[0] == packNo) {
                 break;
             }

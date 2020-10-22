@@ -71,10 +71,10 @@ public class DigitalSensorDriver {
     }
 
     private boolean isValid(DataPacket packet) {
-        final byte checkSum = packet.CalcChecksum();
+        final int checkSum = packet.CalcChecksum();
         final boolean valid = packet.getChecksum() == checkSum;
         if (!valid) {
-            log.debug("Checksum error, recv=[{}], calc=[{}]", packet.getChecksum() & 0xFF, checkSum & 0xFF);
+            log.debug("Checksum error, recv=[{}], calc=[{}]", packet.getChecksum(), checkSum);
         }
         return valid;
     }
@@ -83,7 +83,7 @@ public class DigitalSensorDriver {
         long endTime = System.currentTimeMillis() + timeout;
         do {
             DataPacket packet = Read(timeout);
-            if (packet != null && (packet.getAddress() & 0xFF) == address && (packet.getCmd() & 0xFF) == cmd) {
+            if (packet != null && packet.getAddress() == address && packet.getCmd() == cmd) {
                 return packet;
             } else {
                 log.debug("packet error: required addr={} type={}", address, cmd);
@@ -109,7 +109,7 @@ public class DigitalSensorDriver {
         do {
             Write(packet);
             try {
-                DataPacket ans = Read(packet.getAddress() & 0xFF, packet.ToRecvCmd(), timeout);
+                DataPacket ans = Read(packet.getAddress(), packet.ToRecvCmd(), timeout);
                 if (ans != null) {
                     return ans;
                 }
