@@ -28,9 +28,9 @@ public class DataPacket {
     }
 
     // special addresses
-    public static final byte AddressDefault = 0x00;
-    public static final byte AddressBroadcast = (byte) 0xFF;
-    public static final byte AddressConditionalBroadcast = (byte) 0xFE;
+    public static final int AddressDefault = 0x00;
+    public static final int AddressBroadcast = 0xFF;
+    public static final int AddressConditionalBroadcast = 0xFE;
     public static final int AddressMin = 0x01;
     public static final int AddressMax = 0xF0;
     public static final int AddressELabelStart = 100;
