@@ -51,19 +51,23 @@ public class SerialConnection extends BasicConnection {
                     setConnected(true);
                     threadPool = ThreadUtils.createSingleThreadPool(TAG);
                     threadPool.execute(() -> {
-                        while (isConnected() && serialPort != null) {
-                            try {
-                                int cnt = serialInput.available();
-                                if (cnt > 0) {
-                                    byte[] buf = new byte[cnt];
-                                    cnt = serialInput.read(buf);
-                                    getRecvBuffer().push(buf, 0, cnt);
-                                    notifyReceived();
+                        try {
+                            while (isConnected() && serialPort != null) {
+                                try {
+                                    int cnt = serialInput.available();
+                                    if (cnt > 0) {
+                                        byte[] buf = new byte[cnt];
+                                        cnt = serialInput.read(buf);
+                                        getRecvBuffer().push(buf, 0, cnt);
+                                        notifyReceived();
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
                                 Thread.sleep(5);
-                            } catch (Exception e) {
-                                e.printStackTrace();
                             }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
                     });
                 }
