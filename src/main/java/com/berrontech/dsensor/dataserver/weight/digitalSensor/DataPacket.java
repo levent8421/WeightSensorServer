@@ -17,20 +17,20 @@ public class DataPacket {
     public static final String DefaultCharsetName = "UTF-8";
     public static final byte Head1 = 0x02;
     public static final byte Head2 = (byte) 0xFD;
-    private byte Version = 0x21;
-    private byte Address = 0x00;
-    private byte Cmd = 0;
+    private int Version = 0x21;
+    private int Address = 0x00;
+    private int Cmd = 0;
     public byte[] Content;
-    private byte Checksum;
+    private int Checksum;
 
     public int getContentLength() {
         return (Content == null ? 0 : Content.length);
     }
 
     // special addresses
-    public static final byte AddressDefault = 0x00;
-    public static final byte AddressBroadcast = (byte) 0xFF;
-    public static final byte AddressConditionalBroadcast = (byte) 0xFE;
+    public static final int AddressDefault = 0x00;
+    public static final int AddressBroadcast = 0xFF;
+    public static final int AddressConditionalBroadcast = 0xFE;
     public static final int AddressMin = 0x01;
     public static final int AddressMax = 0xF0;
     public static final int AddressELabelStart = 100;
@@ -43,13 +43,13 @@ public class DataPacket {
         return (1 + 1 + 1 + getContentLength() + 1);
     }
 
-    public byte CalcChecksum() {
-        byte cs = Version;
+    public int CalcChecksum() {
+        int cs = Version;
         cs ^= Address;
         cs ^= Cmd;
         if (Content != null) {
             for (byte b : Content) {
-                cs ^= b;
+                cs ^= (b & 0xFF);
             }
         }
         return cs;
@@ -62,23 +62,23 @@ public class DataPacket {
         bts[0] = Head1;
         bts[1] = Head2;
         bts[2] = (byte) (GetLength() & 0xFF);
-        bts[3] = getVersion();
-        bts[4] = getAddress();
-        bts[5] = getCmd();
+        bts[3] = (byte) (getVersion() & 0xFF);
+        bts[4] = (byte) (getAddress() & 0xFF);
+        bts[5] = (byte) (getCmd() & 0xFF);
         if (getContent() != null) {
             System.arraycopy(getContent(), 0, bts, 6, getContent().length);
         }
-        bts[bts.length - 1] = CalcChecksum();
+        bts[bts.length - 1] = (byte) (CalcChecksum() & 0xFF);
         return bts;
     }
 
     public static DataPacket ParseData(byte[] data) {
         DataPacket pack = new DataPacket();
-        pack.setVersion(data[0]);
-        pack.setAddress(data[1]);
-        pack.setCmd(data[2]);
+        pack.setVersion(data[0] & 0xFF);
+        pack.setAddress(data[1] & 0xFF);
+        pack.setCmd(data[2] & 0xFF);
         pack.setContent(Arrays.copyOfRange(data, 3, data.length - 1));
-        pack.setChecksum(data[data.length - 1]);
+        pack.setChecksum(data[data.length - 1] & 0xFF);
         return pack;
     }
 
@@ -149,11 +149,11 @@ public class DataPacket {
         int Locker = 0xF0;
     }
 
-    public static byte ToRecvCmd(byte cmd) {
-        return (byte) Character.toUpperCase(cmd);
+    public static int ToRecvCmd(int cmd) {
+        return Character.toUpperCase(cmd);
     }
 
-    public byte ToRecvCmd() {
+    public int ToRecvCmd() {
         return ToRecvCmd(getCmd());
     }
 
@@ -241,8 +241,8 @@ public class DataPacket {
 
     public static DataPacket Build(int address, int cmd, byte[] content) {
         DataPacket pack = new DataPacket();
-        pack.setAddress((byte) (address & 0xFF));
-        pack.setCmd((byte) (cmd & 0xFF));
+        pack.setAddress(address);
+        pack.setCmd(cmd);
         pack.setContent(content);
         pack.setChecksum(pack.CalcChecksum());
         return pack;

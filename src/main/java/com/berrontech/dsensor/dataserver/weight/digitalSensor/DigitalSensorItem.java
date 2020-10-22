@@ -969,7 +969,7 @@ public class DigitalSensorItem {
 
     public DataPacket ReadParam(int param, int retries) throws Exception {
         DataPacket packet = DataPacket.BuildReadParam(Params.getAddress(), param);
-        log.info("#{} ReadParam: name={}, retries={}", (packet.getAddress() & 0xFF), param, retries);
+        log.info("#{} ReadParam: name={}, retries={}", packet.getAddress(), param, retries);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {

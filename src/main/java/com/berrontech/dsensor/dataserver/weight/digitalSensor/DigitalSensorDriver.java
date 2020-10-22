@@ -55,7 +55,7 @@ public class DigitalSensorDriver {
                 if (getConnection().readByte(timeout) != DataPacket.Head2) {
                     continue;
                 }
-                byte len = getConnection().readByte(timeout);
+                int len = getConnection().readByte(timeout) & 0xFF;
                 byte[] data = getConnection().readBytes(len, timeout);
                 DataPacket packet = null;
                 if (data != null) {
@@ -71,15 +71,15 @@ public class DigitalSensorDriver {
     }
 
     private boolean isValid(DataPacket packet) {
-        final byte checkSum = packet.CalcChecksum();
+        final int checkSum = packet.CalcChecksum();
         final boolean valid = packet.getChecksum() == checkSum;
         if (!valid) {
-            log.debug("Checksum error, recv=[{}], calc=[{}]", packet.getChecksum() & 0xFF, checkSum & 0xFF);
+            log.debug("Checksum error, recv=[{}], calc=[{}]", packet.getChecksum(), checkSum);
         }
         return valid;
     }
 
-    public DataPacket Read(byte address, byte cmd, int timeout) throws TimeoutException {
+    public DataPacket Read(int address, int cmd, int timeout) throws TimeoutException {
         long endTime = System.currentTimeMillis() + timeout;
         do {
             DataPacket packet = Read(timeout);
