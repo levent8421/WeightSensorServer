@@ -55,7 +55,7 @@ public class DigitalSensorDriver {
                 if (getConnection().readByte(timeout) != DataPacket.Head2) {
                     continue;
                 }
-                byte len = getConnection().readByte(timeout);
+                int len = getConnection().readByte(timeout) & 0xFF;
                 byte[] data = getConnection().readBytes(len, timeout);
                 DataPacket packet = null;
                 if (data != null) {
