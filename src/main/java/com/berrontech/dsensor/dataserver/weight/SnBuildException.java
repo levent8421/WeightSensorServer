@@ -20,9 +20,14 @@ public class SnBuildException extends Exception {
     @Getter
     private final String sn;
 
-    public SnBuildException(Integer connectionId, Integer address, String sn) {
+    public SnBuildException(String msg, Integer connectionId, Integer address, String sn) {
+        super(msg);
         this.address = address;
         this.connectionId = connectionId;
         this.sn = sn;
+    }
+
+    public SnBuildException(Integer connectionId, Integer address, String sn) {
+        this("Error on rebuild SN!", connectionId, address, sn);
     }
 }

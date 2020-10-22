@@ -673,11 +673,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public String rebuildSnForElabel(Integer connectionId, Integer address) throws SnBuildException {
-        // TODO 重新分配电子标签SN
-        // 日期时间格式化使用 FastDateFormat
-        // 示例：
-        // private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
-        // final String dateStr = DATE_FORMAT.format(DateTimeUtils.now());
         String sn = null;
         try {
             DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
@@ -690,9 +685,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 log.warn("rebuildSnForElabel: can not found sensor, connectionId={}, address={}", connectionId, address);
                 throw new SnBuildException(connectionId, address, sn);
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             log.warn("rebuildSnForElabel error: connectionId={}, address={}", connectionId, address, ex);
             throw new SnBuildException(connectionId, address, sn);
         }
@@ -700,7 +693,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public String rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException {
-        // TODO 重新分配传感器SN
         String sn = null;
         try {
             DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
@@ -713,9 +705,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 log.warn("rebuildSnForSensor: can not found sensor, connectionId={}, address={}", connectionId, address);
                 throw new SnBuildException(connectionId, address, sn);
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             log.warn("rebuildSnForSensor error: connectionId={}, address={}", connectionId, address, ex);
             throw new SnBuildException(connectionId, address, sn);
         }
