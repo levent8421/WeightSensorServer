@@ -653,7 +653,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 //                Thread.sleep(group.getCommLongInterval());
 
                 log.debug("#{} setSensorAddressForSn: SetAddressByDeviceSn", address);
-                group.SetAddressByDeviceSn(DataPacket.EDeviceType.DigitalSensor, sn);
+                group.SetAddressByDeviceSn(address, sn);
                 Thread.sleep(group.getCommLongInterval());
 
 //                log.debug("#{} setSensorAddressForSn: switch to Normal mode", address);
