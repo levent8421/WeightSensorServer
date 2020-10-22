@@ -6,8 +6,10 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.web.vo.MergeSensorsParam;
+import com.berrontech.dsensor.dataserver.weight.SnBuildException;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,7 @@ import static com.berrontech.dsensor.dataserver.common.util.ParamChecker.notNull
  *
  * @author Levent8421
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/sensor")
 public class WeightSensorController extends AbstractEntityController<WeightSensor> {
@@ -240,5 +243,49 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
     public GeneralResult<Integer> cleanAllBackupSn() {
         final int num = weightSensorService.cleanAllBackupSn();
         return GeneralResult.ok(num);
+    }
+
+    /**
+     * Rebuild  ELabel sn
+     *
+     * @param id sensor id
+     * @return GR
+     */
+    @PostMapping("/{id}/_rebuild-elabel-sn")
+    public GeneralResult<Void> rebuildElabelSn(@PathVariable("id") Integer id) {
+        final WeightSensor sensor = weightSensorService.require(id);
+        final Integer address = sensor.getAddress();
+        final Integer connectionId = sensor.getConnectionId();
+        try {
+            weightController.rebuildSnForElabel(connectionId, address);
+        } catch (SnBuildException e) {
+            final String errStr = String.format("Error on rebuild sn for eLabel[%s], connection=[%s], sn=[%s]",
+                    e.getAddress(), e.getConnectionId(), e.getSn());
+            log.error(errStr, e);
+            return GeneralResult.error(errStr);
+        }
+        return GeneralResult.ok();
+    }
+
+    /**
+     * Rebuild Sensor sn
+     *
+     * @param id sensor id
+     * @return GR
+     */
+    @PostMapping("/{id}/_rebuild-sensor-sn")
+    public GeneralResult<Void> rebuildSensorSn(@PathVariable("id") Integer id) {
+        final WeightSensor sensor = weightSensorService.require(id);
+        final Integer address = sensor.getAddress();
+        final Integer connectionId = sensor.getConnectionId();
+        try {
+            weightController.rebuildSnForSensor(connectionId, address);
+        } catch (SnBuildException e) {
+            final String errStr = String.format("Error on rebuild sn for sensor[%s], connection=[%s], sn=[%s]",
+                    e.getAddress(), e.getConnectionId(), e.getSn());
+            log.error(errStr, e);
+            return GeneralResult.error(errStr);
+        }
+        return GeneralResult.ok();
     }
 }

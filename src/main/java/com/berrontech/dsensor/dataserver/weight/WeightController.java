@@ -193,4 +193,22 @@ public interface WeightController {
      * @return 是否成功
      */
     boolean setElabelAddressForSn(Integer connectionId, String sn, Integer address);
+
+    /**
+     * 重新为电子标签分配SN
+     *
+     * @param connectionId 连接ID
+     * @param address      地址
+     * @throws SnBuildException any error
+     */
+    void rebuildSnForElabel(Integer connectionId, Integer address) throws SnBuildException;
+
+    /**
+     * 重新为传感器分配SN
+     *
+     * @param connectionId 连接ID
+     * @param address      地址
+     * @throws SnBuildException any Error
+     */
+    void rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException;
 }
