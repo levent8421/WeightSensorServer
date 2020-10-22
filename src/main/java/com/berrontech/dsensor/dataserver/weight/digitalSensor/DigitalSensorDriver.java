@@ -79,11 +79,11 @@ public class DigitalSensorDriver {
         return valid;
     }
 
-    public DataPacket Read(byte address, byte cmd, int timeout) throws TimeoutException {
+    public DataPacket Read(int address, int cmd, int timeout) throws TimeoutException {
         long endTime = System.currentTimeMillis() + timeout;
         do {
             DataPacket packet = Read(timeout);
-            if (packet != null && packet.getAddress() == address && packet.getCmd() == cmd) {
+            if (packet != null && (packet.getAddress() & 0xFF) == address && (packet.getCmd() & 0xFF) == cmd) {
                 return packet;
             } else {
                 log.debug("packet error: required addr={} type={}", address, cmd);
@@ -109,7 +109,7 @@ public class DigitalSensorDriver {
         do {
             Write(packet);
             try {
-                DataPacket ans = Read(packet.getAddress(), packet.ToRecvCmd(), timeout);
+                DataPacket ans = Read(packet.getAddress() & 0xFF, packet.ToRecvCmd(), timeout);
                 if (ans != null) {
                     return ans;
                 }
