@@ -74,11 +74,11 @@ public class DataPacket {
 
     public static DataPacket ParseData(byte[] data) {
         DataPacket pack = new DataPacket();
-        pack.setVersion(data[0]);
-        pack.setAddress(data[1]);
-        pack.setCmd(data[2]);
+        pack.setVersion(data[0] & 0xFF);
+        pack.setAddress(data[1] & 0xFF);
+        pack.setCmd(data[2] & 0xFF);
         pack.setContent(Arrays.copyOfRange(data, 3, data.length - 1));
-        pack.setChecksum(data[data.length - 1]);
+        pack.setChecksum(data[data.length - 1] & 0xFF);
         return pack;
     }
 
