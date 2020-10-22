@@ -671,16 +671,18 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void rebuildSnForElabel(Integer connectionId, Integer address) throws SnBuildException {
+    public String rebuildSnForElabel(Integer connectionId, Integer address) throws SnBuildException {
         // TODO 重新分配电子标签SN
         // 日期时间格式化使用 FastDateFormat
         // 示例：
         // private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
         // final String dateStr = DATE_FORMAT.format(DateTimeUtils.now());
+        return null;
     }
 
     @Override
-    public void rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException {
+    public String rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException {
         // TODO 重新分配传感器SN
+        return null;
     }
 }

@@ -199,16 +199,18 @@ public interface WeightController {
      *
      * @param connectionId 连接ID
      * @param address      地址
+     * @return SN
      * @throws SnBuildException any error
      */
-    void rebuildSnForElabel(Integer connectionId, Integer address) throws SnBuildException;
+    String rebuildSnForElabel(Integer connectionId, Integer address) throws SnBuildException;
 
     /**
      * 重新为传感器分配SN
      *
      * @param connectionId 连接ID
      * @param address      地址
+     * @return SN
      * @throws SnBuildException any Error
      */
-    void rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException;
+    String rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException;
 }

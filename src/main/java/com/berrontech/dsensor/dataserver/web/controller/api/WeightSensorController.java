@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.web.controller.api;
 
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
@@ -257,7 +258,10 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         final Integer address = sensor.getAddress();
         final Integer connectionId = sensor.getConnectionId();
         try {
-            weightController.rebuildSnForElabel(connectionId, address);
+            final String sn = weightController.rebuildSnForElabel(connectionId, address);
+            if (!weightSensorService.updateElabelSn(sensor.getId(), sn)) {
+                throw new InternalServerErrorException("Error on update database ELabel sn! sn=" + sn);
+            }
         } catch (SnBuildException e) {
             final String errStr = String.format("Error on rebuild sn for eLabel[%s], connection=[%s], sn=[%s]",
                     e.getAddress(), e.getConnectionId(), e.getSn());
@@ -279,7 +283,10 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         final Integer address = sensor.getAddress();
         final Integer connectionId = sensor.getConnectionId();
         try {
-            weightController.rebuildSnForSensor(connectionId, address);
+            final String sn = weightController.rebuildSnForSensor(connectionId, address);
+            sensor.setDeviceSn(sn);
+            sensor.setSensorSn(sn);
+            weightSensorService.updateById(sensor);
         } catch (SnBuildException e) {
             final String errStr = String.format("Error on rebuild sn for sensor[%s], connection=[%s], sn=[%s]",
                     e.getAddress(), e.getConnectionId(), e.getSn());
