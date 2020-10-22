@@ -622,8 +622,8 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 //                Thread.sleep(group.getCommLongInterval());
 //                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
 
-                log.debug("#{} setElabelAddressForSn: restart reading", address);
-                group.startReading2();
+//                log.debug("#{} setElabelAddressForSn: restart reading", address);
+//                group.startReading2();
                 return true;
             }
         } catch (Exception ex) {
@@ -660,8 +660,8 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 //                Thread.sleep(group.getCommLongInterval());
 //                DigitalSensorItem.setAllWorkMode(group.Driver, DataPacket.EWorkMode.Normal);
 
-                log.debug("#{} setSensorAddressForSn: restart reading", address);
-                group.startReading2();
+//                log.debug("#{} setSensorAddressForSn: restart reading", address);
+//                group.startReading2();
                 return true;
             }
         } catch (Exception ex) {

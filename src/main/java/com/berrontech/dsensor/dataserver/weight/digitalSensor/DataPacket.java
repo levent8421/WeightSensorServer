@@ -210,9 +210,9 @@ public class DataPacket {
     }
 
     public interface EELabelPalette {
-        int Unknow = 0;
-        int Bpp32 = 1;
-        int Bpp16 = 2;
+        byte Unknow = 0;
+        byte Bpp32 = 1;
+        byte Bpp16 = 2;
     }
 
     public interface EELabelColor {
@@ -239,69 +239,69 @@ public class DataPacket {
         int ErrUnknow = 0xFF;
     }
 
-    public static DataPacket Build(byte address, byte cmd, byte[] content) {
+    public static DataPacket Build(int address, int cmd, byte[] content) {
         DataPacket pack = new DataPacket();
-        pack.setAddress(address);
-        pack.setCmd(cmd);
+        pack.setAddress((byte) (address & 0xFF));
+        pack.setCmd((byte) (cmd & 0xFF));
         pack.setContent(content);
         pack.setChecksum(pack.CalcChecksum());
         return pack;
     }
 
-    public static DataPacket Build(byte address, byte cmd) {
+    public static DataPacket Build(int address, int cmd) {
         return Build(address, cmd, null);
     }
 
-    public static DataPacket BuildGetRawCount(byte address) {
+    public static DataPacket BuildGetRawCount(int address) {
         return Build(address, ESendCmd.RawCount);
     }
 
-    public static DataPacket BuildGetWeight(byte address) {
+    public static DataPacket BuildGetWeight(int address) {
         return Build(address, ESendCmd.Weight);
     }
 
-    public static DataPacket BuildGetHighResolution(byte address) {
+    public static DataPacket BuildGetHighResolution(int address) {
         return Build(address, ESendCmd.HighResolution);
     }
 
-    public static DataPacket BuildGetXSensors(byte address) {
+    public static DataPacket BuildGetXSensors(int address) {
         return Build(address, ESendCmd.XSensors);
     }
 
-    public static DataPacket BuildSetAddress(byte address, byte newAddress) {
+    public static DataPacket BuildSetAddress(int address, int newAddress) {
         byte[] content = new byte[]{
-                newAddress,
+                (byte) (newAddress & 0xFF),
         };
         return Build(address, ESendCmd.SetAddress, content);
     }
 
-    public static DataPacket BuildReadParam(byte address, int param) {
+    public static DataPacket BuildReadParam(int address, int param) {
         byte[] content = new byte[]{
                 (byte) (param & 0xFF),
         };
         return Build(address, ESendCmd.ReadParam, content);
     }
 
-    public static DataPacket BuildWriteParam(byte address, int param, byte value) {
+    public static DataPacket BuildWriteParam(int address, int param, byte value) {
         byte[] bts = new byte[]{value};
         return BuildWriteParam(address, param, bts);
     }
 
-    public static DataPacket BuildWriteParam(byte address, int param, int value) {
+    public static DataPacket BuildWriteParam(int address, int param, int value) {
         byte[] bts = ByteHelper.intToBytes(value);
         return BuildWriteParam(address, param, bts);
     }
 
-    public static DataPacket BuildWriteParam(byte address, int param, float value) {
+    public static DataPacket BuildWriteParam(int address, int param, float value) {
         byte[] bts = ByteHelper.floatToBytes(value);
         return BuildWriteParam(address, param, bts);
     }
 
-    public static DataPacket BuildWriteParam(byte address, int param, BigDecimal value) {
+    public static DataPacket BuildWriteParam(int address, int param, BigDecimal value) {
         return BuildWriteParam(address, param, value.floatValue());
     }
 
-    public static DataPacket BuildWriteParam(byte address, int param, String value, int maxLen) throws Exception {
+    public static DataPacket BuildWriteParam(int address, int param, String value, int maxLen) throws Exception {
         if (value == null) {
             value = "";
         }
@@ -312,14 +312,14 @@ public class DataPacket {
         return BuildWriteParam(address, param, bts);
     }
 
-    public static DataPacket BuildWriteParam(byte address, int param, byte[] value) {
+    public static DataPacket BuildWriteParam(int address, int param, byte[] value) {
         byte[] content = new byte[value.length + 1];
         content[0] = (byte) (param & 0xFF);
         System.arraycopy(value, 0, content, 1, value.length);
         return Build(address, ESendCmd.WriteParam, content);
     }
 
-    public static DataPacket BuildCalibrate(byte address, int point, float weight) {
+    public static DataPacket BuildCalibrate(int address, int point, float weight) {
         byte[] val = ByteHelper.floatToBytes(weight);
         byte[] content = new byte[val.length + 1];
         content[0] = (byte) (point & 0xFF);
@@ -327,14 +327,14 @@ public class DataPacket {
         return Build(address, ESendCmd.Calibrate, content);
     }
 
-    public static DataPacket BuildDoZero(byte address, boolean save) {
+    public static DataPacket BuildDoZero(int address, boolean save) {
         byte[] content = new byte[]{
                 (byte) (save ? 1 : 0),
         };
         return Build(address, ESendCmd.DoZero, content);
     }
 
-    public static DataPacket BuildDoZero(byte address, boolean save, float weight) {
+    public static DataPacket BuildDoZero(int address, boolean save, float weight) {
         byte[] bts = ByteHelper.floatToBytes(weight);
         byte[] content = new byte[bts.length + 1];
         content[0] = (byte) (save ? 1 : 0);
@@ -342,20 +342,20 @@ public class DataPacket {
         return Build(address, ESendCmd.DoZero, content);
     }
 
-    public static DataPacket BuildSetWorkMode(byte address, int mode) {
+    public static DataPacket BuildSetWorkMode(int address, int mode) {
         byte[] content = new byte[]{
                 (byte) (mode & 0xFF),
         };
         return Build(address, ESendCmd.SetWorkMode, content);
     }
 
-    public static DataPacket BuildSetAddressByDeviceSn(byte newAddress, String sn) throws Exception {
+    public static DataPacket BuildSetAddressByDeviceSn(int newAddress, String sn) throws Exception {
         if (sn == null) {
             sn = "";
         }
         byte[] bts = sn.getBytes(DefaultCharsetName);
         byte[] content = new byte[bts.length + 2];
-        content[0] = newAddress;
+        content[0] = (byte) (newAddress & 0xFF);
         content[1] = (byte) (EParam.DeviceSn & 0xFF);
         System.arraycopy(bts, 0, content, 2, bts.length);
         log.debug("BuildSetAddressByDeviceSn: newAddress={}, sn={}, btsLength={}", newAddress, sn, bts.length);
@@ -363,17 +363,17 @@ public class DataPacket {
     }
 
 
-    public static DataPacket BuildUpgrade(byte address, byte packNo, byte[] data) {
+    public static DataPacket BuildUpgrade(int address, int packNo, byte[] data) {
         if (data == null) {
             data = new byte[0];
         }
         byte[] content = new byte[data.length + 1];
-        content[0] = packNo;
+        content[0] = (byte) (packNo & 0xFF);
         System.arraycopy(data, 0, content, 1, data.length);
         return Build(address, ESendCmd.Upgrade, content);
     }
 
-    public static DataPacket BuildUpgradeHead(byte address, int flushAddress, int dataSize) {
+    public static DataPacket BuildUpgradeHead(int address, int flushAddress, int dataSize) {
         byte[] bts1 = ByteHelper.intToBytes(flushAddress);
         byte[] bts2 = ByteHelper.intToBytes(dataSize);
         byte[] content = new byte[bts1.length + bts2.length];
@@ -382,31 +382,31 @@ public class DataPacket {
         return BuildUpgrade(address, (byte) EUpgradePackNo.Head, content);
     }
 
-    public static DataPacket BuildUpgradeEnd(byte address) {
-        return BuildUpgrade(address, (byte) (EUpgradePackNo.End & 0xFF), null);
+    public static DataPacket BuildUpgradeEnd(int address) {
+        return BuildUpgrade(address, EUpgradePackNo.End, null);
     }
 
-    public static DataPacket BuildUpgradeData(byte address, byte packNo, byte[] data) {
+    public static DataPacket BuildUpgradeData(int address, int packNo, byte[] data) {
         return BuildUpgrade(address, packNo, data);
     }
 
-    public static DataPacket BuildUpgradeQuery(byte address) {
-        return BuildUpgrade(address, (byte) (EUpgradePackNo.Query & 0xFF), null);
+    public static DataPacket BuildUpgradeQuery(int address) {
+        return BuildUpgrade(address, EUpgradePackNo.Query, null);
     }
 
-    public static DataPacket BuildUpgradeStart(byte address, byte deviceType, int delay) {
+    public static DataPacket BuildUpgradeStart(int address, int deviceType, int delay) {
         byte[] bts = ByteHelper.intToBytes(delay);
         byte[] content = new byte[bts.length + 1];
-        content[0] = deviceType;
+        content[0] = (byte) (deviceType & 0xFF);
         System.arraycopy(bts, 0, content, 1, bts.length);
         return BuildUpgrade(address, (byte) (EUpgradePackNo.Start & 0xFF), content);
     }
 
-    public static DataPacket BuildELabelCmd(byte address, int cmd, byte page, byte totalPage, byte[] data) {
+    public static DataPacket BuildELabelCmd(int address, int cmd, int page, int totalPage, byte[] data) {
         byte[] content = new byte[3 + (data == null ? 0 : data.length)];
-        content[0] = (byte) cmd;
-        content[1] = page;
-        content[2] = totalPage;
+        content[0] = (byte) (cmd & 0xFF);
+        content[1] = (byte) (page & 0xFF);
+        content[2] = (byte) (totalPage & 0xFF);
         if (data != null) {
             System.arraycopy(data, 0, content, 3, data.length);
         }
