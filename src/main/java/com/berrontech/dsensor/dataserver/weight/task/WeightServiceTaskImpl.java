@@ -14,6 +14,7 @@ import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DataPacket;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorParams;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
@@ -614,7 +615,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 //                Thread.sleep(group.getCommLongInterval());
 
                 log.debug("#{} setElabelAddressForSn: SetAddressByDeviceSn", address);
-                group.SetAddressByDeviceSn(address, sn);
+                group.SetAddressByDeviceSn(DigitalSensorParams.toELabelAddress(address), sn);
                 Thread.sleep(group.getCommLongInterval());
 
 //                log.debug("#{} setElabelAddressForSn: switch to Normal mode", address);
@@ -677,12 +678,46 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         // 示例：
         // private static final FastDateFormat DATE_FORMAT = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss.SSS");
         // final String dateStr = DATE_FORMAT.format(DateTimeUtils.now());
-        return null;
+        String sn = null;
+        try {
+            DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
+            if (sensor != null) {
+                sn = DigitalSensorParams.BuildNewELabelDeviceSn();
+                sensor.SetELabelSn(sn);
+                sensor.getParams().setBackupELabelSn(sn);
+                return sn;
+            } else {
+                log.warn("rebuildSnForElabel: can not found sensor, connectionId={}, address={}", connectionId, address);
+                throw new SnBuildException(connectionId, address, sn);
+            }
+        }
+        catch (Exception ex)
+        {
+            log.warn("rebuildSnForElabel error: connectionId={}, address={}", connectionId, address, ex);
+            throw new SnBuildException(connectionId, address, sn);
+        }
     }
 
     @Override
     public String rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException {
         // TODO 重新分配传感器SN
-        return null;
+        String sn = null;
+        try {
+            DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
+            if (sensor != null) {
+                sn = DigitalSensorParams.BuildNewSensorDeviceSn();
+                sensor.SetDeviceSn(sn);
+                sensor.getParams().setBackupSensorSn(sn);
+                return sn;
+            } else {
+                log.warn("rebuildSnForSensor: can not found sensor, connectionId={}, address={}", connectionId, address);
+                throw new SnBuildException(connectionId, address, sn);
+            }
+        }
+        catch (Exception ex)
+        {
+            log.warn("rebuildSnForSensor error: connectionId={}, address={}", connectionId, address, ex);
+            throw new SnBuildException(connectionId, address, sn);
+        }
     }
 }

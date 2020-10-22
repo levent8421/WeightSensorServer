@@ -372,8 +372,8 @@ public class DigitalSensorItem {
                     long t = endTime - System.currentTimeMillis();
                     DataPacket packet = driver.Read((int) t);
                     if (packet.getCmd() == DataPacket.ERecvCmd.IdBroadcast && packet.getContentLength() > 3) {
-                        int tp = packet.Content[0];
-                        int pm = packet.Content[1];
+                        int tp = packet.Content[0] & 0xFF;
+                        int pm = packet.Content[1] & 0xFF;
                         if (pm == DataPacket.EParam.DeviceSn) {
                             type = tp;
                             sn = new String(packet.Content, 2, packet.getContentLength() - 2, Charset.forName(DataPacket.DefaultCharsetName));
@@ -969,7 +969,7 @@ public class DigitalSensorItem {
             do {
                 try {
                     packet = Driver.WriteRead(packet, getReadTimeout(), retries);
-                    if (packet.Content[0] == param) {
+                    if ((packet.Content[0] & 0xFF) == param) {
                         SetCommResult(true);
                         return packet;
                     }
@@ -991,7 +991,7 @@ public class DigitalSensorItem {
                 try {
 
                     packet = Driver.WriteRead(packet, getReadTimeout(), retries);
-                    if (packet.Content[0] == param) {
+                    if ((packet.Content[0] & 0xFF) == param) {
                         SetELabelCommResult(true);
                         return packet;
                     }
@@ -1528,7 +1528,7 @@ public class DigitalSensorItem {
 
     public boolean WriteELabelStatus(int status) throws Exception {
         DataPacket packet = OperateELabel(DataPacket.EELabelCmdID.WriteStatus, 0, 1, ByteHelper.intToBytes(status));
-        return packet.Content[0] == DataPacket.EResult.OK;
+        return (packet.Content[0] & 0xFF) == DataPacket.EResult.OK;
     }
 
 
@@ -1696,7 +1696,7 @@ public class DigitalSensorItem {
         try {
             packet = UpgradeWriteRead(packet, getUpgradeReadTimeout());
             SetCommResult(true);
-            result = packet.Content[1];
+            result = packet.Content[1] & 0xFF;
             System.arraycopy(packet.Content, 2, version, 0, version.length);
             log.debug("UpgradeQuery: result={}, protocol={}, version={}.{}.{}", result, version[0], version[1], version[2], version[3]);
             return result == DataPacket.EResult.OK;
@@ -1719,7 +1719,7 @@ public class DigitalSensorItem {
         try {
             packet = UpgradeWriteRead(packet, getUpgradeReadTimeout());
             SetCommResult(true);
-            int result = packet.Content[1];
+            int result = packet.Content[1] & 0xFF;
             log.debug("UpgradeStart: result={}", result);
             return result == DataPacket.EResult.OK;
         } catch (TimeoutException ex) {
@@ -1746,7 +1746,7 @@ public class DigitalSensorItem {
         try {
             packet = UpgradeWriteRead(packet, getEmptyFlashTimeout());
             SetCommResult(true);
-            result = packet.Content[1];
+            result = packet.Content[1] & 0xFF;
             log.debug("UpgradeSendHead: result={}", result);
             return result == DataPacket.EResult.OK;
         } catch (TimeoutException ex) {
@@ -1779,7 +1779,7 @@ public class DigitalSensorItem {
         try {
             packet = UpgradeWriteRead(packet, getWriteParamTimeout());
             SetCommResult(true);
-            result = packet.Content[1];
+            result = packet.Content[1] & 0xFF;
             log.debug("UpgradeSendData: result={}", result);
             return result == DataPacket.EResult.OK;
         } catch (TimeoutException ex) {

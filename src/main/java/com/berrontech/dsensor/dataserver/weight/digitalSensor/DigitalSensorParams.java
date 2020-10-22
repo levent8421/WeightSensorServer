@@ -44,8 +44,15 @@ public class DigitalSensorParams {
     public int ELabelModel = EELabelModel.None;
     private boolean Enabled = true;
 
+    public static int toELabelAddress(int address)
+    {
+        if (address < DataPacket.AddressELabelStart) {
+            return address + DataPacket.AddressELabelStart;
+        }
+        return address;
+    }
     public int getELabelAddress() {
-        return Address + DataPacket.AddressELabelStart;
+        return toELabelAddress(Address);
     }
 
     public boolean isXSensor() {
