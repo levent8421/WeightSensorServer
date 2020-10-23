@@ -774,7 +774,7 @@ public class DigitalSensorItem {
             wgt = Values.getNetWeight() + " " + Values.getUnit();
             //pcs = String.valueOf(Values.getPieceCount());
             pcs = String.format("%d", LastNotifyPCS);
-            acc = LastAccuracy;
+            acc = LastNotifyAccuracy;
         } else {
             number = null;
             name = null;
