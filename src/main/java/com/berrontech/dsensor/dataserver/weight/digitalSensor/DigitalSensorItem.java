@@ -541,17 +541,21 @@ public class DigitalSensorItem {
     }
 
     protected static boolean calcCountAccuracy(double tolerance, DigitalSensorValues values) {
-        int pcs = values.getPieceCount();
-        double apw = values.getAPW();
-        double apwTolerance = apw * tolerance;
-        final float netWeight = values.getNetWeight().floatValue();
-        double error = Math.abs(netWeight - apw * pcs);
-        if (pcs <= 0) {
-            pcs = 1;
+        if (values.isPieceCounting()) {
+            int pcs = values.getPieceCount();
+            double apw = values.getAPW();
+            double apwTolerance = apw * tolerance;
+            final float netWeight = values.getNetWeight().floatValue();
+            double error = Math.abs(netWeight - apw * pcs);
+            if (pcs <= 0) {
+                pcs = 1;
+            }
+            double totalTol = apwTolerance * pcs;
+            double resultTol = Math.min(apw / 2, totalTol);
+            return tolerance <= 0 || error < resultTol;
+        } else {
+            return true;
         }
-        double totalTol = apwTolerance * pcs;
-        double resultTol = Math.min(apw / 2, totalTol);
-        return tolerance <= 0 || error < resultTol;
     }
 
     EFlatStatus LastNotifyStatus = null;
