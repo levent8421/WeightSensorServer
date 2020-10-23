@@ -25,6 +25,6 @@ server:
     threads:
       min-spare: 2
 app:
-  app-version: 0.1.20
+  app-version: 0.1.21
 log-conf:
   log-keep-days: 30
