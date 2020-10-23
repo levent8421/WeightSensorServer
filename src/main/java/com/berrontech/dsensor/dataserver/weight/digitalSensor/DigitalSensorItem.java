@@ -541,21 +541,17 @@ public class DigitalSensorItem {
     }
 
     protected static boolean calcCountAccuracy(double tolerance, DigitalSensorValues values) {
-        if (values.isPieceCounting()) {
-            int pcs = values.getPieceCount();
-            double apw = values.getAPW();
-            double apwTolerance = apw * tolerance;
-            final float netWeight = values.getNetWeight().floatValue();
-            double error = Math.abs(netWeight - apw * pcs);
-            if (pcs <= 0) {
-                pcs = 1;
-            }
-            double totalTol = apwTolerance * pcs;
-            double resultTol = Math.min(apw / 2, totalTol);
-            return tolerance <= 0 || error < resultTol;
-        } else {
-            return true;
+        int pcs = values.getPieceCount();
+        double apw = values.getAPW();
+        double apwTolerance = apw * tolerance;
+        final float netWeight = values.getNetWeight().floatValue();
+        double error = Math.abs(netWeight - apw * pcs);
+        if (pcs <= 0) {
+            pcs = 1;
         }
+        double totalTol = apwTolerance * pcs;
+        double resultTol = Math.min(apw / 2, totalTol);
+        return tolerance <= 0 || error < resultTol;
     }
 
     EFlatStatus LastNotifyStatus = null;
@@ -653,7 +649,7 @@ public class DigitalSensorItem {
     private String LastBinNo;
     private String LastWeight;
     private String LastPCS;
-    private boolean LastAccuracy;
+    private Boolean LastAccuracy;
 
     public void UpdateELabel(String number, String name, String bin, String wgt, String pcs, boolean inAccuracy) throws Exception {
         if (!Params.hasELabel()) {
@@ -675,6 +671,8 @@ public class DigitalSensorItem {
                 LastPartName = null;
                 LastBinNo = null;
                 LastWeight = null;
+                LastPCS = null;
+                LastAccuracy = null;
                 // restore enable mark
                 if (Params.isEnabled()) {
                     status |= DataPacket.EELabelStatusBits.Enabled;
@@ -750,20 +748,12 @@ public class DigitalSensorItem {
                 LastWeight = wgt;
                 SetELabelCommResult(true);
             }
-            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != inAccuracy) {
+            if (!Objects.equals(LastPCS, pcs) || !Objects.equals(LastAccuracy, inAccuracy)) {
                 SetELabelPieceCount(pcs, inAccuracy);
                 LastPCS = pcs;
                 LastAccuracy = inAccuracy;
                 SetELabelCommResult(true);
             }
-//            String pcs2 = String.format("%d", LastNotifyPCS);
-//            if (!Objects.equals(LastPCS, pcs2) || LastAccuracy != LastNotifyAccuracy) {
-//                // use notify accuracy
-//                SetELabelPieceCount(pcs2);
-//                LastPCS = pcs2;
-//                LastAccuracy = LastNotifyAccuracy;
-//                SetELabelCommResult(true);
-//            }
         } catch (Exception ex) {
             SetELabelCommResult(false);
             throw ex;
