@@ -8,7 +8,8 @@ values ('weight.soft_filter_level', '0', now(), now(), false);
 
 # add config application.db_version_name
 update t_application_config
-set value='0.2.1'
+set value='0.2.1',
+    update_time=now()
 where name = 'application.db_version_name';
 
 # update db_version
