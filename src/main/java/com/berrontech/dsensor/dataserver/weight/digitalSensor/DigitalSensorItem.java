@@ -644,7 +644,7 @@ public class DigitalSensorItem {
     private String LastPCS;
     private boolean LastAccuracy;
 
-    public void UpdateELabel(String number, String name, String bin, String wgt, String pcs) throws Exception {
+    public void UpdateELabel(String number, String name, String bin, String wgt, String pcs, boolean inAccuracy) throws Exception {
         if (!Params.hasELabel()) {
             return;
         }
@@ -739,10 +739,10 @@ public class DigitalSensorItem {
                 LastWeight = wgt;
                 SetELabelCommResult(true);
             }
-            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != isCountInAccuracy()) {
-                SetELabelPieceCount(pcs);
+            if (!Objects.equals(LastPCS, pcs) || LastAccuracy != inAccuracy) {
+                SetELabelPieceCount(pcs, inAccuracy);
                 LastPCS = pcs;
-                LastAccuracy = isCountInAccuracy();
+                LastAccuracy = inAccuracy;
                 SetELabelCommResult(true);
             }
 //            String pcs2 = String.format("%d", LastNotifyPCS);
@@ -765,6 +765,7 @@ public class DigitalSensorItem {
         String bin;
         String wgt;
         String pcs;
+        boolean acc;
         if (Params.isEnabled()) {
             number = Passenger.getMaterial().getNumber();
             name = Passenger.getMaterial().getName();
@@ -772,16 +773,18 @@ public class DigitalSensorItem {
             wgt = Values.getNetWeight() + " " + Values.getUnit();
             //pcs = String.valueOf(Values.getPieceCount());
             pcs = String.format("%d", LastNotifyPCS);
+            acc = LastAccuracy;
         } else {
             number = null;
             name = null;
             bin = getSubGroup();
             wgt = Values.getNetWeight() + " " + Values.getUnit();
             pcs = null;
+            acc = true;
         }
 
         if (!isSlotChild()) {
-            UpdateELabel(number, name, bin, wgt, pcs);
+            UpdateELabel(number, name, bin, wgt, pcs, acc);
         }
     }
 
@@ -1381,8 +1384,8 @@ public class DigitalSensorItem {
         WriteELabelWeight(value);
     }
 
-    public void SetELabelPieceCount(String value) throws Exception {
-        WriteELabelPCS(value);
+    public void SetELabelPieceCount(String value, boolean inAccuracy) throws Exception {
+        WriteELabelPCS(value, inAccuracy);
     }
 
     public void SetELabelBinNo(String value) throws Exception {
@@ -1567,8 +1570,8 @@ public class DigitalSensorItem {
         WriteELabelString(DataPacket.EELabelCmdID.WriteWeight, 0, 1, DataPacket.EELabelColor.Black, value);
     }
 
-    public void WriteELabelPCS(String value) throws Exception {
-        WriteELabelString(DataPacket.EELabelCmdID.WritePCS, 0, 1, isCountInAccuracy() ? DataPacket.EELabelColor.Black : DataPacket.EELabelColor.Red, value);
+    public void WriteELabelPCS(String value, boolean inAccuracy) throws Exception {
+        WriteELabelString(DataPacket.EELabelCmdID.WritePCS, 0, 1, inAccuracy ? DataPacket.EELabelColor.Black : DataPacket.EELabelColor.Red, value);
     }
 
     public void WriteELabelBinNo(String value) throws Exception {

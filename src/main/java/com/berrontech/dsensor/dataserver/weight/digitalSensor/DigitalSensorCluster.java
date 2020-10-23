@@ -85,6 +85,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         String bin;
         String wgt;
         String pcs;
+        boolean acc;
         if (getParams().isEnabled()) {
             number = getPassenger().getMaterial().Number;
             name = getPassenger().getMaterial().Name;
@@ -92,23 +93,26 @@ public class DigitalSensorCluster extends DigitalSensorItem {
             wgt = getValues().getNetWeight() + " " + getValues().getUnit();
             //pcs = String.valueOf(getValues().getPieceCount());
             pcs = String.format("%d", LastNotifyPCS);
+            acc = LastNotifyAccuracy;
         } else {
             number = " ";
             name = " ";
             bin = getSubGroup();
             wgt = getValues().getNetWeight() + " " + getValues().getUnit();
             pcs = null;
+            acc = true;
         }
 
-        firstSensor.UpdateELabel(number, name, bin, wgt, pcs);
+        firstSensor.UpdateELabel(number, name, bin, wgt, pcs, acc);
         number = " ";
         name = " ";
         bin = getSubGroup();
         wgt = " ";
         pcs = " ";
+        acc = true;
         for (int pos = 0; pos < Children.size(); pos++) {
             if (Children.get(pos) != firstSensor) {
-                Children.get(pos).UpdateELabel(number, name, bin, wgt, pcs);
+                Children.get(pos).UpdateELabel(number, name, bin, wgt, pcs, acc);
             }
         }
     }

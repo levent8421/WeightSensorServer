@@ -126,6 +126,7 @@ public class DigitalSensorGroup {
             item.setGroup(first.getGroup());
             item.setSubGroup(first.getSubGroup());
             item.setPassenger(first.getPassenger());
+            item.setSubGroupId(first.getSubGroupId());
             item.calc();
             clusters.add(item);
         }
