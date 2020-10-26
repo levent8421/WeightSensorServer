@@ -33,10 +33,13 @@ public class HeartbeatTask {
     public void heartbeat() {
         if (apiClient.isConnected()) {
             try {
+                log.debug("Try heartbeat!");
                 weightNotifier.heartbeat();
             } catch (Exception e) {
                 log.warn("Error on notify heartbeat!", e);
             }
+        } else {
+            log.warn("Heartbeat give up! reason=[TCP NOT CONNECTED!]");
         }
     }
 }

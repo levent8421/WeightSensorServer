@@ -11,7 +11,6 @@ import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
@@ -186,7 +185,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
 
     @Override
     public void onNewMessage(Message message) {
-        val type = message.getType();
+        final String type = message.getType();
         if (type == null) {
             log.warn("Null Type!");
             return;
@@ -226,9 +225,9 @@ public class TcpApiClient implements ApiClient, DisposableBean,
     }
 
     private void sendServerErrorReply(Message message, Throwable error) {
-        val errorString = String.format("Error: type=[%s], msg=[%s]", error.getClass().getName(), error.getMessage());
-        val payload = Payload.error(errorString);
-        val reply = MessageUtils.replyMessage(message, payload);
+        final String errorString = String.format("Error: type=[%s], msg=[%s]", error.getClass().getName(), error.getMessage());
+        final Payload<String> payload = Payload.error(errorString);
+        final Message reply = MessageUtils.replyMessage(message, payload);
         try {
             send(reply, 0, null);
         } catch (MessageException e) {
@@ -248,7 +247,7 @@ public class TcpApiClient implements ApiClient, DisposableBean,
 
     @Override
     public void afterSend(MessageInfo messageInfo) {
-        val msgType = messageInfo.getMessage().getType();
+        final String msgType = messageInfo.getMessage().getType();
         if (Objects.equals(msgType, Message.TYPE_REQUEST)) {
             messageManager.addMessage(messageInfo);
         }

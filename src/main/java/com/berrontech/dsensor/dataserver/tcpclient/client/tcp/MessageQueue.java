@@ -4,7 +4,6 @@ import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListener;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -22,10 +21,11 @@ import java.util.concurrent.LinkedBlockingDeque;
 @Slf4j
 public class MessageQueue {
     private static final int MAX_QUEUE_SIZE = 1024;
+    private static final int FULL_QUEUE_SIZE = 1000;
     private final BlockingQueue<MessageInfo> messageInfoQueue = new LinkedBlockingDeque<>(MAX_QUEUE_SIZE);
 
     public boolean offer(Message message, int timeout, int maxRetry, MessageListener listener) {
-        val msgInfo = new MessageInfo();
+        final MessageInfo msgInfo = new MessageInfo();
         msgInfo.setMessage(message);
         msgInfo.setTimeout(timeout);
         msgInfo.setMaxRetry(maxRetry);
@@ -34,13 +34,30 @@ public class MessageQueue {
         return offer(msgInfo);
     }
 
-    public boolean offer(MessageInfo messageInfo) {
+    public synchronized boolean offer(MessageInfo messageInfo) {
+        makeQueueNotFull();
         try {
             messageInfoQueue.put(messageInfo);
             return true;
         } catch (InterruptedException e) {
             log.error("Error On Put Message Into Queue!", e);
             return false;
+        }
+    }
+
+    private void makeQueueNotFull() {
+        final long now = System.currentTimeMillis();
+        while (messageInfoQueue.size() > FULL_QUEUE_SIZE) {
+            try {
+                final MessageInfo messageInfo = poll();
+                final Message message = messageInfo.getMessage();
+                final String seqNo = message.getSeqNo();
+                final long before = now - messageInfo.getSendTime();
+                log.warn("Give up message:[{}/{}/{}], send before [{}], msg=[{}]",
+                        seqNo, message.getAction(), messageInfo.getRetry(), before, message.asJsonString());
+            } catch (MessageException e) {
+                log.error("Error on poll message from queue!", e);
+            }
         }
     }
 

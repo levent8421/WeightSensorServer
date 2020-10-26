@@ -4,10 +4,10 @@ import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,21 +35,21 @@ public class MessageManager {
             return;
         }
         messageInfo.setSendTime(System.currentTimeMillis());
-        val seqNo = messageInfo.getMessage().getSeqNo();
+        final String seqNo = messageInfo.getMessage().getSeqNo();
         messageTable.put(seqNo, messageInfo);
         callBeforeSend(messageInfo);
     }
 
     public void checkTimeout() {
-        val now = System.currentTimeMillis();
-        val completedMessage = new ArrayList<String>();
+        final long now = System.currentTimeMillis();
+        final List<String> completedMessage = new ArrayList<String>();
         final Map<String, MessageInfo> messageInfoMap;
         synchronized (messageTable) {
             messageInfoMap = CollectionUtils.copy(messageTable);
         }
         for (Map.Entry<String, MessageInfo> entry : messageInfoMap.entrySet()) {
-            val message = entry.getValue();
-            val seqNo = entry.getKey();
+            final MessageInfo message = entry.getValue();
+            final String seqNo = entry.getKey();
             if (now - message.getSendTime() > message.getTimeout()) {
                 if (message.getRetry() >= message.getMaxRetry()) {
                     callTimeout(message);
@@ -70,7 +70,7 @@ public class MessageManager {
     }
 
     private void retrySend(MessageInfo messageInfo) throws MessageException {
-        val seqNo = messageInfo.getMessage().getSeqNo();
+        final String seqNo = messageInfo.getMessage().getSeqNo();
         messageInfo.setRetry(messageInfo.getRetry() + 1);
         log.debug("Retry Send Message: [{}], retry=[{}/{}]", seqNo, messageInfo.getRetry(), messageInfo.getMaxRetry());
         if (!messageQueue.offer(messageInfo)) {
@@ -79,9 +79,9 @@ public class MessageManager {
     }
 
     public void reply(Message reply) {
-        val seqNo = reply.getSeqNo();
+        final String seqNo = reply.getSeqNo();
         if (messageTable.containsKey(seqNo)) {
-            val message = messageTable.remove(seqNo);
+            final MessageInfo message = messageTable.remove(seqNo);
             callReply(message, reply);
         } else {
             log.warn("Resolve A Invalidate Reply:[{}]", reply);
