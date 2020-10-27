@@ -37,6 +37,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         }
         DigitalSensorItem firstSensor = getFirstChild();
 
+        getValues().setAPW(firstSensor.getValues().getAPW());
         float fSum;
         BigDecimal sum;
         getValues().setUnit(firstSensor.getValues().getUnit());
@@ -50,24 +51,24 @@ public class DigitalSensorCluster extends DigitalSensorItem {
             fSum += c.getValues().getHighTare();
         }
         getValues().setHighTare(fSum);
-        //Values.IsHighlight = firstSensor?.Values.IsHighlight ?? false;
-        fSum = 0f;
-        for (DigitalSensorItem c : Children) {
-            fSum += c.getTotalSuccess();
-        }
         sum = BigDecimal.ZERO;
         for (DigitalSensorItem c : Children) {
             sum = sum.add(c.getValues().getGrossWeight());
         }
         getValues().setGrossWeight(sum);
         getValues().setStatus((Children.stream().anyMatch(s -> s.getValues().isDynamic())) ? DigitalSensorValues.EStatus.Dynamic : DigitalSensorValues.EStatus.Stable);
+        fSum = 0f;
+        for (DigitalSensorItem c : Children) {
+            fSum += c.getTotalSuccess();
+        }
         setTotalSuccess((int) fSum);
         setOnlineAndNotify(Children.stream().filter(s -> !s.isOnline()).count() <= 0);
-        getValues().setAPW(firstSensor.getValues().getAPW());
         if (getValues().isPieceCounting()) {
             setCountInAccuracy(calcCountAccuracy(getPassenger().getMaterial().getTolerance(), getValues()));
+            setCountError(calcCountError(getValues()));
         } else {
             setCountInAccuracy(true);
+            setCountError(0);
         }
         getParams().setEnabled(firstSensor.getParams().isEnabled());
         SubGroup = firstSensor.getSubGroup();

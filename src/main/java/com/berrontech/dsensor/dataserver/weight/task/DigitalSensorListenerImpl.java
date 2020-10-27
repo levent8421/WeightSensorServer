@@ -80,7 +80,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             val slotData = slot.getData();
             slotData.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
             slotData.setCount(sensor.getValues().getPieceCount());
-            slotData.setTolerance(toTolerance(sensor.getValues()));
+            slotData.setTolerance((int)(sensor.getCountError() * 1000));
             slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
             final Collection<MemorySlot> slots = Collections.singleton(slot);
             weightNotifier.countChange(slots);
@@ -89,12 +89,6 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             log.warn("notify onPieceCountChanged error", ex);
             return false;
         }
-    }
-
-    private int toTolerance(DigitalSensorValues values) {
-        final double apw = values.getAPW() * 1000;
-        final double toleranceRate = 1 - values.getPieceCountAccuracy();
-        return (int) Math.round(apw * toleranceRate);
     }
 
     @Override

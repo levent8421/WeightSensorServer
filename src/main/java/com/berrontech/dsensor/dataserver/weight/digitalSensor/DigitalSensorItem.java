@@ -147,6 +147,7 @@ public class DigitalSensorItem {
     private boolean ELabelOnline = false;
     private int HighResCounter;
     private boolean CountInAccuracy = true;
+    private double CountError = 0;
     private long HighlightDeadTime = 0;
 
     public boolean setOnlineAndNotify(boolean value) {
@@ -526,8 +527,10 @@ public class DigitalSensorItem {
                         Values.setAPW(Passenger.getMaterial().getAPW());
                         // here SF set tolerance as gram not percent
                         setCountInAccuracy(calcCountAccuracy(Passenger.getMaterial().getTolerance(), Values));
+                        setCountError(calcCountError(Values));
                     } else {
                         setCountInAccuracy(true);
+                        setCountError(0);
                     }
                     TryNotifyListener();
                     return true;
@@ -540,12 +543,19 @@ public class DigitalSensorItem {
         }
     }
 
+    protected static double calcCountError(DigitalSensorValues values) {
+        int pcs = values.getPieceCount();
+        double apw = values.getAPW();
+        final float netWeight = values.getNetWeight().floatValue();
+        double error = Math.abs(netWeight - apw * pcs);
+        return error;
+    }
+
     protected static boolean calcCountAccuracy(double tolerance, DigitalSensorValues values) {
+        double error = calcCountError(values);
         int pcs = values.getPieceCount();
         double apw = values.getAPW();
         double apwTolerance = apw * tolerance;
-        final float netWeight = values.getNetWeight().floatValue();
-        double error = Math.abs(netWeight - apw * pcs);
         if (pcs <= 0) {
             pcs = 1;
         }
