@@ -5,6 +5,7 @@ import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.common.exception.ResourceNotFoundException;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
+import com.berrontech.dsensor.dataserver.web.vo.ConfigSettingParam;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,11 +54,18 @@ public class ApplicationConfigController extends AbstractEntityController<Applic
      */
     @PostMapping("/{name}")
     public GeneralResult<Void> setConfig(@PathVariable("name") String name,
-                                         @RequestBody ApplicationConfig param) {
-        final ApplicationConfig config = applicationConfigService.getConfig(name);
+                                         @RequestBody ConfigSettingParam param) {
+        ApplicationConfig config = applicationConfigService.getConfig(name);
+        if (config == null) {
+            if (param.getCreateIfNotExists() != null && param.getCreateIfNotExists()) {
+                config = new ApplicationConfig();
+                config.setName(name);
+                config.setValue(param.getValue());
+                config = applicationConfigService.save(config);
+            }
+        }
         checkNotNull(config);
         notNull(param, BadRequestException.class, "No Params!");
-        notEmpty(param.getValue(), BadRequestException.class, "Empty Config Value!");
         config.setValue(param.getValue());
         applicationConfigService.updateById(config);
         return GeneralResult.ok();

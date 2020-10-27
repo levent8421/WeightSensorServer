@@ -24,6 +24,13 @@ public interface MessageLogger {
 
     /**
      * 获取所有日志
+     *
+     * @return message list
      */
     List<Message> messageList();
+
+    /**
+     * 清理过期消息
+     */
+    void cleanExpiredMessage();
 }
