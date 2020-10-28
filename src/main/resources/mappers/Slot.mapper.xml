@@ -42,17 +42,20 @@
             s.sku_name=#{slot.skuName},
             s.sku_apw=#{slot.skuApw},
             s.sku_tolerance=#{slot.skuTolerance},
-            s.sku_shelf_life_open_days=#{slot.skuShelfLifeOpenDays}
+            s.sku_shelf_life_open_days=#{slot.skuShelfLifeOpenDays},
+            s.update_time=now()
         where s.slot_no = #{slot.slotNo}
     </update>
     <update id="updateSlotNoById">
         update t_slot as s
-        set s.slot_no=#{slotNo}
+        set s.slot_no=#{slotNo},
+            s.update_time=now()
         where id = #{id}
     </update>
     <update id="updateState">
         update t_slot as s
-        set s.state=#{state}
+        set s.state=#{state},
+            s.update_time=now()
         where s.id = #{id}
     </update>
     <select id="selectBySkuLike" resultMap="rm_base">

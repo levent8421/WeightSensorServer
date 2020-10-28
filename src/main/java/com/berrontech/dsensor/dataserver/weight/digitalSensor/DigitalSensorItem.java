@@ -1666,8 +1666,8 @@ public class DigitalSensorItem {
     }
 
     public void WriteELabelDefaultLogo() throws Exception {
-        //WriteELabelLogo((0x006040), _defaultLogoWidth, _defaultLogoHeight, _defaultLogo);
-        WriteELabelLogo((0x000A94), _defaultLogoWidth, _defaultLogoHeight, _monolithLogo);
+        WriteELabelLogo((0x006040), _defaultLogoWidth, _defaultLogoHeight, _defaultLogo);
+        //WriteELabelLogo((0x000A94), _defaultLogoWidth, _defaultLogoHeight, _monolithLogo);
     }
 
     public void WriteELabelBarcode(String value, int size) throws Exception {
