@@ -8,6 +8,7 @@ import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.conf.SerialConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
+import com.berrontech.dsensor.dataserver.weight.CalibrationException;
 import com.berrontech.dsensor.dataserver.weight.NativeLibraryLoader;
 import com.berrontech.dsensor.dataserver.weight.SnBuildException;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -711,5 +713,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             log.warn("rebuildSnForSensor error: connectionId={}, address={}", connectionId, address, ex);
             throw new SnBuildException(connectionId, address, sn);
         }
+    }
+
+    @Override
+    public void calibrateTemperatureSensor(Integer connectionId, Integer address, BigDecimal currentTemperature) throws CalibrationException {
+        // TODO 温度传感器标定
     }
 }

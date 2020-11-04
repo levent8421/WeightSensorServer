@@ -9,6 +9,7 @@ import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Collection;
 
 /**
@@ -213,4 +214,15 @@ public interface WeightController {
      * @throws SnBuildException any Error
      */
     String rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException;
+
+    /**
+     * 标定温度传感器
+     *
+     * @param connectionId       连接ID
+     * @param address            物理地址
+     * @param currentTemperature 当前温度
+     * @throws CalibrationException 标定异常
+     */
+    void calibrateTemperatureSensor(Integer connectionId, Integer address, BigDecimal currentTemperature)
+            throws CalibrationException;
 }
