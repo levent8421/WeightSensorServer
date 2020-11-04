@@ -777,6 +777,9 @@ public class DigitalSensorItem {
         String wgt;
         String pcs;
         boolean acc;
+        if (!Params.hasELabel()) {
+            return;
+        }
         if (Params.isEnabled()) {
             number = Passenger.getMaterial().getNumber();
             name = Passenger.getMaterial().getName();

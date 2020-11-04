@@ -80,6 +80,9 @@ public class DigitalSensorCluster extends DigitalSensorItem {
             return;
         }
         DigitalSensorItem firstSensor = getFirstChild();
+        if (!firstSensor.getParams().hasELabel()) {
+            return;
+        }
 
         String number;
         String name;
@@ -87,7 +90,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         String wgt;
         String pcs;
         boolean acc;
-        if (getParams().isEnabled()) {
+        if (firstSensor.getParams().isEnabled()) {
             number = getPassenger().getMaterial().Number;
             name = getPassenger().getMaterial().Name;
             bin = getSubGroup();
