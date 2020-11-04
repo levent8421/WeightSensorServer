@@ -718,5 +718,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public void calibrateTemperatureSensor(Integer connectionId, Integer address, BigDecimal currentTemperature) throws CalibrationException {
         // TODO 温度传感器标定
+        log.info("Calibrate temp sensor [{}], temp=[{}]", address, currentTemperature);
+        throw new CalibrationException("暂未实现");
     }
 }
