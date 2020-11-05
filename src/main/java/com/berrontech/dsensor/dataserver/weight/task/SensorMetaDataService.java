@@ -72,25 +72,29 @@ public class SensorMetaDataService implements ThreadFactory {
     }
 
     private void doRefreshSlotTable() {
-        final List<DeviceConnection> connections = deviceConnectionService.all();
-        weightDataHolder.setConnections(connections);
+        try {
+            final List<DeviceConnection> connections = deviceConnectionService.all();
+            weightDataHolder.setConnections(connections);
 
-        final List<WeightSensor> weightSensors = weightSensorService.all();
-        weightDataHolder.setWeightSensors(weightSensors);
+            final List<WeightSensor> weightSensors = weightSensorService.all();
+            weightDataHolder.setWeightSensors(weightSensors);
 
-        final List<Slot> slots = slotService.all();
-        weightDataHolder.setSlots(slots);
+            final List<Slot> slots = slotService.all();
+            weightDataHolder.setSlots(slots);
 
-        final List<TemperatureHumiditySensor> temperatureHumiditySensors = temperatureHumiditySensorService.all();
-        weightDataHolder.setTemperatureHumiditySensors(temperatureHumiditySensors);
+            final List<TemperatureHumiditySensor> temperatureHumiditySensors = temperatureHumiditySensorService.all();
+            weightDataHolder.setTemperatureHumiditySensors(temperatureHumiditySensors);
 
-        this.loadSoftFilterLevel();
+            this.loadSoftFilterLevel();
 
-        this.buildMemorySlotTable();
-        this.buildTemperatureHumiditySensorTable();
-        weightController.onMetaDataChanged();
+            this.buildMemorySlotTable();
+            this.buildTemperatureHumiditySensorTable();
+            weightController.onMetaDataChanged();
 
-        this.notifyMergedSlotState();
+            this.notifyMergedSlotState();
+        } catch (Exception e) {
+            log.error("Error on reload sensor meta data!", e);
+        }
     }
 
     private void loadSoftFilterLevel() {
