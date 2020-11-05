@@ -14,6 +14,7 @@ import com.berrontech.dsensor.dataserver.web.vo.SlotMergeParam;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -252,8 +253,18 @@ public class SlotController extends AbstractEntityController<Slot> {
         }
         final List<Slot> slots = slotService.findByIds(param.getSlotIds());
         checkMergeSlotAddress(slots);
+        checkMergeSlotSku(slots);
         final int sensorNum = slotService.mergeSlots(slots);
         return GeneralResult.ok(sensorNum);
+    }
+
+    private void checkMergeSlotSku(List<Slot> slots) {
+        for (Slot slot : slots) {
+            if (!StringUtils.isBlank(slot.getSkuNo())) {
+                final String err = String.format("请先将货道[%s]的SKU数据解绑！", slot.getSlotNo());
+                throw new BadRequestException(err);
+            }
+        }
     }
 
     private void checkMergeSlotAddress(List<Slot> slots) {

@@ -31,6 +31,7 @@ public class MemorySlot implements Serializable {
         sku.setApw(slot.getSkuApw());
         sku.setTolerance(slot.getSkuTolerance());
         sku.setShelfLifeOpenDays(slot.getSkuShelfLifeOpenDays());
+        sku.setSkuUpdateTime(slot.getSkuUpdateTime());
         ms.setSku(sku);
         return ms;
     }

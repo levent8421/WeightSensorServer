@@ -10,6 +10,7 @@
         s.sku_apw       as s_sku_apw,
         s.sku_tolerance as s_sku_tolerance,
         s.sku_shelf_life_open_days as s_sku_shelf_life_open_days,
+        s.sku_update_time as s_sku_update_time,
         s.has_elabel    as s_has_elabel,
         s.create_time   as s_create_time,
         s.update_time   as s_update_time,
@@ -31,6 +32,7 @@
         <result column="s_sku_apw" property="skuApw"/>
         <result column="s_sku_tolerance" property="skuTolerance"/>
         <result column="s_sku_shelf_life_open_days" property="skuShelfLifeOpenDays"/>
+        <result column="s_sku_update_time" property="skuUpdateTime"/>
         <result column="s_has_elabel" property="hasElabel"/>
         <result column="s_create_time" property="createTime"/>
         <result column="s_update_time" property="updateTime"/>
@@ -43,7 +45,8 @@
             s.sku_apw=#{slot.skuApw},
             s.sku_tolerance=#{slot.skuTolerance},
             s.sku_shelf_life_open_days=#{slot.skuShelfLifeOpenDays},
-            s.update_time=now()
+            s.update_time=now(),
+            s.sku_update_time=now()
         where s.slot_no = #{slot.slotNo}
     </update>
     <update id="updateSlotNoById">
