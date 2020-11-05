@@ -26,7 +26,9 @@ INSERT INTO `t_application_config`
 VALUES (1, 'application.db_version', '4', now(), now(), false),          # for this database version
        (2, 'application.db_version_name', '0.1.0', now(), now(), false), # db version name
        (3, 'application.ui.enable_tabBar', 'true', now(), now(), false),
-       (4, 'weight.soft_filter_level', '0', now(), now(), false); # enable the Dashboard UI TabBar
+       (4, 'weight.soft_filter_level', '0', now(), now(), false),        # enable the Dashboard UI TabBar
+       (5, 'extra.page_uri', 'http://56.58.0.1:8081/starbucks-camera/pages/tt.html', now(), now(),
+        false);
 
 UNLOCK TABLES;
 

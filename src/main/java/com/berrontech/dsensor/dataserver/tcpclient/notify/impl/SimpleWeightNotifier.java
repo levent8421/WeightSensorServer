@@ -382,6 +382,9 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void notifySlotStateChanged(Collection<MemorySlot> slots) {
+        for (MemorySlot slot : slots) {
+            slotService.updateState(slot.getId(), slot.getState());
+        }
         stateChangedEventBuffer.push(slots, MemorySlot::getSlotNo);
     }
 }

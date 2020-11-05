@@ -11,7 +11,6 @@ import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -73,8 +72,8 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
 
     @Override
     public List<Slot> createOrUpdateSlotsBySensor(Collection<WeightSensor> sensors, WeightSensorService weightSensorService) {
-        val existsSlots = all();
-        val existsSlotTable = existsSlots.stream().collect(Collectors.toMap(Slot::getId, v -> v));
+        final List<Slot> existsSlots = all();
+        final Map<Integer, Slot> existsSlotTable = existsSlots.stream().collect(Collectors.toMap(Slot::getId, v -> v));
         final Map<Integer, Slot> returnSlots = new HashMap<>(16);
         for (WeightSensor sensor : sensors) {
             final Slot slot;
@@ -101,7 +100,7 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     }
 
     private Slot createDefaultSlot(WeightSensor sensor) {
-        val slot = new Slot();
+        final Slot slot = new Slot();
         slot.setAddress(sensor.getAddress());
         slot.setSlotNo(defaultSlotNo(sensor));
         slot.setHasElabel(sensor.getHasElabel());

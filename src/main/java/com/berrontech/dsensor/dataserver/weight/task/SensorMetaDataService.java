@@ -84,14 +84,22 @@ public class SensorMetaDataService implements ThreadFactory {
         final List<TemperatureHumiditySensor> temperatureHumiditySensors = temperatureHumiditySensorService.all();
         weightDataHolder.setTemperatureHumiditySensors(temperatureHumiditySensors);
 
-        final ApplicationConfig softFilterLevelConfig = applicationConfigService.getConfig(ApplicationConfig.SOFT_FILTER_LEVEL);
-        weightDataHolder.setSoftFilterLevel(Integer.parseInt(softFilterLevelConfig.getValue()));
+        this.loadSoftFilterLevel();
 
         this.buildMemorySlotTable();
         this.buildTemperatureHumiditySensorTable();
         weightController.onMetaDataChanged();
 
         this.notifyMergedSlotState();
+    }
+
+    private void loadSoftFilterLevel() {
+        final ApplicationConfig softFilterLevelConfig = applicationConfigService.getConfig(ApplicationConfig.SOFT_FILTER_LEVEL);
+        int softFilterLevel = 0;
+        if (softFilterLevelConfig != null) {
+            softFilterLevel = Integer.parseInt(softFilterLevelConfig.getValue());
+        }
+        weightDataHolder.setSoftFilterLevel(softFilterLevel);
     }
 
     /**
@@ -105,7 +113,7 @@ public class SensorMetaDataService implements ThreadFactory {
                 .collect(Collectors.toList());
         weightNotifier.notifySlotStateChanged(mergedSlots);
     }
-    
+
     private void buildMemorySlotTable() {
         final Map<Integer, MemorySlot> slotMap = weightDataHolder
                 .getSlots()

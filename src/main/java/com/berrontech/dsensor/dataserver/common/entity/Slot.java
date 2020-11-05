@@ -3,7 +3,9 @@ package com.berrontech.dsensor.dataserver.common.entity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.persistence.Column;
 import javax.persistence.Table;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,40 +23,54 @@ import java.util.List;
 @Table(name = "t_slot")
 public class Slot extends AbstractEntity {
     /**
-     * 组合485地址
+     * 货道绑定原地址
      */
+    @Column(name = "address", length = 10, nullable = false)
     private Integer address;
     /**
      * 货位号
      */
+    @Column(name = "slot_no", nullable = false)
     private String slotNo;
     /**
      * SKU 号
      */
+    @Column(name = "sku_no")
     private String skuNo;
     /**
      * SKU 名称
      */
+    @Column(name = "sku_name")
     private String skuName;
     /**
      * SKU 单重
      */
+    @Column(name = "sku_apw")
     private Integer skuApw;
     /**
      * SKU 允差
      */
+    @Column(name = "sku_tolerance")
     private Integer skuTolerance;
     /**
      * 开封后保存天数
      */
+    @Column(name = "sku_shelf_life_open_days")
     private Integer skuShelfLifeOpenDays;
+    /**
+     * SKU 更新时间
+     */
+    @Column(name = "sku_update_time")
+    private Date skuUpdateTime;
     /**
      * 是否有电子标签
      */
+    @Column(name = "has_elabel")
     private Boolean hasElabel;
     /**
      * 状态
      */
+    @Column(name = "state")
     private Integer state;
     /**
      * 传感器列表
