@@ -718,7 +718,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public void calibrateTemperatureSensor(Integer connectionId, Integer address, BigDecimal currentTemperature) throws CalibrationException {
         // TODO 温度传感器标定
-        log.info("Calibrate temp sensor [{}], temp=[{}]", address, currentTemperature);
+        log.info("calibrateTemperatureSensor [{}], temp=[{}]", address, currentTemperature);
         try {
             DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
             if (sensor != null) {
@@ -728,8 +728,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 if (!sensor.UpdateXSensors()) {
                     throw new Exception(String.format("Update xSensor failed"));
                 }
+                log.info("calibrateTemperatureSensor [{}], value=[{}]", address, sensor.getValues().getXSensors()[0]);
                 BigDecimal offset = currentTemperature.subtract(sensor.getValues().getXSensors()[0]);
-                log.info("Calibrate temp sensor [{}], offset=[{}]", address, offset);
+                log.info("calibrateTemperatureSensor [{}], offset=[{}]", address, offset);
                 sensor.SetZeroOffset(true, offset.floatValue());
             } else {
                 throw new Exception("Cannot found sensor");
