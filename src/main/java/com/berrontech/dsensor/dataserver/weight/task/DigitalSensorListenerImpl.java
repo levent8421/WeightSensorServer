@@ -61,7 +61,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
 
     @Override
     public boolean onPieceCountChanged(DigitalSensorItem sensor) {
-        if (!sensor.getValues().isDynamic()) {
+        if (sensor.getValues().isRoughlyStable()) {
             log.info("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
         } else {
             log.debug("#{} Notify onPieceCountChanged, but not stable", sensor.getParams().getAddress());

@@ -103,6 +103,7 @@ public class DigitalSensorValues {
     public static final byte DynamicMark = 'D';
 
 
+    public boolean RoughlyStable = false;
     public enum EStatus {
         Unknow,
         Stable,
@@ -115,6 +116,10 @@ public class DigitalSensorValues {
 
     public boolean isStable() {
         return Status == EStatus.Stable;
+    }
+
+    public boolean isRoughStable() {
+        return Status != EStatus.Dynamic && Status != EStatus.Unknow;
     }
 
     public void setStable() {
@@ -162,6 +167,7 @@ public class DigitalSensorValues {
     }
 
     public void CheckStatus(byte stableMark, BigDecimal capacity, BigDecimal increment) {
+        RoughlyStable = isStableMark(stableMark);
         if (HighGross > capacity.floatValue()) {
             setOverLoad();
         } else if (HighGross < increment.floatValue() * (-10)) {
