@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 import com.berrontech.dsensor.dataserver.common.entity.*;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.service.general.*;
+import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SystemError;
@@ -36,6 +37,7 @@ public class SensorMetaDataService implements ThreadFactory {
     private final WeightController weightController;
     private final BlockingQueue<Runnable> threadQueue;
     private final ApplicationConfigService applicationConfigService;
+    private final WeightNotifier weightNotifier;
 
     public SensorMetaDataService(WeightDataHolder weightDataHolder,
                                  DeviceConnectionService deviceConnectionService,
@@ -43,7 +45,8 @@ public class SensorMetaDataService implements ThreadFactory {
                                  SlotService slotService,
                                  WeightController weightController,
                                  TemperatureHumiditySensorService temperatureHumiditySensorService,
-                                 ApplicationConfigService applicationConfigService) {
+                                 ApplicationConfigService applicationConfigService,
+                                 WeightNotifier weightNotifier) {
         this.weightDataHolder = weightDataHolder;
         this.deviceConnectionService = deviceConnectionService;
         this.weightSensorService = weightSensorService;
@@ -53,6 +56,7 @@ public class SensorMetaDataService implements ThreadFactory {
         this.threadPool = buildThreadPool();
         this.temperatureHumiditySensorService = temperatureHumiditySensorService;
         this.applicationConfigService = applicationConfigService;
+        this.weightNotifier = weightNotifier;
     }
 
     private ExecutorService buildThreadPool() {
@@ -82,12 +86,26 @@ public class SensorMetaDataService implements ThreadFactory {
 
         final ApplicationConfig softFilterLevelConfig = applicationConfigService.getConfig(ApplicationConfig.SOFT_FILTER_LEVEL);
         weightDataHolder.setSoftFilterLevel(Integer.parseInt(softFilterLevelConfig.getValue()));
-        
+
         this.buildMemorySlotTable();
         this.buildTemperatureHumiditySensorTable();
         weightController.onMetaDataChanged();
+
+        this.notifyMergedSlotState();
     }
 
+    /**
+     * 通知合并货道的状态
+     */
+    private void notifyMergedSlotState() {
+        final Collection<MemorySlot> slots = weightDataHolder.getSlotTable().values();
+        final List<MemorySlot> mergedSlots = slots.stream()
+                .filter(slot -> CollectionUtils.isEmpty(slot.getSensors()))
+                .peek(slot -> slot.setState(AbstractDevice485.STATE_DISABLE))
+                .collect(Collectors.toList());
+        weightNotifier.notifySlotStateChanged(mergedSlots);
+    }
+    
     private void buildMemorySlotTable() {
         final Map<Integer, MemorySlot> slotMap = weightDataHolder
                 .getSlots()

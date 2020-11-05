@@ -82,4 +82,11 @@ public interface WeightNotifier {
      * @param sensors 传感器列表
      */
     void notifyTemperatureHumiditySensorStateChanged(Collection<MemoryTemperatureHumiditySensor> sensors);
+
+    /**
+     * 通知货道状态发生变化
+     *
+     * @param slots memory slot collection
+     */
+    void notifySlotStateChanged(Collection<MemorySlot> slots);
 }

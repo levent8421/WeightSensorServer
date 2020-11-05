@@ -379,4 +379,9 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     public void notifyTemperatureHumiditySensorStateChanged(Collection<MemoryTemperatureHumiditySensor> sensors) {
         // TODO 更新传感器状态
     }
+
+    @Override
+    public void notifySlotStateChanged(Collection<MemorySlot> slots) {
+        stateChangedEventBuffer.push(slots, MemorySlot::getSlotNo);
+    }
 }
