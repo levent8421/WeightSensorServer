@@ -719,6 +719,24 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public void calibrateTemperatureSensor(Integer connectionId, Integer address, BigDecimal currentTemperature) throws CalibrationException {
         // TODO 温度传感器标定
         log.info("Calibrate temp sensor [{}], temp=[{}]", address, currentTemperature);
-        throw new CalibrationException("暂未实现");
+        try {
+            DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
+            if (sensor != null) {
+                if (sensor.getParams().getDeviceType() != DigitalSensorParams.EDeviceType.TempHumi) {
+                    throw new Exception(String.format("This sensor(%d) is not a TemperatureSensor", sensor.getParams().getDeviceType()));
+                }
+                if (!sensor.UpdateXSensors()) {
+                    throw new Exception(String.format("Update xSensor failed"));
+                }
+                BigDecimal offset = currentTemperature.subtract(sensor.getValues().getXSensors()[0]);
+                log.info("Calibrate temp sensor [{}], offset=[{}]", address, offset);
+                sensor.SetZeroOffset(true, offset.floatValue());
+            } else {
+                throw new Exception("Cannot found sensor");
+            }
+        } catch (Exception ex) {
+            log.warn("calibrateTemperatureSensor error: connectionId={}, address={}", connectionId, address, ex);
+            throw new CalibrationException(ex.getMessage());
+        }
     }
 }
