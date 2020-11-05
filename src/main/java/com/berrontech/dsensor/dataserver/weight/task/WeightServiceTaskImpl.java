@@ -727,10 +727,13 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 if (!sensor.UpdateXSensors()) {
                     throw new Exception("Update xSensor failed");
                 }
+                sensor.UpdateHighResolution(false);
                 log.info("calibrateTemperatureSensor [{}], value=[{}]", address, sensor.getValues().getXSensors()[0]);
                 BigDecimal offset = currentTemperature.subtract(sensor.getValues().getXSensors()[0]);
-                log.info("calibrateTemperatureSensor [{}], offset=[{}]", address, offset);
-                sensor.SetZeroOffset(true, offset.floatValue());
+                log.info("calibrateTemperatureSensor [{}], div=[{}], oriOffset=[{}]", address, offset, sensor.getValues().getZeroOffset());
+                float newZero = offset.floatValue() + sensor.getValues().getZeroOffset();
+                log.info("calibrateTemperatureSensor [{}], div=[{}], newZeroOffset=[{}]", address, offset, newZero);
+                sensor.SetZeroOffset(true, newZero);
             } else {
                 throw new Exception("Cannot found sensor");
             }
