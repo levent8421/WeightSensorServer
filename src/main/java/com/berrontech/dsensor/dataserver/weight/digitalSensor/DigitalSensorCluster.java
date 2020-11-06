@@ -57,6 +57,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         }
         getValues().setGrossWeight(sum);
         getValues().setStatus((Children.stream().anyMatch(s -> s.getValues().isDynamic())) ? DigitalSensorValues.EStatus.Dynamic : DigitalSensorValues.EStatus.Stable);
+        getValues().setRoughlyStable(Children.stream().allMatch(s -> s.getValues().isRoughlyStable()));
         fSum = 0f;
         for (DigitalSensorItem c : Children) {
             fSum += c.getTotalSuccess();

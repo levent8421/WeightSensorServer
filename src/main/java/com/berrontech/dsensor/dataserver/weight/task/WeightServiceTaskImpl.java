@@ -436,7 +436,6 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void upgradeElabelFirmware(Integer connectionId, Integer address, FirmwareResource resource, UpgradeFirmwareListener listener) {
-        // TODO 电子标签固件升级
         sensorManager.StopReading();
         DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
         if (s == null) {
