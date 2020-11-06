@@ -43,14 +43,29 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     public boolean onSensorStateChanged(DigitalSensorItem sensor) {
         log.debug("#{} Notify onSensorStateChanged", sensor.getParams().getAddress());
         try {
-            MemoryWeightSensor s = DigitalSensorUtils.tryLookupMemorySensor(sensor, weightDataHolder);
-            if (s == null) {
-                log.warn("#{} Can not find memory weight sensor", sensor.getParams().getAddress());
+            if (sensor.getParams().isXSensor()) {
+                final MemoryTemperatureHumiditySensor slot = weightDataHolder.getTemperatureHumiditySensorTable().get(sensor.getParams().getId());
+                if (slot == null) {
+                    log.warn("#{} Could not found MemoryTemperatureHumiditySensor({})", sensor.getParams().getAddress(), sensor.getSubGroup());
+                } else {
+                    if (slot.getData() == null) {
+                        slot.setData(new MemoryTemperatureHumidityData());
+                    }
+                    slot.setState(toState(sensor));
+
+                    val data = slot.getData();
+                    data.setHumidityState(toState(DigitalSensorItem.toFlatStatus(sensor.isOnline(), sensor.getParams().isDisabled(), sensor.getValues().getXSensorStatus()[1])));
+                }
             } else {
-                int state = toState(sensor);
-                s.setState(state);
-                Collection<MemoryWeightSensor> sensors = Collections.singleton(s);
-                weightNotifier.sensorStateChanged(sensors);
+                MemoryWeightSensor s = DigitalSensorUtils.tryLookupMemorySensor(sensor, weightDataHolder);
+                if (s == null) {
+                    log.warn("#{} Can not find memory weight sensor", sensor.getParams().getAddress());
+                } else {
+                    int state = toState(sensor);
+                    s.setState(state);
+                    Collection<MemoryWeightSensor> sensors = Collections.singleton(s);
+                    weightNotifier.sensorStateChanged(sensors);
+                }
             }
             return true;
         } catch (Exception ex) {
@@ -64,7 +79,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         if (sensor.getValues().isRoughlyStable()) {
             log.info("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
         } else {
-            log.debug("#{} Notify onPieceCountChanged, but not stable", sensor.getParams().getAddress());
+            //log.debug("#{} Notify onPieceCountChanged, but not stable", sensor.getParams().getAddress());
             return false;
         }
 
@@ -80,7 +95,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             val slotData = slot.getData();
             slotData.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
             slotData.setCount(sensor.getValues().getPieceCount());
-            slotData.setTolerance((int)Math.round(sensor.getCountError() * 1000));
+            slotData.setTolerance((int) Math.round(sensor.getCountError() * 1000));
             slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
             final Collection<MemorySlot> slots = Collections.singleton(slot);
             weightNotifier.countChange(slots);
@@ -135,7 +150,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
         try {
             final MemoryTemperatureHumiditySensor slot = weightDataHolder.getTemperatureHumiditySensorTable().get(sensor.getParams().getId());
             if (slot == null) {
-                log.warn("#{} Could not found slot({})", sensor.getParams().getAddress(), sensor.getSubGroup());
+                log.warn("#{} Could not found MemoryTemperatureHumiditySensor({})", sensor.getParams().getAddress(), sensor.getSubGroup());
             } else {
                 if (slot.getData() == null) {
                     slot.setData(new MemoryTemperatureHumidityData());
