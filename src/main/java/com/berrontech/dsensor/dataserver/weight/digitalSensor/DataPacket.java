@@ -160,6 +160,7 @@ public class DataPacket {
 
     public interface ECalibrationPoint {
         int PointZero = 0;
+        int PointMiddle = 1;
         int PointSpan = 2;
     }
 

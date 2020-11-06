@@ -926,8 +926,8 @@ public class DigitalSensorItem {
         try {
             log.info("#{} CalibrateZero", Params.getAddress());
             int point = DataPacket.ECalibrationPoint.PointZero;
-            float weight = 0;
-            DataPacket packet = DataPacket.BuildCalibrate(Params.getAddress(), point, weight);
+            float val = 0;
+            DataPacket packet = DataPacket.BuildCalibrate(Params.getAddress(), point, val);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getCalibrateTimeout());
             }
@@ -938,7 +938,7 @@ public class DigitalSensorItem {
                     break;
                 }
                 default: {
-                    throw new Exception("Calibrate zero failed: point=" + point + ", weight=" + weight + ", result=" + result);
+                    throw new Exception("CalibrateZero failed: point=" + point + ", value=" + val + ", result=" + result);
                 }
             }
             log.info("#{} CalibrateZero Done", Params.getAddress());
@@ -948,11 +948,11 @@ public class DigitalSensorItem {
         }
     }
 
-    public void CalibrateSpan(float weight) throws Exception {
+    public void CalibrateMiddle(float val) throws Exception {
         try {
-            log.info("#{} CalibrateSpan: weight={}", Params.getAddress(), weight);
-            int point = DataPacket.ECalibrationPoint.PointSpan;
-            DataPacket packet = DataPacket.BuildCalibrate(Params.getAddress(), point, weight);
+            log.info("#{} CalibrateMiddle: value={}", Params.getAddress(), val);
+            int point = DataPacket.ECalibrationPoint.PointMiddle;
+            DataPacket packet = DataPacket.BuildCalibrate(Params.getAddress(), point, val);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getCalibrateTimeout());
             }
@@ -963,7 +963,32 @@ public class DigitalSensorItem {
                     break;
                 }
                 default: {
-                    throw new Exception("Calibrate span failed: point=" + point + ", weight=" + weight + ", result=" + result);
+                    throw new Exception("CalibrateMiddle failed: point=" + point + ", value=" + val + ", result=" + result);
+                }
+            }
+            log.info("#{} CalibrateMiddle Done", Params.getAddress());
+        } catch (Exception ex) {
+            SetCommResult(false);
+            throw ex;
+        }
+    }
+
+    public void CalibrateSpan(float val) throws Exception {
+        try {
+            log.info("#{} CalibrateSpan: value={}", Params.getAddress(), val);
+            int point = DataPacket.ECalibrationPoint.PointSpan;
+            DataPacket packet = DataPacket.BuildCalibrate(Params.getAddress(), point, val);
+            synchronized (Driver.getLock()) {
+                packet = Driver.WriteRead(packet, getCalibrateTimeout());
+            }
+            SetCommResult(true);
+            int result = packet.Content[0];
+            switch (result) {
+                case DataPacket.EResult.OK: {
+                    break;
+                }
+                default: {
+                    throw new Exception("CalibrateSpan failed: point=" + point + ", value=" + val + ", result=" + result);
                 }
             }
             log.info("#{} CalibrateSpan Done", Params.getAddress());

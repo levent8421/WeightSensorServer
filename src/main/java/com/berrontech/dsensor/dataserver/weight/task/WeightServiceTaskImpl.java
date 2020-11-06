@@ -724,16 +724,8 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 if (sensor.getParams().getDeviceType() != DigitalSensorParams.EDeviceType.TempHumi) {
                     throw new Exception(String.format("This sensor(%d) is not a TemperatureSensor", sensor.getParams().getDeviceType()));
                 }
-                if (!sensor.UpdateXSensors()) {
-                    throw new Exception("Update xSensor failed");
-                }
-                sensor.UpdateHighResolution(false);
-                log.info("calibrateTemperatureSensor [{}], value=[{}]", address, sensor.getValues().getXSensors()[0]);
-                BigDecimal offset = currentTemperature.subtract(sensor.getValues().getXSensors()[0]);
-                log.info("calibrateTemperatureSensor [{}], div=[{}], oriOffset=[{}]", address, offset, sensor.getValues().getZeroOffset());
-                float newZero = offset.floatValue() + sensor.getValues().getZeroOffset();
-                log.info("calibrateTemperatureSensor [{}], div=[{}], newZeroOffset=[{}]", address, offset, newZero);
-                sensor.SetZeroOffset(true, newZero);
+                sensor.CalibrateMiddle(currentTemperature.floatValue());
+                log.info("calibrateTemperatureSensor [{}] done", address);
             } else {
                 throw new Exception("Cannot found sensor");
             }
