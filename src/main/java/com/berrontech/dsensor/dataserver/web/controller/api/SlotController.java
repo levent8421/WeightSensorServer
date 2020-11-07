@@ -4,6 +4,7 @@ import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
+import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
@@ -259,11 +260,15 @@ public class SlotController extends AbstractEntityController<Slot> {
     }
 
     private void checkMergeSlotSku(List<Slot> slots) {
+        final List<String> errorSlotNos = new ArrayList<>();
         for (Slot slot : slots) {
             if (!StringUtils.isBlank(slot.getSkuNo())) {
-                final String err = String.format("请先将货道[%s]的SKU数据解绑！", slot.getSlotNo());
-                throw new BadRequestException(err);
+                errorSlotNos.add(slot.getSlotNo());
             }
+        }
+        if (!CollectionUtils.isEmpty(errorSlotNos)) {
+            final String errSlotNos = CollectionUtils.join(errorSlotNos.stream(), "、");
+            throw new BadRequestException(String.format("请先在巴枪上解绑被合并货道（%s）的SKU后，再进行合并", errSlotNos));
         }
     }
 

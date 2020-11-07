@@ -7,6 +7,7 @@ import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.DateTimeUtils;
+import com.berrontech.dsensor.dataserver.common.util.SlotStateUtils;
 import com.berrontech.dsensor.dataserver.conf.ApplicationConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
@@ -36,7 +37,9 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -216,7 +219,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void countChange(Collection<MemorySlot> slots) {
-        weightChangedEventBuffer.push(slots, MemorySlot::getSlotNo);
+        weightChangedEventBuffer.push(SlotStateUtils.filterNotifySlots(slots), MemorySlot::getSlotNo);
     }
 
     private void logPcsChanged(Collection<SlotVo> slots, Message message) {
@@ -263,24 +266,8 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
 
     @Override
     public void sensorStateChanged(Collection<MemoryWeightSensor> sensors) {
-        obtainSensorMetaDataService().syncStateBySensor(sensors);
-        final Map<Integer, SlotVo> slotMap = new HashMap<>(16);
-        final List<MemorySlot> memorySlots = new ArrayList<>();
-        for (MemoryWeightSensor sensor : sensors) {
-            weightSensorService.updateState(sensor.getId(), sensor.getState());
-            slotService.updateState(sensor.getSlotId(), sensor.getState());
-            if (!slotMap.containsKey(sensor.getId())) {
-                val slot = slotService.get(sensor.getSlotId());
-                val ms = MemorySlot.of(slot);
-                ms.setState(sensor.getState());
-                memorySlots.add(ms);
-                val vo = SlotVo.of(ms);
-                slotMap.put(vo.getId(), vo);
-                log.debug("Update slot[{},{}], sensor[{{},{}}] state to [{}]",
-                        slot.getId(), slot.getSlotNo(), slot.getId(), slot.getAddress(), sensor.getState());
-            }
-        }
-        stateChangedEventBuffer.push(memorySlots, MemorySlot::getSlotNo);
+        final List<MemorySlot> slots = obtainSensorMetaDataService().syncStateBySensor(sensors);
+        stateChangedEventBuffer.push(SlotStateUtils.filterNotifySlots(slots), MemorySlot::getSlotNo);
     }
 
     private List<Slot> createOrUpdateSlot(Collection<MemoryWeightSensor> sensors) {
@@ -385,6 +372,6 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
         for (MemorySlot slot : slots) {
             slotService.updateState(slot.getId(), slot.getState());
         }
-        stateChangedEventBuffer.push(slots, MemorySlot::getSlotNo);
+        stateChangedEventBuffer.push(SlotStateUtils.filterNotifySlots(slots), MemorySlot::getSlotNo);
     }
 }

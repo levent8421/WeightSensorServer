@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.*;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
+import com.berrontech.dsensor.dataserver.common.util.SlotStateUtils;
 import com.berrontech.dsensor.dataserver.service.general.*;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
@@ -166,36 +167,44 @@ public class SensorMetaDataService implements ThreadFactory {
         slotTable.put(slotNo, slot);
     }
 
-    public void syncStateBySensor(Collection<MemoryWeightSensor> sensors) {
+    public List<MemorySlot> syncStateBySensor(Collection<MemoryWeightSensor> sensors) {
         if (CollectionUtils.isEmpty(sensors)) {
-            return;
+            return Collections.emptyList();
         }
-        final Map<Integer, MemoryWeightSensor> sensorMap = sensors.stream().collect(Collectors.toMap(MemoryWeightSensor::getId, v -> v));
-        for (MemorySlot slot : weightDataHolder.getSlotTable().values()) {
-            final Collection<MemoryWeightSensor> slotSensors = slot.getSensors();
-            if (CollectionUtils.isEmpty(slotSensors)) {
+        final Map<Integer, List<MemoryWeightSensor>> slotSensorTable = new HashMap<>(32);
+        for (MemoryWeightSensor sensor : sensors) {
+            final List<MemoryWeightSensor> slotSensors =
+                    slotSensorTable.computeIfAbsent(sensor.getSlotId(), k -> new ArrayList<>());
+            slotSensors.add(sensor);
+        }
+        final List<MemorySlot> updatedSlots = new ArrayList<>();
+        for (Map.Entry<Integer, List<MemoryWeightSensor>> entry : slotSensorTable.entrySet()) {
+            final Integer slotId = entry.getKey();
+            final List<MemoryWeightSensor> slotSensors = entry.getValue();
+            final int state = getMergedSlotState(slotSensors);
+            final MemorySlot slot = tryFindSlotById(slotId);
+            if (slot == null) {
+                log.warn("Can not find slot by id [{}]", slotId);
                 continue;
             }
+            slot.setState(state);
+            updatedSlots.add(slot);
+        }
+        return updatedSlots;
+    }
 
-            int slotState = slot.getState();
-            int errorState = slotState;
-            boolean error = false;
-            for (MemoryWeightSensor sensor : slotSensors) {
-                if (sensorMap.containsKey(sensor.getId())) {
-                    final MemoryWeightSensor targetStateSensor = sensorMap.get(sensor.getId());
-                    sensor.setState(targetStateSensor.getState());
-                    slotState = targetStateSensor.getState();
-                    if (!Objects.equals(targetStateSensor.getState(), AbstractDevice485.STATE_ONLINE)) {
-                        errorState = targetStateSensor.getState();
-                        error = true;
-                    }
-                }
-            }
-            slot.setState(slotState);
-            if (error) {
-                slot.setState(errorState);
+    private int getMergedSlotState(List<MemoryWeightSensor> sensors) {
+        final List<Integer> status = sensors.stream().map(MemoryWeightSensor::getState).collect(Collectors.toList());
+        return SlotStateUtils.getMergedSlotState(status);
+    }
+
+    private MemorySlot tryFindSlotById(Integer id) {
+        for (MemorySlot slot : weightDataHolder.getSlotTable().values()) {
+            if (Objects.equals(id, slot.getId())) {
+                return slot;
             }
         }
+        return null;
     }
 
     /**
