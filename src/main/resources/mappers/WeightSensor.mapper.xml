@@ -165,4 +165,10 @@
         set ws.sensor_sn=#{sn}
         where id = #{id}
     </update>
+    <select id="selectCountBySlotId" resultType="integer">
+        select count(*) as ct
+        from t_weight_sensor as ws
+        where ws.deleted = false
+          and ws.slot_id = #{slotId}
+    </select>
 </mapper>

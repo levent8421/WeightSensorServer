@@ -249,4 +249,10 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     public int cleanAllBackupSn() {
         return weightSensorMapper.cleanAllBackupSn();
     }
+
+    @Override
+    public int getSensorCountBySlot(Integer slotId) {
+        final Integer count = weightSensorMapper.selectCountBySlotId(slotId);
+        return count == null ? 0 : count;
+    }
 }

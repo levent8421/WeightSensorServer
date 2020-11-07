@@ -108,8 +108,9 @@ public interface SlotService extends AbstractService<Slot> {
     /**
      * 合并糊货道
      *
-     * @param slots 货道列表
+     * @param slots               货道列表
+     * @param weightSensorService 传感器业务组件
      * @return 合并传感器数量
      */
-    int mergeSlots(List<Slot> slots);
+    int mergeSlots(List<Slot> slots, WeightSensorService weightSensorService);
 }

@@ -169,4 +169,12 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @return rows
      */
     int cleanAllBackupSn();
+
+    /**
+     * 查询货道有几个传感器
+     *
+     * @param slotId 货道ID
+     * @return 传感器数量
+     */
+    int getSensorCountBySlot(Integer slotId);
 }

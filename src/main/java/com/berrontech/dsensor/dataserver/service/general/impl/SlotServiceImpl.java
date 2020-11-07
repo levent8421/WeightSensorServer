@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.service.general.impl;
 
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
@@ -175,12 +176,15 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     }
 
     @Override
-    public int mergeSlots(List<Slot> slots) {
+    public int mergeSlots(List<Slot> slots, WeightSensorService weightSensorService) {
         Slot minAddSlot = slots.get(0);
         for (Slot slot : slots) {
             if (slot.getAddress() < minAddSlot.getAddress()) {
                 minAddSlot = slot;
             }
+        }
+        if (weightSensorService.getSensorCountBySlot(minAddSlot.getId()) <= 0) {
+            throw new BadRequestException("该货道已经被合并！");
         }
         final List<Integer> slotsIds = slots.stream().map(Slot::getId).collect(Collectors.toList());
         return weightSensorMapper.updateSlotIdBySlotIds(slotsIds, minAddSlot.getId());

@@ -172,4 +172,12 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return rows
      */
     int updateSensorSnById(@Param("id") Integer id, @Param("sn") String sn);
+
+    /**
+     * 查询货道的传感器数量
+     *
+     * @param slotId 货道ID
+     * @return 传感器数量
+     */
+    Integer selectCountBySlotId(@Param("slotId") Integer slotId);
 }
