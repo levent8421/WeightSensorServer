@@ -115,9 +115,9 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         wgt = " ";
         pcs = " ";
         acc = true;
-        for (int pos = 0; pos < Children.size(); pos++) {
-            if (Children.get(pos) != firstSensor) {
-                Children.get(pos).UpdateELabel(number, name, bin, wgt, pcs, acc);
+        for (DigitalSensorItem child : Children) {
+            if (child != firstSensor) {
+                child.UpdateELabel(number, name, bin, wgt, pcs, acc);
             }
         }
     }
