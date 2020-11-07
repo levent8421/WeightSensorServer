@@ -255,7 +255,7 @@ public class SlotController extends AbstractEntityController<Slot> {
         final List<Slot> slots = slotService.findByIds(param.getSlotIds());
         checkMergeSlotAddress(slots);
         checkMergeSlotSku(slots);
-        final int sensorNum = slotService.mergeSlots(slots);
+        final int sensorNum = slotService.mergeSlots(slots, weightSensorService);
         return GeneralResult.ok(sensorNum);
     }
 
