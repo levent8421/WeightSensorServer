@@ -93,8 +93,16 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                 slot.setData(new MemoryWeightData());
             }
             val slotData = slot.getData();
-            slotData.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
-            slotData.setCount(sensor.getValues().getPieceCount());
+            int wgt = sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue();
+            if (sensor.getParams().isNegativeMode()) {
+                wgt = -wgt;
+            }
+            slotData.setWeight(wgt);
+            int pcs = sensor.getValues().getPieceCount();
+            if (sensor.getParams().isNegativeMode()) {
+                pcs = -pcs;
+            }
+            slotData.setCount(pcs);
             slotData.setTolerance((int) Math.round(sensor.getCountError() * 1000));
             slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
             final Collection<MemorySlot> slots = Collections.singleton(slot);
@@ -123,7 +131,11 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                     slot.setData(new MemoryWeightData());
                 }
                 val data = slot.getData();
-                data.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+                int wgt = sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue();
+                if (sensor.getParams().isNegativeMode()) {
+                    wgt = -wgt;
+                }
+                data.setWeight(wgt);
                 data.setWeightState(sensor.getValues().isStable() ? MemoryWeightData.WEIGHT_STATE_STABLE : MemoryWeightData.WEIGHT_STATE_DYNAMIC);
                 slot.setState(toState(sensor));
             }

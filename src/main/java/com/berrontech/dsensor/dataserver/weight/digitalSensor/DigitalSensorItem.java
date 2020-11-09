@@ -433,7 +433,7 @@ public class DigitalSensorItem {
             }
             SetCommResult(true);
             Values.setGrossWeightStr(new String(packet.Content, 1, packet.Content.length - 1));
-            Values.CheckStatus(packet.Content[0], Params.getCapacity(), Params.getIncrement());
+            Values.CheckStatus(packet.Content[0], Params.getCapacity(), Params.getIncrement(), Params.isNegativeMode());
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -468,7 +468,7 @@ public class DigitalSensorItem {
                     Values.setGrossWeightStr(new String(packet.Content, 2, 8).trim());
                     Values.setHighGross(ByteHelper.bytesToFloat(packet.Content, 10, 4));
                     Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 14, 4));
-                    Values.CheckStatus(packet.Content[1], Params.getCapacity(), Params.getIncrement());
+                    Values.CheckStatus(packet.Content[1], Params.getCapacity(), Params.getIncrement(), Params.isNegativeMode());
 
                     TryNotifyListener();
                 }
@@ -523,7 +523,7 @@ public class DigitalSensorItem {
                         stableMark = DigitalSensorValues.StableMark;
                     }
                     /////////////////////////////////////
-                    Values.CheckStatus(stableMark, Params.getCapacity(), Params.getIncrement());
+                    Values.CheckStatus(stableMark, Params.getCapacity(), Params.getIncrement(), Params.isNegativeMode());
                     if (Passenger.getMaterial().getAPW() > 0) {
                         // apw from passenger will replace local apw
                         Values.setAPW(Passenger.getMaterial().getAPW());

@@ -40,6 +40,7 @@ public class DigitalSensorParams {
     private int Id;
     private String backupSensorSn;
     private String backupELabelSn;
+    private boolean NegativeMode = false;
 
     public int ELabelModel = EELabelModel.None;
     private boolean Enabled = true;

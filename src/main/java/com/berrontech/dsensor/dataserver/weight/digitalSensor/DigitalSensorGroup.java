@@ -127,6 +127,7 @@ public class DigitalSensorGroup {
             item.setSubGroup(first.getSubGroup());
             item.setPassenger(first.getPassenger());
             item.setSubGroupId(first.getSubGroupId());
+            item.getParams().setNegativeMode((first.getParams().isNegativeMode()));
             item.calc();
             clusters.add(item);
         }

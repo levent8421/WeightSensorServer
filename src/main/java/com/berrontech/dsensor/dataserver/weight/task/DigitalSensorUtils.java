@@ -10,6 +10,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -83,6 +84,7 @@ public class DigitalSensorUtils {
                         params.setDeviceSn(sen.getDeviceSn());
                         params.setBackupSensorSn(sen.getSensorSn());
                         params.setBackupELabelSn(sen.getElabelSn());
+                        params.setNegativeMode(StringUtils.isNotBlank(sen.getConfigStr()));
                         sensor.getValues().setZeroOffset(sen.getZeroReference() == null ? 0 : sen.getZeroReference().floatValue());
                         if (sen.getHasElabel()) {
 //                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
