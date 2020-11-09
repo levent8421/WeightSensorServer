@@ -144,6 +144,7 @@ public class DigitalSensorItem {
     private long ELabelTotalSuccess;
     private int ELabelContinueErrors;
     private boolean Online = false;
+    private int OnlineNotifiedCount = 0;
     private boolean ELabelOnline = false;
     private int HighResCounter;
     private boolean CountInAccuracy = true;
@@ -151,8 +152,9 @@ public class DigitalSensorItem {
     private long HighlightDeadTime = 0;
 
     public boolean setOnlineAndNotify(boolean value) {
-        if (Online != value) {
+        if (Online != value || OnlineNotifiedCount == 0) {
             Online = value;
+            OnlineNotifiedCount++;
             TryNotifyListener();
             return true;
         }
