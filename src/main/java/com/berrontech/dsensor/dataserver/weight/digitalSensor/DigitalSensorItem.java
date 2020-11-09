@@ -467,6 +467,10 @@ public class DigitalSensorItem {
                     HighResCounter = counter;
                     Values.setGrossWeightStr(new String(packet.Content, 2, 8).trim());
                     Values.setHighGross(ByteHelper.bytesToFloat(packet.Content, 10, 4));
+                    if (Params.isNegativeMode()) {
+                        Values.setGrossWeight(Values.getGrossWeight().negate());
+                        Values.setHighGross(-Values.getHighGross());
+                    }
                     Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 14, 4));
                     Values.CheckStatus(packet.Content[1], Params.getCapacity(), Params.getIncrement(), Params.isNegativeMode());
 
@@ -515,6 +519,10 @@ public class DigitalSensorItem {
                     byte stableMark = packet.Content[1];
                     Values.setGrossWeightStr(new String(packet.Content, 2, 8));
                     Values.setHighGross(ByteHelper.bytesToFloat(packet.Content, 10, 4));
+                    if (Params.isNegativeMode()) {
+                        Values.setGrossWeight(Values.getGrossWeight().negate());
+                        Values.setHighGross(-Values.getHighGross());
+                    }
                     Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 14, 4));
                     ////// valuate stable manually //////
                     if (Math.abs(highgross - Values.getHighGross()) > Params.getIncrement().floatValue() * 2) {
