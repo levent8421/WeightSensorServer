@@ -166,30 +166,16 @@ public class DigitalSensorValues {
         return false;
     }
 
-    public void CheckStatus(byte stableMark, BigDecimal capacity, BigDecimal increment, boolean negativeMode) {
+    public void CheckStatus(byte stableMark, BigDecimal capacity, BigDecimal increment) {
         RoughlyStable = isStableMark(stableMark);
-        if (negativeMode)
-        {
-            if (HighGross < -capacity.floatValue()) {
-                setOverLoad();
-            } else if (HighGross > increment.floatValue() * (10)) {
-                setUnderLoad();
-            } else if (isStableMark(stableMark)) {
-                setStable();
-            } else {
-                setDynamic();
-            }
-        }
-        else {
-            if (HighGross > capacity.floatValue()) {
-                setOverLoad();
-            } else if (HighGross < increment.floatValue() * (-10)) {
-                setUnderLoad();
-            } else if (isStableMark(stableMark)) {
-                setStable();
-            } else {
-                setDynamic();
-            }
+        if (HighGross > capacity.floatValue()) {
+            setOverLoad();
+        } else if (HighGross < increment.floatValue() * (-10)) {
+            setUnderLoad();
+        } else if (isStableMark(stableMark)) {
+            setStable();
+        } else {
+            setDynamic();
         }
     }
 
