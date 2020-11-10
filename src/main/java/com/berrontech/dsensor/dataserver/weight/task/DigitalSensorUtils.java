@@ -168,6 +168,7 @@ public class DigitalSensorUtils {
                             log.info("Use default net port: {}", defaultPort);
                             group.setCommPort(defaultPort);
                         }
+                        group.setReadTimeout(300);
                         break;
                     }
                 }
