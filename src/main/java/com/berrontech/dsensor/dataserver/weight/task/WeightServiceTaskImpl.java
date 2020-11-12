@@ -177,7 +177,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void startScan(DeviceConnection connection, SensorScanListener listener) {
+    public void startScan(DeviceConnection connection, SensorScanListener listener) throws IOException {
         // TODO 扫描货道
     }
 

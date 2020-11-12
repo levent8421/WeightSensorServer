@@ -10,6 +10,8 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.scan.SensorScanListener;
+import com.berrontech.dsensor.dataserver.weight.scan.SimpleSensorScanListener;
 import lombok.val;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +39,7 @@ public class DeviceConnectionController extends AbstractEntityController<DeviceC
     private final WeightSensorService weightSensorService;
     private final WeightController weightController;
     private final SlotService slotService;
+    private SensorScanListener scanListener;
 
     protected DeviceConnectionController(DeviceConnectionService deviceConnectionService,
                                          WeightSensorService weightSensorService,
@@ -114,12 +117,23 @@ public class DeviceConnectionController extends AbstractEntityController<DeviceC
     @PostMapping("/{id}/_scan")
     public GeneralResult<Void> startScan(@PathVariable("id") Integer id) {
         final DeviceConnection connection = deviceConnectionService.require(id);
+        scanListener = SimpleSensorScanListener.resetAndGet();
         try {
-            weightController.startScan(connection);
+            weightController.startScan(connection, scanListener);
         } catch (IOException e) {
             throw new InternalServerErrorException("Error On Scan!", e);
         }
         return GeneralResult.ok();
+    }
+
+    /**
+     * 获取扫描进度
+     *
+     * @return GR
+     */
+    @GetMapping("/_scan-progress")
+    public GeneralResult<SensorScanListener> getScanProgress() {
+        return GeneralResult.ok(scanListener);
     }
 
     /**

@@ -5,9 +5,9 @@ import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareResource;
-import com.berrontech.dsensor.dataserver.weight.scan.SensorScanListener;
 import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
+import com.berrontech.dsensor.dataserver.weight.scan.SensorScanListener;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -45,8 +45,9 @@ public interface WeightController {
      *
      * @param connection 连接
      * @param listener   监听器
+     * @throws IOException IOE
      */
-    void startScan(DeviceConnection connection, SensorScanListener listener);
+    void startScan(DeviceConnection connection, SensorScanListener listener) throws IOException;
 
     /**
      * 更新货道SKU
