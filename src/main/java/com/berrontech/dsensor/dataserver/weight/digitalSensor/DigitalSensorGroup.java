@@ -685,7 +685,7 @@ public class DigitalSensorGroup {
                             DigitalSensorParams newp = new DigitalSensorParams();
                             newp.setAddress(addr);
                             newp.setDeviceSn(sn);
-                            newp.setELabelDeviceSn(sn);
+                            newp.setELabelDeviceSn(null);
                             if (addr >= DataPacket.AddressXSensorStart) {
                                 log.debug("#{} Set as XSensor", addr);
                                 newp.setDeviceType(DigitalSensorParams.EDeviceType.TempHumi);
@@ -695,7 +695,6 @@ public class DigitalSensorGroup {
                             if (addr < DataPacket.AddressELabelStart) {
                                 // check ELabel
                                 params.setAddress(addr + DataPacket.AddressELabelStart);
-                                params.setDeviceSn(null);
                                 log.debug("#{} Try scan elabel on this device", addr);
                                 Thread.sleep(getCommLongInterval());
                                 sn = sensor.GetDeviceSn(1);
