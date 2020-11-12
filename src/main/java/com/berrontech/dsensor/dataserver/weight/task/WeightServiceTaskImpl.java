@@ -179,6 +179,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public void startScan(DeviceConnection connection, SensorScanListener listener) throws IOException {
         // TODO 扫描货道
+        listener.onScanError(new Exception("暂未实现！"));
+        listener.onProgress(10, "123", "123");
+        listener.onScanEnd();
     }
 
     @Override
