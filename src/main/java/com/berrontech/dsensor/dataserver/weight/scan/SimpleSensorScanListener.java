@@ -69,6 +69,7 @@ public class SimpleSensorScanListener implements SensorScanListener {
     public void onProgress(int address, String sn, String eLabelSn) {
         log.info("Scan result [{}]/ s/e = [{}/{}]", address, sn, eLabelSn);
         this.currentAddress = address;
+        this.updateProgress();
         if (StringUtils.isBlank(sn)) {
             return;
         }
@@ -76,7 +77,6 @@ public class SimpleSensorScanListener implements SensorScanListener {
         snPair.setSensorSn(sn);
         snPair.setELabelSn(eLabelSn);
         scanResult.put(address, snPair);
-        this.updateProgress();
     }
 
     private void updateProgress() {
