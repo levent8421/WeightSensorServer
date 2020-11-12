@@ -215,6 +215,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
                 @Override
                 public void onScanFailed(DigitalSensorGroup group, String msg) {
                     if (listener != null) {
+                        listener.onScanError(new Exception(msg));
                         listener.onScanEnd();
                     }
                 }
