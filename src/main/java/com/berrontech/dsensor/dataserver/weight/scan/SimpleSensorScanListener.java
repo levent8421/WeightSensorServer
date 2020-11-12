@@ -1,5 +1,6 @@
 package com.berrontech.dsensor.dataserver.weight.scan;
 
+import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -30,8 +31,8 @@ public class SimpleSensorScanListener implements SensorScanListener {
     private final Map<Integer, SnPair> scanResult = new HashMap<>(128);
     private final List<String> errors = new ArrayList<>();
     private int state = STATE_READY;
-    private int offset = 0;
-    private int length = 0;
+    private int start = 0;
+    private int end = 0;
     private int currentAddress = -1;
     private double progress = 0;
 
@@ -46,12 +47,11 @@ public class SimpleSensorScanListener implements SensorScanListener {
     }
 
     @Override
-
-    public void onScanStart(int offset, int length) {
+    public void onScanStart(DeviceConnection connection, int start, int end) {
         log.info("Scan Task start!");
         this.state = STATE_START;
-        this.length = length;
-        this.offset = offset;
+        this.start = start;
+        this.end = end;
         this.currentAddress = -1;
         this.progress = 0;
     }
@@ -77,8 +77,9 @@ public class SimpleSensorScanListener implements SensorScanListener {
     }
 
     private void updateProgress() {
-        final double num = this.currentAddress - offset;
-        this.progress = num * this.length * MAX_PROGRESS;
+        final double num = this.currentAddress - this.start + 1;
+        final int total = this.end - this.start + 1;
+        this.progress = num / total * MAX_PROGRESS;
     }
 
     @Override
@@ -91,8 +92,8 @@ public class SimpleSensorScanListener implements SensorScanListener {
         scanResult.clear();
         errors.clear();
         state = STATE_READY;
-        offset = 0;
-        length = 0;
+        start = 0;
+        end = 0;
         currentAddress = -1;
         progress = 0;
     }

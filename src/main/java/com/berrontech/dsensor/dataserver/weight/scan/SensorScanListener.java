@@ -1,5 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.scan;
 
+import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/11/12 11:04
@@ -14,10 +16,11 @@ public interface SensorScanListener {
     /**
      * 开始扫描回调
      *
-     * @param offset 其实地址
-     * @param length 扫描数量
+     * @param connection 连接
+     * @param start      开始地址
+     * @param end        结束地址
      */
-    void onScanStart(int offset, int length);
+    void onScanStart(DeviceConnection connection, int start, int end);
 
     /**
      * 扫描结束回调
