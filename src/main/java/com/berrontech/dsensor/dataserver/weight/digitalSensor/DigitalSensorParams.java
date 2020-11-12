@@ -114,8 +114,7 @@ public class DigitalSensorParams {
         int Unknow = 0;
         int WeightSensor = 1;
         int ELabel = 1;
-        int Accelerator = 2;
-        int TempHumi = 3;
+        int TempHumi = 2;
     }
 
     public static boolean IsValidSn(String sn, String partNo) {

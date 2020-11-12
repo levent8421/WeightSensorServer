@@ -1,19 +1,19 @@
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/scada_wsa?userSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=GMT%2B8
-    username: scada_wsa
-    password: Wsa666!
+    username: root
+    password: 123456
 server:
   port: 5601
 tcp-api:
   ip: 127.0.0.1
   port: 8888
 serial:
-  lib-path: /sdcard/scada_wsa/so/libserial_port.so
+  lib-path: /opt/weight_slot/libserial_port.so
 db-upgrade:
   db-version-file-path: /sdcard/scada_wsa/db/db_version.json
   script-path: /sdcard/scada_wsa/db
 logging:
   config: classpath:logback-spring-release.xml
 log-conf:
-  log-file-dir: /mnt/hd0/scada_wsa/log
+  log-file-dir: /opt/weight_slot/log

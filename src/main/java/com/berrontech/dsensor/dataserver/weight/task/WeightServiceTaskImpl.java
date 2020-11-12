@@ -12,10 +12,7 @@ import com.berrontech.dsensor.dataserver.weight.CalibrationException;
 import com.berrontech.dsensor.dataserver.weight.NativeLibraryLoader;
 import com.berrontech.dsensor.dataserver.weight.SnBuildException;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DataPacket;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorManager;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorParams;
+import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
@@ -166,7 +163,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         scanManager.open();
         for (val g : scanManager.getGroups()) {
             log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
-            g.startScan();
+            g.startScan(null);
         }
         processScanResult();
     }
@@ -177,11 +174,68 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void startScan(DeviceConnection connection, SensorScanListener listener) throws IOException {
-        // TODO 扫描货道
-        listener.onScanError(new Exception("暂未实现！"));
-        listener.onProgress(10, "123", "123");
-        listener.onScanEnd();
+    public void startScan(final DeviceConnection connection, final SensorScanListener listener) throws IOException {
+        synchronized (scanLock) {
+            if (scanning) {
+                throw new IOException("Scanning is in processing");
+            }
+            scanning = true;
+        }
+
+        log.debug("Notify scan with full addresses");
+        // shutdown connections
+        log.debug("Try shutdown connections");
+        sensorManager.shutdown();
+
+        // build scanner
+        if (scanManager == null) {
+            log.debug("Try build scan manager");
+            scanManager = new DigitalSensorManager();
+        }
+        log.debug("Try build connection");
+        DigitalSensorUtils.buildDigitalSensorGroups(scanManager, Collections.singletonList(connection));
+        scanManager.open();
+        for (val g : scanManager.getGroups()) {
+            log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
+            g.startScan(new DigitalSensorScanListener() {
+                @Override
+                public void onScanStart(DigitalSensorGroup group, int startAddress, int endAddress) {
+                    if (listener != null) {
+                        listener.onScanStart(connection, startAddress, endAddress);
+                    }
+                }
+
+                @Override
+                public void onScanEnd(DigitalSensorGroup group) {
+                    if (listener != null) {
+                        listener.onScanEnd();
+                    }
+                }
+
+                @Override
+                public void onScanFailed(DigitalSensorGroup group, String msg) {
+                    if (listener != null) {
+                        listener.onScanEnd();
+                    }
+                }
+
+                @Override
+                public void onStartTest(DigitalSensorItem sensor) {
+                }
+
+                @Override
+                public void onFound(DigitalSensorItem sensor) {
+                    if (listener != null) {
+                        listener.onProgress(sensor.getParams().getAddress(), sensor.getParams().getDeviceSn(), sensor.getParams().getELabelDeviceSn());
+                    }
+                }
+
+                @Override
+                public void onNotFound(DigitalSensorItem sensor) {
+                }
+            });
+        }
+        processScanResult();
     }
 
     @Override
@@ -501,7 +555,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         scanManager.open();
         for (val g : scanManager.getGroups()) {
             log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
-            g.startScanXSensors();
+            g.startScanXSensors(null);
         }
         processXSensorScanResult();
     }

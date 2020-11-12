@@ -636,21 +636,24 @@ public class DigitalSensorGroup {
 
     private List<DigitalSensorParams> ScanResult;
 
-    public void startScan() {
-        startScan(DataPacket.AddressMin, DataPacket.AddressELabelStart - 1);
+    public void startScan(DigitalSensorScanListener listener) {
+        startScan(DataPacket.AddressMin, DataPacket.AddressELabelStart - 1, listener);
     }
 
-    public void startScanXSensors() {
-        startScan(DataPacket.AddressXSensorStart, DataPacket.AddressXSensorEnd);
+    public void startScanXSensors(DigitalSensorScanListener listener) {
+        startScan(DataPacket.AddressXSensorStart, DataPacket.AddressXSensorEnd, listener);
     }
 
-    public void startScan(int startAddress, int endAddress) {
+    public void startScan(int startAddress, int endAddress, DigitalSensorScanListener listener) {
         if (isNotOpened() || isAddressPrograming()) {
             return;
         }
         AddressPrograming = true;
 
         log.info("Start scan");
+        if (listener != null) {
+            listener.onScanStart(this, startAddress, endAddress);
+        }
 
         ScanResult = new ArrayList<>();
         createThreadPool().execute(() ->
@@ -659,23 +662,33 @@ public class DigitalSensorGroup {
                 DigitalSensorItem sensor = DigitalSensorItem.NewDefaultSensor(Driver, this);
                 synchronized (Driver.getLock()) {
                     for (int addr = startAddress; addr <= endAddress; addr++) {
+                        if (isNotAddressPrograming()) {
+                            throw new Exception("User aborted");
+                        }
                         DigitalSensorParams params = sensor.getParams();
                         params.setAddress(addr);
                         params.setDeviceSn(null);
                         log.debug("#{} Try scan this device", addr);
+                        if (listener != null) {
+                            listener.onStartTest(sensor);
+                        }
                         String sn = sensor.GetDeviceSn(1);
                         if (TextUtils.isTrimedEmpty(sn)) {
                             // this address not exists
                             log.debug("#{} This device not exists", addr);
+                            if (listener != null) {
+                                listener.onNotFound(sensor);
+                            }
                         } else {
                             // exists
                             log.info("#{} Found this device: sn={}", addr, sn);
                             DigitalSensorParams newp = new DigitalSensorParams();
                             newp.setAddress(addr);
                             newp.setDeviceSn(sn);
+                            newp.setELabelDeviceSn(sn);
                             if (addr >= DataPacket.AddressXSensorStart) {
                                 log.debug("#{} Set as XSensor", addr);
-                                newp.setDeviceType(DigitalSensorParams.EDeviceType.Accelerator);
+                                newp.setDeviceType(DigitalSensorParams.EDeviceType.TempHumi);
                             }
                             ScanResult.add(newp);
 
@@ -694,14 +707,24 @@ public class DigitalSensorGroup {
                                     // exists
                                     log.info("#{} Found elabel on this device: sn={}", addr, sn);
                                     newp.setELabelModel(DigitalSensorParams.EELabelModel.V3);
+                                    newp.setELabelDeviceSn(sn);
                                 }
+                            }
+                            if (listener != null) {
+                                listener.onFound(sensor);
                             }
                         }
                         Thread.sleep(getCommInterval());
                     }
+                    if (listener != null) {
+                        listener.onScanEnd(this);
+                    }
                 }
             } catch (Exception ex) {
                 log.warn("Scan failed", ex);
+                if (listener != null) {
+                    listener.onScanFailed(this, ex.getMessage());
+                }
             } finally {
                 AddressPrograming = false;
                 for (DigitalSensorItem s : Sensors) {
