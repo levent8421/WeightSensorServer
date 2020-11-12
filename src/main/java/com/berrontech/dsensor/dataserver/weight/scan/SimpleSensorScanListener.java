@@ -35,6 +35,7 @@ public class SimpleSensorScanListener implements SensorScanListener {
     private int end = 0;
     private int currentAddress = -1;
     private double progress = 0;
+    private DeviceConnection connection;
 
     /**
      * Get a empty listener
@@ -54,6 +55,7 @@ public class SimpleSensorScanListener implements SensorScanListener {
         this.end = end;
         this.currentAddress = -1;
         this.progress = 0;
+        this.connection = connection;
     }
 
     @Override
