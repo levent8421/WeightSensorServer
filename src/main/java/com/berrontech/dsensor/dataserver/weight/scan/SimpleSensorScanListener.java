@@ -68,6 +68,7 @@ public class SimpleSensorScanListener implements SensorScanListener {
     @Override
     public void onProgress(int address, String sn, String eLabelSn) {
         log.info("Scan result [{}]/ s/e = [{}/{}]", address, sn, eLabelSn);
+        this.currentAddress = address;
         if (StringUtils.isBlank(sn)) {
             return;
         }
