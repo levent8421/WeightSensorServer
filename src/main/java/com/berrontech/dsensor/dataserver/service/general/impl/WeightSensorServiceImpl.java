@@ -8,7 +8,6 @@ import com.berrontech.dsensor.dataserver.service.basic.impl.AbstractServiceImpl;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -37,33 +36,34 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
 
     @Override
     public void deleteByConnection(Integer connectionId) {
-        val query = new WeightSensor();
+        final WeightSensor query = new WeightSensor();
         query.setConnectionId(connectionId);
         weightSensorMapper.delete(query);
     }
 
     @Override
     public List<WeightSensor> findByConnection(Integer connectionId) {
-        val query = new WeightSensor();
+        final WeightSensor query = new WeightSensor();
         query.setConnectionId(connectionId);
         return weightSensorMapper.select(query);
     }
 
     @Override
     public List<WeightSensor> createOrUpdateSensor(Collection<MemoryWeightSensor> sensors) {
-        val existsSensors = all();
+        final List<WeightSensor> existsSensors = all();
         final Map<String, WeightSensor> sensorTable = existsSensors.stream()
                 .collect(Collectors.toMap(WeightSensor::getDeviceSn, v -> v));
         final Map<Integer, WeightSensor> addressSensorTable = existsSensors.stream()
                 .collect(Collectors.toMap(WeightSensor::getAddress, v -> v));
+        final Map<String, MemoryWeightSensor> scannedSensorTable = tryBuildDeviceSnSensorTable(sensors);
 
         final List<WeightSensor> updatedSensors = new ArrayList<>();
         final List<WeightSensor> sensorsToSave = new ArrayList<>();
-        for (MemoryWeightSensor sensor : sensors) {
+        for (MemoryWeightSensor sensor : scannedSensorTable.values()) {
             if (sensorTable.containsKey(sensor.getDeviceSn())) {
                 // 扫描到的传感器已经在数据库中
-                val existsSensor = sensorTable.get(sensor.getDeviceSn());
-                val res = updateSensorInfo(existsSensor, sensor);
+                final WeightSensor existsSensor = sensorTable.get(sensor.getDeviceSn());
+                final WeightSensor res = updateSensorInfo(existsSensor, sensor);
                 updatedSensors.add(res);
             } else if (addressSensorTable.containsKey(sensor.getAddress485())) {
                 //新扫描的物理地址已经存在
@@ -73,7 +73,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
                         existsSensor.getDeviceSn(), existsSensor.getAddress());
             } else {
                 // 新的传感器被扫描到
-                val res = createSensor(sensor);
+                final WeightSensor res = createSensor(sensor);
                 sensorTable.put(res.getDeviceSn(), res);
                 sensorsToSave.add(res);
                 updatedSensors.add(res);
@@ -81,6 +81,19 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         }
         save(sensorsToSave);
         return updatedSensors;
+    }
+
+    private Map<String, MemoryWeightSensor> tryBuildDeviceSnSensorTable(Collection<MemoryWeightSensor> sensors) {
+        final Map<String, MemoryWeightSensor> sensorMap = new HashMap<>(128);
+        for (MemoryWeightSensor sensor : sensors) {
+            final String sn = sensor.getDeviceSn();
+            log.info("Scanned weightSensor [{}/{}]", sn, sensor.getAddress485());
+            if (sensorMap.containsKey(sn)) {
+                log.error("Scanned duplicate WeightSensor[{}]", sn);
+            }
+            sensorMap.put(sn, sensor);
+        }
+        return sensorMap;
     }
 
     private WeightSensor updateSensorInfo(WeightSensor base, MemoryWeightSensor update) {
@@ -101,7 +114,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     }
 
     private WeightSensor createSensor(MemoryWeightSensor sensor) {
-        val weightSensor = new WeightSensor();
+        final WeightSensor weightSensor = new WeightSensor();
         weightSensor.setState(sensor.getState());
         weightSensor.setConnectionId(sensor.getConnectionId());
         weightSensor.setAddress(sensor.getAddress485());
@@ -113,7 +126,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
 
     @Override
     public List<WeightSensor> findBySlot(Integer slotId) {
-        val query = new WeightSensor();
+        final WeightSensor query = new WeightSensor();
         query.setSlotId(slotId);
         return findByQuery(query);
     }

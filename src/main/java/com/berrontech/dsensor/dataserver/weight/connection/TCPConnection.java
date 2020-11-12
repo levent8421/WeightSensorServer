@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.weight.connection;
 
 
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +11,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
+@Slf4j
 public class TCPConnection extends BasicConnection {
     private InputStream in = null;
     private OutputStream out = null;
@@ -58,7 +60,7 @@ public class TCPConnection extends BasicConnection {
                         Thread.sleep(30);
                     } catch (Exception e) {
                         cleanup();
-                        e.printStackTrace();
+                        log.error("Error on create TCP connection, [{}:{}], [{}:{}]", IP, Port, e.getClass().getSimpleName(), e.getMessage());
                     }
                 }
             });

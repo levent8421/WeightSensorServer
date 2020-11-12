@@ -5,6 +5,7 @@ import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
 import com.berrontech.dsensor.dataserver.weight.firmware.FirmwareResource;
+import com.berrontech.dsensor.dataserver.weight.scan.SensorScanListener;
 import com.berrontech.dsensor.dataserver.weight.firmware.UpgradeFirmwareListener;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 
@@ -38,6 +39,14 @@ public interface WeightController {
      * @throws IOException 开启扫描失败时抛出
      */
     void startScan(DeviceConnection connection) throws IOException;
+
+    /**
+     * 扫描单连接
+     *
+     * @param connection 连接
+     * @param listener   监听器
+     */
+    void startScan(DeviceConnection connection, SensorScanListener listener);
 
     /**
      * 更新货道SKU

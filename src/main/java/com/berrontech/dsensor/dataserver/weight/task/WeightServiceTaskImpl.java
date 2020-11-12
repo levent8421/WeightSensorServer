@@ -25,6 +25,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumiditySensor;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
+import com.berrontech.dsensor.dataserver.weight.scan.SensorScanListener;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -173,6 +174,11 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public void startScan(DeviceConnection connection) throws IOException {
         startScan(Collections.singletonList(connection));
+    }
+
+    @Override
+    public void startScan(DeviceConnection connection, SensorScanListener listener) {
+        // TODO 扫描货道
     }
 
     @Override

@@ -25,9 +25,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.data.Heartbeat;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SkuVo;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SlotVo;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.data.WeightDataVo;
-import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
-import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumiditySensor;
-import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
+import com.berrontech.dsensor.dataserver.weight.holder.*;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -291,10 +289,10 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     }
 
     private SlotVo memoryObject2SlotVo(MemorySlot slot) {
-        val slotVo = SlotVo.of(slot);
-        val weightData = slot.getData();
+        final SlotVo slotVo = SlotVo.of(slot);
+        final MemoryWeightData weightData = slot.getData();
         slotVo.setData(WeightDataVo.of(weightData));
-        val sku = slot.getSku();
+        final MemorySku sku = slot.getSku();
         slotVo.setSku(SkuVo.of(sku));
         return slotVo;
     }
