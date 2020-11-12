@@ -711,7 +711,7 @@ public class DigitalSensorGroup {
                                 }
                             }
                             if (listener != null) {
-                                listener.onFound(sensor);
+                                listener.onFound(sensor, newp);
                             }
                         }
                         Thread.sleep(getCommInterval());
