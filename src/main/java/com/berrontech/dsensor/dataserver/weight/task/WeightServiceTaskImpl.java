@@ -232,6 +232,9 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
                 @Override
                 public void onNotFound(DigitalSensorItem sensor) {
+                    if (listener != null) {
+                        listener.onProgress(sensor.getParams().getAddress(), null, null);
+                    }
                 }
             });
         }
