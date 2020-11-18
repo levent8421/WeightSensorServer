@@ -260,14 +260,19 @@ public class SlotController extends AbstractEntityController<Slot> {
     }
 
     private void checkMergeSlotSku(List<Slot> slots) {
-        final List<String> errorSlotNos = new ArrayList<>();
+        final Map<Integer, String> errorSlotNos = new HashMap<>(16);
+        int minAddress = Integer.MAX_VALUE;
         for (Slot slot : slots) {
             if (!StringUtils.isBlank(slot.getSkuNo())) {
-                errorSlotNos.add(slot.getSlotNo());
+                errorSlotNos.put(slot.getAddress(), slot.getSlotNo());
+            }
+            if (slot.getAddress() < minAddress) {
+                minAddress = slot.getAddress();
             }
         }
+        errorSlotNos.remove(minAddress);
         if (!CollectionUtils.isEmpty(errorSlotNos)) {
-            final String errSlotNos = CollectionUtils.join(errorSlotNos.stream(), "、");
+            final String errSlotNos = CollectionUtils.join(errorSlotNos.values().stream(), "、");
             throw new BadRequestException(String.format("请先在巴枪上解绑被合并货道（%s）的SKU后，再进行合并", errSlotNos));
         }
     }
