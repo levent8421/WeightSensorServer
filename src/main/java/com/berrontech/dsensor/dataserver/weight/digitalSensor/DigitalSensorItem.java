@@ -802,11 +802,11 @@ public class DigitalSensorItem {
             pcs = String.format("%d", LastNotifyPCS);
             acc = LastNotifyAccuracy;
         } else {
-            number = null;
-            name = null;
+            number = " ";
+            name = " ";
             bin = getSubGroup();
             wgt = Values.getNetWeight() + " " + Values.getUnit();
-            pcs = null;
+            pcs = " ";
             acc = true;
         }
 
