@@ -1594,8 +1594,8 @@ public class DigitalSensorItem {
 
 
     void WriteELabelString(int cmd, int page, int totalPage, int color, String str) throws Exception {
-        if (str == null) {
-            str = "";
+        if (str == null || str.length() == 0) {
+            str = " ";
         }
         byte[] bts = str.getBytes(DataPacket.DefaultCharsetName);
         byte[] content = new byte[1 + 4 + bts.length];
