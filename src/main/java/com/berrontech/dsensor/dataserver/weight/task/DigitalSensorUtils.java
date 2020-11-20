@@ -180,11 +180,18 @@ public class DigitalSensorUtils {
         }
     }
 
+    static String GetSafeEmptyElabelString(String s)
+    {
+        if (s == null || s.length() == 0) {
+            return " ";
+        }
+        return s;
+    }
 
     public static void setSkuToSensor(MemorySku sku, MaterialInfo mat) {
         if (sku != null) {
-            mat.setNumber(sku.getSkuNo());
-            mat.setName(sku.getName());
+            mat.setNumber(GetSafeEmptyElabelString(sku.getSkuNo()));
+            mat.setName(GetSafeEmptyElabelString(sku.getName()));
             mat.setAPW(sku.getApw() == null ? 0 : sku.getApw() / 1000.0);
             mat.setToleranceInGram(sku.getTolerance() == null ? 0 : sku.getTolerance());
             mat.setShelfLifeDays(sku.getShelfLifeOpenDays() == null ? 0 : sku.getShelfLifeOpenDays());
