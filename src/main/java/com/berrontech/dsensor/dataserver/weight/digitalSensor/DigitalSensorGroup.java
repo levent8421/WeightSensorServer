@@ -122,11 +122,7 @@ public class DigitalSensorGroup {
             val group = itItem.getKey();
             val item = new DigitalSensorCluster();
             item.setChildren(itItem.getValue());
-            val first = item.getFirstChild();
-            item.setGroup(first.getGroup());
-            item.setSubGroup(first.getSubGroup());
-            item.setPassenger(first.getPassenger());
-            item.setSubGroupId(first.getSubGroupId());
+            item.init();
             item.calc();
             clusters.add(item);
         }

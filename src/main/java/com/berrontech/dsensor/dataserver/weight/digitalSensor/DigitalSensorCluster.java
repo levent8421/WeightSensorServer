@@ -31,6 +31,21 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         return Children.stream().sorted(Comparator.comparing(DigitalSensorItem::getSubGroupPosition)).collect(Collectors.toList()).get(0);
     }
 
+    public void init(){
+        DigitalSensorItem firstSensor = getFirstChild();
+        BigDecimal dSum = BigDecimal.ZERO;
+
+        setGroup(firstSensor.getGroup());
+        setSubGroup(firstSensor.getSubGroup());
+        setPassenger(firstSensor.getPassenger());
+        setSubGroupId(firstSensor.getSubGroupId());
+        for (DigitalSensorItem c : Children) {
+            dSum.add(c.getParams().getCapacity());
+        }
+        getParams().setCapacity(dSum);
+        getParams().setIncrement(firstSensor.getParams().getIncrement());
+    }
+
     public void calc() {
         if (Children.size() <= 0) {
             return;
@@ -56,8 +71,11 @@ public class DigitalSensorCluster extends DigitalSensorItem {
             sum = sum.add(c.getValues().getGrossWeight());
         }
         getValues().setGrossWeight(sum);
-        getValues().setStatus((Children.stream().anyMatch(s -> s.getValues().isDynamic())) ? DigitalSensorValues.EStatus.Dynamic : DigitalSensorValues.EStatus.Stable);
-        getValues().setRoughlyStable(Children.stream().allMatch(s -> s.getValues().isRoughlyStable()));
+        {
+            byte stableMark = Children.stream().allMatch(s -> s.getValues().isRoughlyStable()) ? DigitalSensorValues.StableMark : DigitalSensorValues.DynamicMark;
+            getValues().CheckStatus(stableMark, getParams().getCapacity(), getParams().getIncrement());
+        }
+
         fSum = 0f;
         for (DigitalSensorItem c : Children) {
             fSum += c.getTotalSuccess();
