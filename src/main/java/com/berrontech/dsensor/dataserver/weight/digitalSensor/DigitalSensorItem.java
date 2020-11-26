@@ -630,7 +630,12 @@ public class DigitalSensorItem {
                     LastNotifyStable = Values.isStable();
                 }
             }
-            if (LastNotifyPCS != Values.getPieceCount() || isAccuracyChangedAndBigEnough()) {
+
+            int pcs = Values.getPieceCount();
+            if (pcs < 0) {
+                pcs = 0;
+            }
+            if (LastNotifyPCS != pcs || isAccuracyChangedAndBigEnough()) {
                 if (isSlotChild() || getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
                     log.debug("#{} Notified piece count changed (last/new): PCS={}/{}, Accuracy={}/{}, PCSWgt={}/{}, APW={}, Tol={}, TolWgt={}",
                             Params.getAddress(),

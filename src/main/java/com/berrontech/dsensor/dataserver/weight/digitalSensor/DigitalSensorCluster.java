@@ -31,7 +31,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         return Children.stream().sorted(Comparator.comparing(DigitalSensorItem::getSubGroupPosition)).collect(Collectors.toList()).get(0);
     }
 
-    public void init(){
+    public void init() {
         DigitalSensorItem firstSensor = getFirstChild();
         BigDecimal dSum = BigDecimal.ZERO;
 
