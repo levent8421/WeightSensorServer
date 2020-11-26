@@ -40,7 +40,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         setPassenger(firstSensor.getPassenger());
         setSubGroupId(firstSensor.getSubGroupId());
         for (DigitalSensorItem c : Children) {
-            dSum.add(c.getParams().getCapacity());
+            dSum = dSum.add(c.getParams().getCapacity());
         }
         getParams().setCapacity(dSum);
         getParams().setIncrement(firstSensor.getParams().getIncrement());
