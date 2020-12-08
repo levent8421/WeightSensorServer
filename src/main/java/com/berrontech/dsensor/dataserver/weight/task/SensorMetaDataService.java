@@ -114,7 +114,7 @@ public class SensorMetaDataService implements ThreadFactory {
         final Collection<MemorySlot> slots = weightDataHolder.getSlotTable().values();
         final List<MemorySlot> mergedSlots = slots.stream()
                 .filter(slot -> CollectionUtils.isEmpty(slot.getSensors()))
-                .peek(slot -> slot.setState(AbstractDevice485.STATE_DISABLE))
+                .peek(slot -> slot.setState(AbstractDevice485.STATE_MERGED))
                 .collect(Collectors.toList());
         weightNotifier.notifySlotStateChanged(mergedSlots);
     }

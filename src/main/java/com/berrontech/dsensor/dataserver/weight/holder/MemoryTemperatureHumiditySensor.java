@@ -1,6 +1,5 @@
 package com.berrontech.dsensor.dataserver.weight.holder;
 
-import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.TemperatureHumiditySensor;
 import lombok.Data;

@@ -28,6 +28,8 @@ public abstract class AbstractDevice485 extends AbstractEntity {
     public static final String STATE_OVERLOAD_STR = "overload";
     public static final int STATE_UNDER_LOAD = 0x05;
     public static final String STATE_UNDER_LOAD_STR = "underload";
+    public static final int STATE_MERGED = 0x06;
+    public static final String STATE_MERGED_STR = "merged";
 
     public static String getStateString(Integer state) {
         if (state == null) {
@@ -44,6 +46,8 @@ public abstract class AbstractDevice485 extends AbstractEntity {
                 return STATE_OVERLOAD_STR;
             case STATE_UNDER_LOAD:
                 return STATE_UNDER_LOAD_STR;
+            case STATE_MERGED:
+                return STATE_MERGED_STR;
             default:
                 return String.valueOf(state);
         }
@@ -61,6 +65,8 @@ public abstract class AbstractDevice485 extends AbstractEntity {
                 return STATE_OVERLOAD;
             case STATE_UNDER_LOAD_STR:
                 return STATE_UNDER_LOAD;
+            case STATE_MERGED_STR:
+                return STATE_MERGED;
             default:
                 return -1;
         }
