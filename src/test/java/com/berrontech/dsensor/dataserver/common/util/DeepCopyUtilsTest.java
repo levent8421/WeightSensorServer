@@ -7,6 +7,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 class DeepCopyUtilsTest implements Runnable, Serializable {
 
@@ -22,7 +23,7 @@ class DeepCopyUtilsTest implements Runnable, Serializable {
     public void run() {
         final MemorySlot memorySlot = new MemorySlot();
         final MemoryWeightData data = new MemoryWeightData();
-        data.setWeight(123);
+        data.setWeight(BigDecimal.ZERO);
         memorySlot.setData(data);
         for (int i = 0; i < 20; i++) {
             try {

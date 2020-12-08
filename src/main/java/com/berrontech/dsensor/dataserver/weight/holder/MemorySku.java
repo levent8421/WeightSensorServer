@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.weight.holder;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -19,8 +20,8 @@ import java.util.Date;
 public class MemorySku implements Serializable {
     private String name;
     private String skuNo;
-    private Integer apw;
-    private Integer tolerance;
+    private BigDecimal apw;
+    private BigDecimal tolerance;
     private Integer shelfLifeOpenDays;
     private Date skuUpdateTime;
 }

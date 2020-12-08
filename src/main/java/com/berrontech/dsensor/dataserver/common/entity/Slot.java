@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -45,13 +46,13 @@ public class Slot extends AbstractEntity {
     /**
      * SKU 单重
      */
-    @Column(name = "sku_apw")
-    private Integer skuApw;
+    @Column(name = "sku_apw", length = 10)
+    private BigDecimal skuApw;
     /**
      * SKU 允差
      */
-    @Column(name = "sku_tolerance")
-    private Integer skuTolerance;
+    @Column(name = "sku_tolerance", length = 10)
+    private BigDecimal skuTolerance;
     /**
      * 开封后保存天数
      */

@@ -2,6 +2,8 @@ package com.berrontech.dsensor.dataserver.tcpclient.vo.data;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/19 12:58
@@ -16,8 +18,8 @@ import lombok.Data;
 public class SkuParam {
     private String slotNo;
     private String name;
-    private Integer apw;
+    private BigDecimal apw;
     private String skuNo;
-    private Integer tolerance;
+    private BigDecimal tolerance;
     private Integer skuShelfLifeOpenDays;
 }

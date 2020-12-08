@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.weight.holder;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * Create By Levent8421
@@ -40,9 +41,9 @@ public class MemoryWeightData implements Serializable {
      * 误差状态 不可信
      */
     public static final int TOLERANCE_STATE_INCREDIBLE = 0x02;
-    private Integer weight;
+    private BigDecimal weight;
     private Integer weightState;
     private Integer count;
-    private Integer tolerance;
+    private BigDecimal tolerance;
     private Integer toleranceState;
 }

@@ -5,7 +5,6 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorItem;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorListener;
-import com.berrontech.dsensor.dataserver.weight.digitalSensor.DigitalSensorValues;
 import com.berrontech.dsensor.dataserver.weight.holder.*;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -27,6 +26,9 @@ import java.util.Collections;
  */
 @Slf4j
 public class DigitalSensorListenerImpl implements DigitalSensorListener {
+    private static final int KILOGRAM_TO_GRAM_INT = 1000;
+    private static final BigDecimal KILOGRAM_TO_GRAM = BigDecimal.valueOf(KILOGRAM_TO_GRAM_INT);
+
     private final WeightDataHolder weightDataHolder;
     private final WeightNotifier weightNotifier;
     private final WeightSensorService sensorService;
@@ -53,7 +55,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                     }
                     slot.setState(toState(sensor));
 
-                    val data = slot.getData();
+                    final MemoryTemperatureHumidityData data = slot.getData();
                     data.setHumidityState(toState(DigitalSensorItem.toFlatStatus(sensor.isOnline(), sensor.getParams().isDisabled(), sensor.getValues().getXSensorStatus()[1])));
                 }
             } else {
@@ -93,9 +95,13 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                 slot.setData(new MemoryWeightData());
             }
             val slotData = slot.getData();
-            slotData.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+            final double tolerance = Math.round(sensor.getCountError() * KILOGRAM_TO_GRAM_INT);
+            final BigDecimal weight = sensor.getValues()
+                    .getNetWeight()
+                    .multiply(KILOGRAM_TO_GRAM);
+            slotData.setWeight(weight);
             slotData.setCount(Math.max(sensor.getValues().getPieceCount(), 0));
-            slotData.setTolerance((int) Math.round(sensor.getCountError() * 1000));
+            slotData.setTolerance(BigDecimal.valueOf(tolerance));
             slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
             final Collection<MemorySlot> slots = Collections.singleton(slot);
             weightNotifier.countChange(slots);
@@ -122,8 +128,9 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                 if (slot.getData() == null) {
                     slot.setData(new MemoryWeightData());
                 }
-                val data = slot.getData();
-                data.setWeight(sensor.getValues().getNetWeight().multiply(BigDecimal.valueOf(1000)).intValue());
+                final MemoryWeightData data = slot.getData();
+                final BigDecimal weight = sensor.getValues().getNetWeight().multiply(KILOGRAM_TO_GRAM);
+                data.setWeight(weight);
                 data.setWeightState(sensor.getValues().isStable() ? MemoryWeightData.WEIGHT_STATE_STABLE : MemoryWeightData.WEIGHT_STATE_DYNAMIC);
                 slot.setState(toState(sensor));
             }

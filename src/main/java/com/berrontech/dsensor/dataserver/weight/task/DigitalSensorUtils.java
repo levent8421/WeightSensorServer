@@ -1,7 +1,6 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
-import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
@@ -180,8 +179,7 @@ public class DigitalSensorUtils {
         }
     }
 
-    static String GetSafeEmptyElabelString(String s)
-    {
+    static String GetSafeEmptyElabelString(String s) {
         if (s == null || s.length() == 0) {
             return " ";
         }
@@ -192,8 +190,8 @@ public class DigitalSensorUtils {
         if (sku != null) {
             mat.setNumber(GetSafeEmptyElabelString(sku.getSkuNo()));
             mat.setName(GetSafeEmptyElabelString(sku.getName()));
-            mat.setAPW(sku.getApw() == null ? 0 : sku.getApw() / 1000.0);
-            mat.setToleranceInGram(sku.getTolerance() == null ? 0 : sku.getTolerance());
+            mat.setAPW(sku.getApw() == null ? 0 : sku.getApw().doubleValue() / 1000.0);
+            mat.setToleranceInGram(sku.getTolerance() == null ? 0 : sku.getTolerance().doubleValue());
             mat.setShelfLifeDays(sku.getShelfLifeOpenDays() == null ? 0 : sku.getShelfLifeOpenDays());
         }
     }

@@ -4,6 +4,8 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import lombok.Data;
 import lombok.val;
 
+import java.math.BigDecimal;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/20 18:22
@@ -31,7 +33,7 @@ public class SkuVo {
 
     private String name;
     private String skuNo;
-    private Integer apw;
-    private Integer tolerance;
+    private BigDecimal apw;
+    private BigDecimal tolerance;
     private Integer shelfLifeOpenDays;
 }

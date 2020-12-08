@@ -4,6 +4,8 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightData;
 import lombok.Data;
 import lombok.val;
 
+import java.math.BigDecimal;
+
 /**
  * Create By Levent8421
  * Create Time: 2020/6/20 18:23
@@ -57,9 +59,9 @@ public class WeightDataVo {
         return vo;
     }
 
-    private Integer weight;
+    private BigDecimal weight;
     private String weightState;
     private Integer count;
-    private Integer tolerance;
+    private BigDecimal tolerance;
     private String toleranceState;
 }
