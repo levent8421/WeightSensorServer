@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.common.entity.WeightDataRecord;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.util.OSUtils;
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
@@ -799,5 +800,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             log.warn("calibrateTemperatureSensor error: connectionId={}, address={}", connectionId, address, ex);
             throw new CalibrationException(ex.getMessage(), ex);
         }
+    }
+
+    @Override
+    public WeightDataRecord getSensorRecord(Integer connectionId, Integer address) {
+        return null;
     }
 }

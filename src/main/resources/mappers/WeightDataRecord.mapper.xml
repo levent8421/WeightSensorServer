@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.berrontech.dsensor.dataserver.repository.mapper.WeightDataRecordMapper">
+    <sql id="columns">
+        wdr.id                 as wdr_id,
+        wdr.sensor_sn          as wdr_sensor_sn,
+        wdr.sensor_address     as wdr_sensor_address,
+        wdr.sensor_state       as wdr_sensor_state,
+        wdr.elabel_sn          as wdr_elabel_sn,
+        wdr.elabel_state       as wdr_elabel_state,
+        wdr.weight             as wdr_weight,
+        wdr.zero_offset        as wdr_zero_offset,
+        wdr.sensor_error_rate  as wdr_sensor_error_rate,
+        wdr.sensor_error_count as wdr_sensor_error_count,
+        wdr.elabel_error_rate  as wdr_elabel_error_rate,
+        wdr.elabel_error_count as wdr_elabel_error_count,
+        wdr.sku_apw            as wdr_sku_apw,
+        wdr.sku_pcs            as wdr_sku_pcs,
+        wdr.create_time        as wdr_create_time,
+        wdr.update_time        as wdr_update_time,
+        wdr.deleted            as wdr_deleted
+    </sql>
+    <sql id="select">
+        select
+        <include refid="columns"/>
+        from t_weight_data_record as wdr
+        where wdr.deleted = false
+    </sql>
+    <resultMap id="rm_base" type="com.berrontech.dsensor.dataserver.common.entity.WeightDataRecord"
+               extends="com.berrontech.dsensor.dataserver.repository.AbstractMapper.rm_base">
+        <id column="wdr_id" property="id"/>
+        <result column="wdr_sensor_sn" property="sensorSn"/>
+        <result column="wdr_sensor_address" property="sensorAddress"/>
+        <result column="wdr_sensor_state" property="sensorState"/>
+        <result column="wdr_elabel_sn" property="eLabelSn"/>
+        <result column="wdr_elabel_state" property="eLabelState"/>
+        <result column="wdr_weight" property="weight"/>
+        <result column="wdr_zero_offset" property="zeroOffset"/>
+        <result column="wdr_sensor_error_rate" property="sensorErrorRate"/>
+        <result column="wdr_sensor_error_count" property="sensorErrorCount"/>
+        <result column="wdr_elabel_error_rate" property="eLabelErrorRate"/>
+        <result column="wdr_elabel_error_count" property="eLabelErrorCount"/>
+        <result column="wdr_sku_apw" property="skuApw"/>
+        <result column="wdr_sku_pcs" property="skuPcs"/>
+        <result column="wdr_create_time" property="createTime"/>
+        <result column="wdr_update_time" property="updateTime"/>
+        <result column="wdr_deleted" property="deleted"/>
+    </resultMap>
+    <update id="deleteOnCreateTimeBefore">
+        delete
+        from t_weight_data_record
+        where datediff(now(), create_time) > #{keepDays}
+    </update>
+</mapper>

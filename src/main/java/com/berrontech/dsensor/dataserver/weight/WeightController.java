@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
+import com.berrontech.dsensor.dataserver.common.entity.WeightDataRecord;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SensorPackageCounter;
@@ -235,4 +236,13 @@ public interface WeightController {
      */
     void calibrateTemperatureSensor(Integer connectionId, Integer address, BigDecimal currentTemperature)
             throws CalibrationException;
+
+    /**
+     * 获取传感器记录信息
+     *
+     * @param connectionId connectionId
+     * @param address      address
+     * @return record
+     */
+    WeightDataRecord getSensorRecord(Integer connectionId, Integer address);
 }
