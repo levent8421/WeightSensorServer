@@ -27,6 +27,7 @@ import java.util.Collections;
 @Slf4j
 public class DigitalSensorListenerImpl implements DigitalSensorListener {
     private static final int KILOGRAM_TO_GRAM_INT = 1000;
+    public static final int ZERO_COUNT = 0;
     private static final BigDecimal KILOGRAM_TO_GRAM = BigDecimal.valueOf(KILOGRAM_TO_GRAM_INT);
 
     private final WeightDataHolder weightDataHolder;
@@ -95,14 +96,23 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                 slot.setData(new MemoryWeightData());
             }
             val slotData = slot.getData();
-            final double tolerance = Math.round(sensor.getCountError() * KILOGRAM_TO_GRAM_INT);
-            final BigDecimal weight = sensor.getValues()
-                    .getNetWeight()
-                    .multiply(KILOGRAM_TO_GRAM);
-            slotData.setWeight(weight);
-            slotData.setCount(Math.max(sensor.getValues().getPieceCount(), 0));
-            slotData.setTolerance(BigDecimal.valueOf(tolerance));
-            slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
+            if (sensor.isOnline())
+            {
+                final double tolerance = Math.round(sensor.getCountError() * KILOGRAM_TO_GRAM_INT);
+                final BigDecimal weight = sensor.getValues()
+                        .getNetWeight()
+                        .multiply(KILOGRAM_TO_GRAM);
+                slotData.setWeight(weight);
+                slotData.setCount(Math.max(sensor.getValues().getPieceCount(), ZERO_COUNT));
+                slotData.setTolerance(BigDecimal.valueOf(tolerance));
+                slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
+            }
+            else {
+                slotData.setWeight(null);
+                slotData.setCount(null);
+                slotData.setTolerance(null);
+                slotData.setToleranceState(null);
+            }
             final Collection<MemorySlot> slots = Collections.singleton(slot);
             weightNotifier.countChange(slots);
             return true;
