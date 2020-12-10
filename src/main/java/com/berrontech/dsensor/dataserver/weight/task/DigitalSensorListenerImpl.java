@@ -78,9 +78,11 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
     }
 
     @Override
-    public boolean onPieceCountChanged(DigitalSensorItem sensor) {
+    public boolean onPieceCountChanged(DigitalSensorItem sensor, boolean force) {
         if (sensor.getValues().isRoughlyStable()) {
             log.info("#{} Notify onPieceCountChanged", sensor.getParams().getAddress());
+        } else if (force) {
+            log.info("#{} Notify onPieceCountChanged with force", sensor.getParams().getAddress());
         } else {
             //log.debug("#{} Notify onPieceCountChanged, but not stable", sensor.getParams().getAddress());
             return false;
@@ -96,8 +98,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                 slot.setData(new MemoryWeightData());
             }
             val slotData = slot.getData();
-            if (sensor.isOnline())
-            {
+            if (sensor.isOnline()) {
                 final double tolerance = Math.round(sensor.getCountError() * KILOGRAM_TO_GRAM_INT);
                 final BigDecimal weight = sensor.getValues()
                         .getNetWeight()
@@ -106,8 +107,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
                 slotData.setCount(Math.max(sensor.getValues().getPieceCount(), ZERO_COUNT));
                 slotData.setTolerance(BigDecimal.valueOf(tolerance));
                 slotData.setToleranceState(sensor.isCountInAccuracy() ? MemoryWeightData.TOLERANCE_STATE_CREDIBLE : MemoryWeightData.TOLERANCE_STATE_INCREDIBLE);
-            }
-            else {
+            } else {
                 slotData.setWeight(null);
                 slotData.setCount(null);
                 slotData.setTolerance(null);

@@ -26,7 +26,7 @@ public interface DigitalSensorListener {
      * @param sensor sensor
      * @return success
      */
-    boolean onPieceCountChanged(DigitalSensorItem sensor);
+    boolean onPieceCountChanged(DigitalSensorItem sensor, boolean force);
 
     /**
      * 通知货道状态改变

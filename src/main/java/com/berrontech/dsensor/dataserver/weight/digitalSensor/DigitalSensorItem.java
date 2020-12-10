@@ -621,7 +621,7 @@ public class DigitalSensorItem {
                 if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
                     LastNotifyStatus = status;
                     // force to notify piece count changed if status is changed
-                    getGroup().getManager().getSensorListener().onPieceCountChanged(this);
+                    getGroup().getManager().getSensorListener().onPieceCountChanged(this, true);
                 }
             }
         }
@@ -649,7 +649,7 @@ public class DigitalSensorItem {
                 pcs = 0;
             }
             if (LastNotifyPCS != pcs || isAccuracyChangedAndBigEnough()) {
-                if (isSlotChild() || getGroup().getManager().getSensorListener().onPieceCountChanged(this)) {
+                if (isSlotChild() || getGroup().getManager().getSensorListener().onPieceCountChanged(this, false)) {
                     log.debug("#{} Notified piece count changed (last/new): PCS={}/{}/{}, Accuracy={}/{}, PCSWgt={}/{}, APW={}, Tol={}, TolWgt={}",
                             Params.getAddress(),
                             LastNotifyPCS, Values.getPieceCount(), pcs,
