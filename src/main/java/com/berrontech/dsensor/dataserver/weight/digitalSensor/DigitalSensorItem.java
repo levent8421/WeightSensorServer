@@ -166,11 +166,22 @@ public class DigitalSensorItem {
     }
 
     public enum EFlatStatus {
-        Offline,
-        Disabled,
-        Normal,
-        Underload,
-        Overload,
+        Offline(0),
+        Disabled(1),
+        Normal(2),
+        Underload(3),
+        Overload(4);
+
+        private int code = 0;
+        EFlatStatus(int code)
+        {
+            this.code = code;
+        }
+
+        public int code()
+        {
+            return code;
+        }
     }
 
     public static EFlatStatus toFlatStatus(boolean online, boolean disable, DigitalSensorValues.EStatus status) {
@@ -609,6 +620,8 @@ public class DigitalSensorItem {
             if (LastNotifyStatus != status) {
                 if (getGroup().getManager().getSensorListener().onSensorStateChanged(this)) {
                     LastNotifyStatus = status;
+                    // force to notify piece count changed if status is changed
+                    getGroup().getManager().getSensorListener().onPieceCountChanged(this);
                 }
             }
         }
