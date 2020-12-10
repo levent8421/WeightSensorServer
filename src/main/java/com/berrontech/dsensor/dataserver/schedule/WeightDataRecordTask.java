@@ -74,8 +74,12 @@ public class WeightDataRecordTask implements Runnable {
             }
         }
         if (records.size() > 0) {
-            weightDataRecordService.save(records);
-            log.info("Save sensor records , res=[{}]", records.size());
+            try {
+                weightDataRecordService.save(records);
+                log.info("Save sensor records , res=[{}]", records.size());
+            } catch (Exception e) {
+                log.error("Error on save weight data!", e);
+            }
         }
     }
 }

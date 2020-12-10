@@ -19,7 +19,7 @@ import java.math.BigDecimal;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Table(name = "t_weight_record")
+@Table(name = "t_weight_data_record")
 public class WeightDataRecord extends AbstractEntity {
     /**
      * 电子标签SN
