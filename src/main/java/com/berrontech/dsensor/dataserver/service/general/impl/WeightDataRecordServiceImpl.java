@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class WeightDataRecordServiceImpl extends AbstractServiceImpl<WeightDataRecord> implements WeightDataRecordService {
-    private static final int RECORD_KEEP_DAYS = 30;
+    private static final int RECORD_KEEP_DAYS = 90;
     private final WeightDataRecordMapper weightDataRecordMapper;
 
     public WeightDataRecordServiceImpl(WeightDataRecordMapper weightDataRecordMapper) {
