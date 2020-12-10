@@ -27,8 +27,8 @@ import java.util.concurrent.ExecutorService;
 @Component
 @Slf4j
 public class WeightDataRecordTask implements Runnable {
-    private static final int RECORD_INIT_DELAY = 60 * 60 * 1000;
-    private static final int RECORD_RUN_DURATION = 60 * 60 * 1000;
+    private static final int RECORD_INIT_DELAY = 60 * 1000;
+    private static final int RECORD_RUN_DURATION = 60 * 1000;
     private static final String RECORD_CLEANUP_CRON = "0 0 0 * * ?";
     private final ExecutorService threadPool = ThreadUtils.createSingleThreadPool("WeightDataRecord");
     private final WeightDataRecordService weightDataRecordService;
