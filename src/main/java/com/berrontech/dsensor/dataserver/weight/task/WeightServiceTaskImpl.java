@@ -828,4 +828,3 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         }
     }
 }
-}
