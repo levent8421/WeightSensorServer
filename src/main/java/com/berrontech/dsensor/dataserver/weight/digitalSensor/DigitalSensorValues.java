@@ -104,6 +104,7 @@ public class DigitalSensorValues {
 
 
     public boolean RoughlyStable = false;
+    
     public enum EStatus {
         Unknow,
         Stable,

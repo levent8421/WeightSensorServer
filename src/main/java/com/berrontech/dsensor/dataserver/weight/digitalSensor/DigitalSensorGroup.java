@@ -335,7 +335,14 @@ public class DigitalSensorGroup {
                                 sensor.UpdateRawCount();
                                 sensor.UpdateHighResolution(OnlyShowStable);
 
-                                ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().ifPresent(DigitalSensorCluster::calc);
+                                ClusterSensors.stream()
+                                        .filter(s -> s.getChildren().contains(sensor))
+                                        .findFirst()
+                                        .ifPresent((s2) ->
+                                        {
+                                            s2.calc();
+                                            s2.TryNotifyListener();
+                                        });
                             }
                         }
                         Thread.sleep(CommInterval);
@@ -391,7 +398,9 @@ public class DigitalSensorGroup {
                                         //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
                                         sensor.UpdateELabel();
                                         //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
-                                        val s2 = ClusterSensors.stream().filter(s -> s.getChildren().contains(sensor)).findFirst().orElse(null);
+                                        val s2 = ClusterSensors.stream()
+                                                .filter(s -> s.getChildren().contains(sensor))
+                                                .findFirst().orElse(null);
                                         if (s2 != null) {
                                             s2.calc();
                                             s2.UpdateELabel();

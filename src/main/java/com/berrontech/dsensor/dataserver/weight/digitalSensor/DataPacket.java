@@ -141,6 +141,13 @@ public class DataPacket {
         int GeoFactor = 0x15;
         int StableSpeed = 0x16;
 
+        int Inputs1 = 0x30;
+        int Outputs1 = 0x32;
+        int BatteryV = 0x35;
+        int ExtPowerV = 0x36;
+        int Com1Baud = 0x37;
+        int ExtFunctions = 0x40;
+
         int FirmwareVersion = 0x50;
         int PCBASn = 0x51;
         int DeviceSn = 0x52;
