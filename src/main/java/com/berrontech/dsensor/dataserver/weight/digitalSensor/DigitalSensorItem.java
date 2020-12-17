@@ -38,6 +38,7 @@ public class DigitalSensorItem {
     public String SubGroup = "";
     public int SubGroupPosition = 0;
     public String Cluster = "";
+    public static final int READWRITE_RETRY_DEFAULT = 1;
 
     public boolean isSlotChild() {
         return SubGroupPosition > 0;
@@ -239,7 +240,7 @@ public class DigitalSensorItem {
 
     private void CheckSensorSn() {
         try {
-            String sn = GetDeviceSn("", 1);
+            String sn = GetDeviceSn("", READWRITE_RETRY_DEFAULT);
             if (DigitalSensorParams.IsSnInRule(sn)) {
                 if (!Objects.equals(sn, Params.getBackupSensorSn())) {
                     if (getGroup().getManager().getSensorListener().onNotifySensorSnChanged(this, sn)) {
@@ -256,7 +257,7 @@ public class DigitalSensorItem {
 
     private void CheckELabelSn() {
         try {
-            String sn = GetELabelDeviceSn("", 1);
+            String sn = GetELabelDeviceSn("", READWRITE_RETRY_DEFAULT);
             if (DigitalSensorParams.IsSnInRule(sn)) {
                 if (!Objects.equals(sn, Params.getBackupELabelSn())) {
                     if (getGroup().getManager().getSensorListener().onNotifyELabelSnChanged(this, sn)) {
@@ -424,7 +425,7 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = DataPacket.BuildGetRawCount(Params.getAddress());
             synchronized (Driver.getLock()) {
-                packet = Driver.WriteRead(packet, getReadTimeout(), 1);
+                packet = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
             }
             SetCommResult(true);
             Values.setDynamicRawCount(ByteHelper.bytesToInt(packet.Content, 0, 4));
@@ -458,7 +459,7 @@ public class DigitalSensorItem {
         try {
             DataPacket packet = DataPacket.BuildGetHighResolution(Params.getAddress());
             synchronized (Driver.getLock()) {
-                packet = Driver.WriteRead(packet, getReadTimeout(), 1);
+                packet = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
             }
             SetCommResult(true);
             byte counter = packet.Content[0];
@@ -504,7 +505,7 @@ public class DigitalSensorItem {
 //            long ticks = System.currentTimeMillis();
             DataPacket packet = DataPacket.BuildGetHighResolution(Params.getAddress());
             synchronized (Driver.getLock()) {
-                packet = Driver.WriteRead(packet, getReadTimeout(), 1);
+                packet = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
             }
 //            ticks = System.currentTimeMillis() - ticks;
 //            log.debug("#{} UpdateHighResolution2 done, usedMs={}", Params.getAddress(), ticks);
@@ -839,7 +840,7 @@ public class DigitalSensorItem {
             //Log.D($"#{Params.Address} UpdateXSensors");
             DataPacket packet = DataPacket.BuildGetXSensors(Params.getAddress());
             synchronized (Driver.getLock()) {
-                packet = Driver.WriteRead(packet, getReadTimeout(), 1);
+                packet = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
             }
             SetCommResult(true);
 
@@ -1030,7 +1031,7 @@ public class DigitalSensorItem {
     }
 
     public DataPacket ReadParam(int param) throws Exception {
-        return ReadParam(param, 0);
+        return ReadParam(param, READWRITE_RETRY_DEFAULT);
     }
 
     public DataPacket ReadParam(int param, int retries) throws Exception {
@@ -1156,7 +1157,7 @@ public class DigitalSensorItem {
     }
 
     public String ReadParamAsString(int param, String defaultValue) throws IOException {
-        return ReadParamAsString(param, defaultValue, 0);
+        return ReadParamAsString(param, defaultValue, READWRITE_RETRY_DEFAULT);
     }
 
     public String ReadParamAsString(int param, String defaultValue, int retries) throws IOException {
@@ -1192,7 +1193,7 @@ public class DigitalSensorItem {
     }
 
     private int WriteParam(DataPacket packet) throws Exception {
-        return WriteParam(packet, 0);
+        return WriteParam(packet, READWRITE_RETRY_DEFAULT);
     }
 
     private int WriteParam(DataPacket packet, int retries) throws Exception {
@@ -1295,7 +1296,7 @@ public class DigitalSensorItem {
         WriteParam(DataPacket.EParam.ZeroCapture, (float) value);
     }
 
-    public double GetZeroCapture() throws Exception {
+    public float GetZeroCapture() throws Exception {
         return ReadParamAsFloat(DataPacket.EParam.ZeroCapture, (float) Params.getZeroCapture());
     }
 
@@ -1329,7 +1330,7 @@ public class DigitalSensorItem {
         }
     }
 
-    public double GetCreepCorrect() throws Exception {
+    public float GetCreepCorrect() throws Exception {
         return ReadParamAsFloat(DataPacket.EParam.CreepCorrect, (float) Params.getCreepCorrect());
     }
 
@@ -1337,7 +1338,7 @@ public class DigitalSensorItem {
         WriteParam(DataPacket.EParam.StableRange, (float) value);
     }
 
-    public double GetStableRange() throws Exception {
+    public float GetStableRange() throws Exception {
         return ReadParamAsFloat(DataPacket.EParam.StableRange, (float) Params.getStableRange());
     }
 
@@ -1345,9 +1346,42 @@ public class DigitalSensorItem {
         WriteParam(DataPacket.EParam.StableSpeed, (float) value);
     }
 
-    public double GetStableSpeed() throws Exception {
+    public float GetStableSpeed() throws Exception {
         return ReadParamAsFloat(DataPacket.EParam.StableSpeed, (float) Params.getStableSpeed());
     }
+
+    public int GetInputs1() throws Exception {
+        return ReadParamAsInt(DataPacket.EParam.Inputs1, 0);
+    }
+
+    public void SetOutputs1(int value) throws Exception {
+        WriteParam(DataPacket.EParam.Outputs1, value);
+    }
+
+    public void SetOutputs(int position, boolean level) throws Exception {
+        int outputs = GetOutputs1();
+        if (level) {
+            outputs |= 0x1 << position;
+        } else {
+            outputs &= ~(0x1 << position);
+        }
+        SetOutputs1(outputs);
+    }
+
+    public int GetOutputs1() throws Exception {
+        return ReadParamAsInt(DataPacket.EParam.Outputs1, 0);
+    }
+
+    public float GetBatteryVoltage() throws Exception {
+        return ReadParamAsFloat(DataPacket.EParam.BatteryV, 0);
+    }
+
+    public float GetExtPowerVoltage() throws Exception {
+        return ReadParamAsFloat(DataPacket.EParam.ExtPowerV, 0);
+    }
+
+
+
 
     private byte[] GetFirmwareVersionBytes() throws Exception {
         return ReadParamAsBytes(DataPacket.EParam.FirmwareVersion, new byte[4]);
@@ -1409,7 +1443,7 @@ public class DigitalSensorItem {
     }
 
     public String GetDeviceSn() throws Exception {
-        return GetDeviceSn(0);
+        return GetDeviceSn(READWRITE_RETRY_DEFAULT);
     }
 
     public String GetDeviceSn(int retries) throws Exception {
@@ -1586,7 +1620,7 @@ public class DigitalSensorItem {
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
             do {
-                final DataPacket res = Driver.WriteRead(packet, getReadTimeout(), 1);
+                final DataPacket res = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
                 if ((res.Content[1] & 0xFF) == cmd) {
                     //SetCommResult(true);
                     return res;
@@ -1752,9 +1786,9 @@ public class DigitalSensorItem {
         WriteELabelLogo(DataPacket.EELabelColor.Black, width, height, data);
     }
 
-    public void UpdateParams() throws Exception {
+    public void UpdateCalibParams() throws Exception{
         try {
-            log.info("#{} UpdateParams", Params.getAddress());
+            log.info("#{} UpdateCalibParams", Params.getAddress());
             synchronized (Driver.getLock()) {
                 Params.setPoint1RawCount(GetPoint1RawCount());
                 Params.setPoint2RawCount(GetPoint2RawCount());
@@ -1765,17 +1799,56 @@ public class DigitalSensorItem {
                 Params.setZeroCapture(GetZeroCapture());
                 Params.setCreepCorrect(GetCreepCorrect());
                 Params.setStableRange(GetStableRange());
+                Params.setStableSpeed(GetStableSpeed());
+            }
+            log.info("#{} UpdateCalibParams Done", Params.getAddress());
+        } catch (Exception ex) {
+            SetCommResult(false);
+            throw ex;
+        }
+    }
 
+    public void UpdateDevInfoParams() throws Exception{
+        try {
+            log.info("#{} UpdateDevInfoParams", Params.getAddress());
+            synchronized (Driver.getLock()) {
                 Params.setFirmwareVersion(GetFirmwareVersion());
                 Params.setPCBASn(GetPCBASn());
                 Params.setDeviceSn(GetDeviceSn());
                 Params.setDeviceModel(GetDeviceModel());
+            }
+            log.info("#{} UpdateDevInfoParams Done", Params.getAddress());
+        } catch (Exception ex) {
+            SetCommResult(false);
+            throw ex;
+        }
+    }
+
+    public void UpdateELabelParams() throws Exception{
+        try {
+            log.info("#{} UpdateDevInfoParams", Params.getAddress());
+            synchronized (Driver.getLock()) {
+                Params.setELabelFirmwareVersion(GetELabelFirmwareVersion(READWRITE_RETRY_DEFAULT));
+                Params.setELabelPCBASn(GetELabelPCBASn(READWRITE_RETRY_DEFAULT));
+                Params.setELabelDeviceSn(GetELabelDeviceSn(READWRITE_RETRY_DEFAULT));
+                Params.setELabelDeviceModel(GetELabelDeviceModel(READWRITE_RETRY_DEFAULT));
+            }
+            log.info("#{} UpdateDevInfoParams Done", Params.getAddress());
+        } catch (Exception ex) {
+            SetCommResult(false);
+            throw ex;
+        }
+    }
+
+    public void UpdateParams() throws Exception {
+        try {
+            log.info("#{} UpdateParams", Params.getAddress());
+            synchronized (Driver.getLock()) {
+                UpdateCalibParams();
+                UpdateDevInfoParams();
 
                 if (Params.hasELabel()) {
-                    Params.setELabelFirmwareVersion(GetELabelFirmwareVersion(0));
-                    Params.setELabelPCBASn(GetELabelPCBASn(0));
-                    Params.setELabelDeviceSn(GetELabelDeviceSn(0));
-                    Params.setELabelDeviceModel(GetELabelDeviceModel(0));
+                    UpdateELabelParams();
                 }
             }
             log.info("#{} UpdateParams Done", Params.getAddress());

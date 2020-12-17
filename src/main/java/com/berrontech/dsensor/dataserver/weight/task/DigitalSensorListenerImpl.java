@@ -99,7 +99,7 @@ public class DigitalSensorListenerImpl implements DigitalSensorListener {
             }
             val slotData = slot.getData();
             if (sensor.isOnline()) {
-                final double tolerance = Math.round(sensor.getCountError() * KILOGRAM_TO_GRAM_INT);
+                final double tolerance = sensor.getCountError() * KILOGRAM_TO_GRAM_INT;
                 final BigDecimal weight = sensor.getValues()
                         .getNetWeight()
                         .multiply(KILOGRAM_TO_GRAM);
