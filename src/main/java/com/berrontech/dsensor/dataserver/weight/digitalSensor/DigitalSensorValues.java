@@ -168,7 +168,7 @@ public class DigitalSensorValues {
     }
 
     public void CheckStatus(byte stableMark, BigDecimal capacity, BigDecimal increment) {
-        RoughlyStable = isStableMark(stableMark);
+        setRoughlyStable(isStableMark(stableMark));
         if (HighGross > capacity.floatValue()) {
             setOverLoad();
         } else if (HighGross < increment.floatValue() * (-10)) {
