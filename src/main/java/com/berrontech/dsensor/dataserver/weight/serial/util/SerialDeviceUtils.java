@@ -15,7 +15,7 @@ import java.nio.file.Path;
  * @author Levent8421
  */
 public class SerialDeviceUtils {
-    private static final File DEVICE_ID_PATH_FILE = new File("/dev/serial/by_id");
+    private static final File DEVICE_ID_PATH_FILE = new File("/dev/serial/by-id");
 
     private static boolean hasUsbTtyDevice() {
         return DEVICE_ID_PATH_FILE.exists();
