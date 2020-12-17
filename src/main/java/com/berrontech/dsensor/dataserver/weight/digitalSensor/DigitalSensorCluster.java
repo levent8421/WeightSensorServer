@@ -139,6 +139,7 @@ public class DigitalSensorCluster extends DigitalSensorItem {
         }
 
         firstSensor.UpdateELabel(number, name, bin, wgt, pcs, acc);
+        getParams().setEnabled(firstSensor.getParams().isEnabled());
         number = " ";
         name = " ";
         bin = getSubGroup();
