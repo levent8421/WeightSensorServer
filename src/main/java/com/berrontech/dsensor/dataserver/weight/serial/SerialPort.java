@@ -75,6 +75,38 @@ public class SerialPort {
         return mFileOutputStream;
     }
 
+    public int read(byte[] buffer, int offset, int length) throws IOException {
+        if (isStreamSupported()) {
+            return doStreamRead(buffer, offset, length);
+        } else {
+            return read0(buffer, offset, length);
+        }
+    }
+
+    private native int read0(byte[] buffer, int offset, int length);
+
+    private int doStreamRead(byte[] buffer, int offset, int length) {
+        return -1;
+    }
+
+    public int write(byte[] buffer, int offset, int length) throws IOException {
+        if (isStreamSupported()) {
+            return doStreamWrite(buffer, offset, length);
+        } else {
+            return write0(buffer, offset, length);
+        }
+    }
+
+    private native int write0(byte[] buffer, int offset, int length);
+
+    private int doStreamWrite(byte[] buffer, int offset, int length) {
+        return -1;
+    }
+
+    private boolean isStreamSupported() {
+        return false;
+    }
+
     /**
      * Native Open Serial Port
      *
