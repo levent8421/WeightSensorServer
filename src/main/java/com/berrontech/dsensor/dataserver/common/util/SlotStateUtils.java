@@ -27,6 +27,7 @@ public class SlotStateUtils {
         STATE_PRIORITY.put(AbstractDevice485.STATE_UNDER_LOAD, 3);
         STATE_PRIORITY.put(AbstractDevice485.STATE_DISABLE, 4);
         STATE_PRIORITY.put(AbstractDevice485.STATE_OFFLINE, 5);
+        STATE_PRIORITY.put(AbstractDevice485.STATE_MERGED, 6);
     }
 
     /**
