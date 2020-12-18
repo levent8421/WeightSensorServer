@@ -26,7 +26,6 @@ public class SerialUtils {
     /**
      * Timeout in ms for serial open
      */
-    private static final int OPEN_SERIAL_FLAG = 0;
     private static final SerialPortFinder FINDER = new SerialPortFinder();
 
     public static List<String> scan() {
@@ -41,7 +40,7 @@ public class SerialUtils {
                 throw new FileNotFoundException("Device File [" + device.getAbsolutePath() + "] not found!");
             }
             try {
-                return new SerialPort(device, baudRate, OPEN_SERIAL_FLAG);
+                return new SerialPort(device, baudRate);
             } catch (Exception e) {
                 throw new SerialException("Error On Open Serial Port", e);
             }

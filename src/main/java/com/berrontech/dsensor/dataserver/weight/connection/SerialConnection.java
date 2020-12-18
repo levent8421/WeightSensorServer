@@ -27,8 +27,6 @@ public class SerialConnection extends BasicConnection {
     private String portName;
     private int baudrate = 115200;
     private SerialPort serialPort;
-    private OutputStream serialOutput;
-    private InputStream serialInput;
     private ExecutorService threadPool;
 
     public SerialConnection() {
@@ -45,19 +43,17 @@ public class SerialConnection extends BasicConnection {
         if (serialPort == null) {
             try {
                 if (!StringUtils.isBlank(portName)) {
-                    serialPort = new SerialPort(new File(portName), baudrate, 0);
-                    serialOutput = serialPort.getOutputStream();
-                    serialInput = serialPort.getInputStream();
+                    serialPort = new SerialPort(new File(portName), baudrate);
+                    serialPort.open();
                     setConnected(true);
                     threadPool = ThreadUtils.createSingleThreadPool(TAG);
                     threadPool.execute(() -> {
                         try {
+                            byte[] buf = new byte[1024];
                             while (isConnected() && serialPort != null) {
                                 try {
-                                    int cnt = serialInput.available();
+                                    int cnt = serialPort.read(buf, 0, buf.length);
                                     if (cnt > 0) {
-                                        byte[] buf = new byte[cnt];
-                                        cnt = serialInput.read(buf);
                                         getRecvBuffer().push(buf, 0, cnt);
                                         notifyReceived();
                                     }
@@ -72,8 +68,6 @@ public class SerialConnection extends BasicConnection {
                     });
                 }
             } catch (Exception ex) {
-                serialOutput = null;
-                serialInput = null;
                 serialPort = null;
                 setConnected(false);
                 throw ex;
@@ -86,14 +80,9 @@ public class SerialConnection extends BasicConnection {
         setConnected(false);
         try {
             if (serialPort != null) {
-                serialOutput.flush();
-                serialOutput.close();
-                serialInput.close();
                 serialPort.close();
+                serialPort = null;
             }
-            serialPort = null;
-            serialOutput = null;
-            serialInput = null;
             threadPool.shutdown();
         } catch (Exception ex) {
             // Do Nothing
@@ -103,8 +92,8 @@ public class SerialConnection extends BasicConnection {
     @Override
     public void writeBuf(byte[] buf, int offset, int count) {
         try {
-            if (serialOutput != null) {
-                serialOutput.write(buf, offset, count);
+            if (serialPort != null) {
+                serialPort.write(buf, offset, count);
             }
         } catch (Exception e) {
             e.printStackTrace();

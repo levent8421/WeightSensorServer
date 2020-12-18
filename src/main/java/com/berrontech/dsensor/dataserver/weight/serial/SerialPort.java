@@ -16,6 +16,7 @@
 
 package com.berrontech.dsensor.dataserver.weight.serial;
 
+import com.berrontech.dsensor.dataserver.common.util.OSUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -33,6 +34,12 @@ import java.io.*;
  */
 @Slf4j
 public class SerialPort {
+
+    private static final int OPEN_SERIAL_FLAG = 0;
+
+    File device;
+    int baudrate;
+
     /**
      * Do not remove or rename the field mFd: it is used by native method close();
      */
@@ -41,41 +48,35 @@ public class SerialPort {
     private FileInputStream mFileInputStream;
     private FileOutputStream mFileOutputStream;
 
-    public SerialPort(File device, int baudrate, int flags) throws SecurityException, IOException {
-        if (!device.exists()) {
-            throw new FileNotFoundException("File " + device.getAbsolutePath() + " not found!");
-        }
-        if (!device.canRead() || !device.canWrite()) {
-            throw new IOException("Device file can not be read or write!");
-        }
+    public SerialPort(File device, int baudrate) {
+        this.device = device;
+        this.baudrate = baudrate;
+    }
 
-        mFd = open(device.getAbsolutePath(), baudrate, flags);
+    public void open() throws Exception {
+        int flags = OPEN_SERIAL_FLAG;
+        mFd = open0(device.getAbsolutePath(), baudrate, flags);
         if (mFd == null) {
             throw new IOException("Open Device File Descriptor failed!");
         }
-        mFileInputStream = new FileInputStream(mFd);
-        mFileOutputStream = new FileOutputStream(mFd);
+        if (isStreamSupported()) {
+            mFileInputStream = new FileInputStream(mFd);
+            mFileOutputStream = new FileOutputStream(mFd);
+        }
     }
 
-    /**
-     * Get InoutStream for this serial port
-     *
-     * @return Stream
-     */
-    public InputStream getInputStream() {
-        return mFileInputStream;
+    public void close() throws Exception {
+        if (mFileOutputStream != null) {
+            mFileOutputStream.flush();
+            mFileOutputStream.close();
+        }
+        if (mFileInputStream != null) {
+            mFileInputStream.close();
+        }
+        close0();
     }
 
-    /**
-     * Get OutputStream for this serial port
-     *
-     * @return stream
-     */
-    public OutputStream getOutputStream() {
-        return mFileOutputStream;
-    }
-
-    public int read(byte[] buffer, int offset, int length) throws IOException {
+    public int read(byte[] buffer, int offset, int length) throws Exception {
         if (isStreamSupported()) {
             return doStreamRead(buffer, offset, length);
         } else {
@@ -83,13 +84,12 @@ public class SerialPort {
         }
     }
 
-    private native int read0(byte[] buffer, int offset, int length);
 
-    private int doStreamRead(byte[] buffer, int offset, int length) {
-        return -1;
+    public int write(byte[] buffer) throws Exception {
+        return write(buffer, 0, buffer.length);
     }
 
-    public int write(byte[] buffer, int offset, int length) throws IOException {
+    public int write(byte[] buffer, int offset, int length) throws Exception {
         if (isStreamSupported()) {
             return doStreamWrite(buffer, offset, length);
         } else {
@@ -97,15 +97,25 @@ public class SerialPort {
         }
     }
 
-    private native int write0(byte[] buffer, int offset, int length);
 
-    private int doStreamWrite(byte[] buffer, int offset, int length) {
-        return -1;
+    private int doStreamRead(byte[] buffer, int offset, int length) throws Exception {
+        int cnt = mFileInputStream.available();
+        cnt = Math.min(cnt, length);
+        cnt = mFileInputStream.read(buffer, offset, cnt);
+        return Math.max(cnt, 0);
+    }
+
+    private int doStreamWrite(byte[] buffer, int offset, int length) throws Exception {
+        if (mFileOutputStream != null) {
+            mFileOutputStream.write(buffer, offset, length);
+        }
+        return length;
     }
 
     private boolean isStreamSupported() {
-        return false;
+        return !OSUtils.isWindows();
     }
+
 
     /**
      * Native Open Serial Port
@@ -115,10 +125,14 @@ public class SerialPort {
      * @param flags    open device file with this flag
      * @return FD
      */
-    private native static FileDescriptor open(String path, int baudrate, int flags);
+    private native static FileDescriptor open0(String path, int baudrate, int flags);
 
     /**
      * Native Close Method
      */
-    public native void close();
+    public native void close0();
+
+    private native int read0(byte[] buffer, int offset, int length);
+
+    private native int write0(byte[] buffer, int offset, int length);
 }
