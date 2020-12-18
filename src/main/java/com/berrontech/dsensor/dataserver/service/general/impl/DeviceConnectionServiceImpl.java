@@ -9,8 +9,11 @@ import com.berrontech.dsensor.dataserver.weight.serial.util.SerialDeviceUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Create By Levent8421
@@ -40,6 +43,35 @@ public class DeviceConnectionServiceImpl extends AbstractServiceImpl<DeviceConne
         }
         replaceUsbPath(param);
         return save(param);
+    }
+
+    @Override
+    public List<DeviceConnection> refreshConnectionUsbIdAndGet() {
+        final List<DeviceConnection> connections = all();
+        return connections.stream()
+                .map(this::refreshUsbId)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public DeviceConnection refreshUsbId(DeviceConnection connection) {
+        if (!Objects.equals(connection.getType(), DeviceConnection.TYPE_SERIAL)) {
+            return connection;
+        }
+        final String deviceName = connection.getTarget();
+        try {
+            final File usbIdFile = SerialDeviceUtils.getUsbDeviceIdPath(deviceName);
+            if (usbIdFile == null) {
+                log.warn("Can not find USB ID FILE for connection:[{}]", connection.getTarget());
+                return connection;
+            }
+            connection.setTarget(usbIdFile.getAbsolutePath());
+            connection.setUsbDeviceId(usbIdFile.getName());
+            return updateById(connection);
+        } catch (IOException e) {
+            log.error("Error on refresh ttyDevice USB ID", e);
+            return connection;
+        }
     }
 
     private void replaceUsbPath(DeviceConnection connection) {

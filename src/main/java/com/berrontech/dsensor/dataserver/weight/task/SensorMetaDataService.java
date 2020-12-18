@@ -74,7 +74,7 @@ public class SensorMetaDataService implements ThreadFactory {
 
     private void doRefreshSlotTable() {
         try {
-            final List<DeviceConnection> connections = deviceConnectionService.all();
+            final List<DeviceConnection> connections = deviceConnectionService.refreshConnectionUsbIdAndGet();
             weightDataHolder.setConnections(connections);
 
             final List<WeightSensor> weightSensors = weightSensorService.all();

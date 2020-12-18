@@ -22,13 +22,13 @@ public class SerialDeviceUtils {
     }
 
     /**
-     * 获取USB串口设备ID
+     * 获取USB ID连接文件
      *
-     * @param deviceFile device file
-     * @return id
-     * @throws IOException ioe
+     * @param deviceFile 设备文件
+     * @return 连接文件
+     * @throws IOException IOE
      */
-    public static String getUsbTtyDeviceId(String deviceFile) throws IOException {
+    public static File getUsbDeviceIdPath(String deviceFile) throws IOException {
         if (!hasUsbTtyDevice()) {
             return null;
         }
@@ -45,10 +45,25 @@ public class SerialDeviceUtils {
             final Path readPath = linkFile.toPath().toRealPath();
             final String sourceName = readPath.toFile().getName();
             if (filename.equalsIgnoreCase(sourceName)) {
-                return linkFile.getName();
+                return linkFile;
             }
         }
         return null;
+    }
+
+    /**
+     * 获取USB串口设备ID
+     *
+     * @param deviceFile device file
+     * @return id
+     * @throws IOException ioe
+     */
+    public static String getUsbTtyDeviceId(String deviceFile) throws IOException {
+        final File usbLinkFile = getUsbDeviceIdPath(deviceFile);
+        if (usbLinkFile == null) {
+            return null;
+        }
+        return usbLinkFile.getName();
     }
 
     /**

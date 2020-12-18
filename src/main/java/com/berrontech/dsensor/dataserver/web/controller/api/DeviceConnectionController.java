@@ -12,7 +12,6 @@ import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.scan.SensorScanListener;
 import com.berrontech.dsensor.dataserver.weight.scan.SimpleSensorScanListener;
-import com.berrontech.dsensor.dataserver.weight.serial.util.SerialDeviceUtils;
 import lombok.val;
 import org.springframework.web.bind.annotation.*;
 
@@ -177,19 +176,7 @@ public class DeviceConnectionController extends AbstractEntityController<DeviceC
         if (!Objects.equals(connection.getType(), DeviceConnection.TYPE_SERIAL)) {
             throw new BadRequestException("该操作只能对串口连接进行");
         }
-        final String devicePath = connection.getTarget();
-        final String usbId;
-        try {
-            usbId = SerialDeviceUtils.getUsbTtyDeviceId(devicePath);
-        } catch (IOException e) {
-            throw new InternalServerErrorException("Error on find usbId :" + e.getMessage(), e);
-        }
-        if (usbId == null) {
-            throw new InternalServerErrorException("Can not find usb id for device:" + devicePath);
-        }
-        connection.setUsbDeviceId(usbId);
-        connection.setTarget(SerialDeviceUtils.asUsbDeviceIdTarget(usbId));
-        final DeviceConnection res = deviceConnectionService.updateById(connection);
+        final DeviceConnection res = deviceConnectionService.refreshUsbId(connection);
         return GeneralResult.ok(res);
     }
 }
