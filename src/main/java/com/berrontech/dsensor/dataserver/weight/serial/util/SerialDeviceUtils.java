@@ -50,4 +50,14 @@ public class SerialDeviceUtils {
         }
         return null;
     }
+
+    /**
+     * 将USBid转换为USB设备连接的路径
+     *
+     * @param usbId usb id
+     * @return path
+     */
+    public static String asUsbDeviceIdTarget(String usbId) {
+        return new File(DEVICE_ID_PATH_FILE, usbId).getAbsolutePath();
+    }
 }

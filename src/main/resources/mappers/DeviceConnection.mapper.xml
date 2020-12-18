@@ -5,6 +5,7 @@
         dc.id          as dc_id,
         dc.type        as dc_type,
         dc.target      as dc_target,
+        dc.usb_device_id as dc_usb_device_id,
         dc.create_time as dc_create_time,
         dc.update_time as dc_update_time,
         dc.deleted     as dc_deleted
@@ -20,6 +21,7 @@
         <id column="dc_id" property="id"/>
         <result column="dc_type" property="type"/>
         <result column="dc_target" property="target"/>
+        <result column="dc_usb_device_id" property="usbDeviceId"/>
         <result column="dc_create_time" property="createTime"/>
         <result column="dc_update_time" property="updateTime"/>
         <result column="dc_deleted" property="deleted"/>

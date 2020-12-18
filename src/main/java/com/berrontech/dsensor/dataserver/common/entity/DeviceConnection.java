@@ -48,5 +48,10 @@ public class DeviceConnection extends AbstractEntity {
      */
     @Column(name = "target", nullable = false)
     private String target;
+    /**
+     * USB device ID
+     */
+    @Column(name = "usb_device_id")
+    private String usbDeviceId;
 }
 
