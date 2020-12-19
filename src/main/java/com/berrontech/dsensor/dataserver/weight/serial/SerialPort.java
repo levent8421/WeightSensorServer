@@ -97,6 +97,14 @@ public class SerialPort {
         }
     }
 
+    public static String[] findSerialPortDevices() {
+        if (OSUtils.isWindows()) {
+            return findSerialPortDevices0();
+        } else {
+            return null;
+        }
+    }
+
 
     private int doStreamRead(byte[] buffer, int offset, int length) throws Exception {
         int cnt = mFileInputStream.available();
@@ -135,4 +143,6 @@ public class SerialPort {
     private native int read0(byte[] buffer, int offset, int length);
 
     private native int write0(byte[] buffer, int offset, int length);
+
+    private native static String[] findSerialPortDevices0();
 }
