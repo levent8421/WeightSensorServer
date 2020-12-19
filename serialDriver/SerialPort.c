@@ -23,7 +23,7 @@
 #include <jni.h>
 #include <stdio.h>
 
-#include "SerialPort.h"
+#include "com_berrontech_dsensor_dataserver_weight_serial_SerialPort.h"
 
 //#include "android/log.h"
 static const char *TAG="serial_port";
@@ -74,7 +74,7 @@ static speed_t getBaudrate(jint baudrate)
  * Method:    open
  * Signature: (Ljava/lang/String;II)Ljava/io/FileDescriptor;
  */
-JNIEXPORT jobject JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_open
+JNIEXPORT jobject JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_open0
   (JNIEnv *env, jclass thiz, jstring path, jint baudrate, jint flags)
 {
 	int fd;
@@ -150,7 +150,7 @@ JNIEXPORT jobject JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_S
  * Method:    close
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_close
+JNIEXPORT void JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_close0
   (JNIEnv *env, jobject thiz)
 {
 	jclass SerialPortClass = (*env)->GetObjectClass(env, thiz);
@@ -166,3 +166,30 @@ JNIEXPORT void JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_Seri
 	close(descriptor);
 }
 
+/*
+ * Class:     com_berrontech_dsensor_dataserver_weight_serial_SerialPort
+ * Method:    read0
+ * Signature: ([BII)I
+ */
+JNIEXPORT jint JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_read0
+  (JNIEnv * env, jobject thiz, jbyteArray buffer, jint offset, jint length)
+{
+	return 0;
+}
+
+/*
+ * Class:     com_berrontech_dsensor_dataserver_weight_serial_SerialPort
+ * Method:    write0
+ * Signature: ([BII)I
+ */
+JNIEXPORT jint JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_write0
+  (JNIEnv * env, jobject thiz, jbyteArray buffer, jint offset, jint length)
+{
+	return 0;
+}
+
+JNIEXPORT jobjectArray JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_findSerialPortDevices0
+  (JNIEnv * env, jclass clazz)
+{
+	return NULL;
+}

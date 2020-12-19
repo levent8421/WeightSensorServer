@@ -9,7 +9,7 @@ tcp-api:
   ip: 127.0.0.1
   port: 8888
 serial:
-  lib-path: /sdcard/scada_wsa/so/libserial_port.so
+  lib-name: native_lib/libserial_port
 db-upgrade:
   db-version-file-path: /sdcard/scada_wsa/db/db_version.json
   script-path: /sdcard/scada_wsa/db

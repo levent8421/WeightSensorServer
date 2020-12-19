@@ -102,7 +102,7 @@ public class DashboardController extends AbstractController {
         res.put("appVersion", appVersion);
         res.put("appName", ApplicationConstants.Context.APP_NAME);
         res.put("pid", ProcessUtils.getProcessId());
-        res.put("libPath", serialConfiguration.getLibPath());
+        res.put("libPath", serialConfiguration.getLibName());
         return GeneralResult.ok(res);
     }
 

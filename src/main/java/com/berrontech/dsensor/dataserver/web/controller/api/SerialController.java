@@ -1,15 +1,17 @@
 package com.berrontech.dsensor.dataserver.web.controller.api;
 
+import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
 import com.berrontech.dsensor.dataserver.common.util.NativeUtils;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.conf.SerialConfiguration;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.web.vo.LoadLibraryParam;
-import com.berrontech.dsensor.dataserver.weight.serial.util.SerialUtils;
+import com.berrontech.dsensor.dataserver.weight.serial.SerialPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -39,8 +41,12 @@ public class SerialController extends AbstractController {
      */
     @GetMapping("/scan")
     public GeneralResult<List<String>> scanSerialPorts() {
-        final List<String> ports = SerialUtils.scan();
-        return GeneralResult.ok(ports);
+        try {
+            final List<String> ports = SerialPort.findSerialPorts();
+            return GeneralResult.ok(ports);
+        } catch (IOException e) {
+            throw new InternalServerErrorException("Error on scan serial ports:" + e.getMessage(), e);
+        }
     }
 
     /**
@@ -53,7 +59,7 @@ public class SerialController extends AbstractController {
     public GeneralResult<String> loadLibrary(@RequestBody LoadLibraryParam param) {
         final String path;
         if (param == null || TextUtils.isTrimedEmpty(param.getLibPath())) {
-            path = serialConfiguration.getLibPath();
+            path = serialConfiguration.getLibName();
         } else {
             path = param.getLibPath();
         }

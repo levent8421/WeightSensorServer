@@ -25,7 +25,6 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import com.berrontech.dsensor.dataserver.weight.scan.SensorScanListener;
 import lombok.Data;
-import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,10 +89,13 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
      */
     @PostConstruct
     public void loadLibrary() {
-        final String osName = OSUtils.getOsName();
+        final String osName = OSUtils.isWindows() ? OSUtils.OS_NAME_WINDOWS : OSUtils.getOsName();
         final String arch = OSUtils.getArch();
-
-        nativeLibraryLoader.loadLib(osName, arch, false);
+        try {
+            nativeLibraryLoader.loadLib(osName.toLowerCase(), arch.toLowerCase(), false);
+        } catch (IOException e) {
+            throw new RuntimeException("Error on load native lib!", e);
+        }
     }
 
     @Override
@@ -815,10 +817,10 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             record.setELabelSn(sensor.getParams().getBackupELabelSn());
             record.setELabelState(sensor.isELabelOnline() ? DigitalSensorItem.EFlatStatus.Normal.code() : DigitalSensorItem.EFlatStatus.Offline.code());
             record.setWeight(sensor.getValues().getNetWeight());
-            record.setZeroOffset((double)sensor.getValues().getZeroOffset());
-            record.setSensorErrorRate((double)sensor.getTotalErrors() / Math.max(sensor.getTotalErrors() + sensor.getTotalSuccess(), 1));
+            record.setZeroOffset((double) sensor.getValues().getZeroOffset());
+            record.setSensorErrorRate((double) sensor.getTotalErrors() / Math.max(sensor.getTotalErrors() + sensor.getTotalSuccess(), 1));
             record.setSensorErrorCount(sensor.getTotalErrors());
-            record.setELabelErrorRate((double)sensor.getELabelTotalErrors() / Math.max(sensor.getELabelTotalErrors() + sensor.getELabelTotalSuccess(), 1));
+            record.setELabelErrorRate((double) sensor.getELabelTotalErrors() / Math.max(sensor.getELabelTotalErrors() + sensor.getELabelTotalSuccess(), 1));
             record.setELabelErrorCount(sensor.getELabelTotalErrors());
             record.setSkuApw(BigDecimal.valueOf(sensor.getValues().getAPW()));
             record.setSkuPcs(sensor.getValues().getPieceCount());

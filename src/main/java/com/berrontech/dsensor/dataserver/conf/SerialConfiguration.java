@@ -21,5 +21,5 @@ public class SerialConfiguration {
     /**
      * 本地库位置
      */
-    private String libPath = "/lib/libserial_port.so";
+    private String libName = "lib_serialport";
 }

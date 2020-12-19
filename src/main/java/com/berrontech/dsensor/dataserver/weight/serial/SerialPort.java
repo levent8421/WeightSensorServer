@@ -17,9 +17,12 @@
 package com.berrontech.dsensor.dataserver.weight.serial;
 
 import com.berrontech.dsensor.dataserver.common.util.OSUtils;
+import com.berrontech.dsensor.dataserver.weight.serial.util.SerialUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -34,7 +37,6 @@ import java.io.*;
  */
 @Slf4j
 public class SerialPort {
-
     private static final int OPEN_SERIAL_FLAG = 0;
 
     File device;
@@ -97,15 +99,6 @@ public class SerialPort {
         }
     }
 
-    public static String[] findSerialPortDevices() {
-        if (OSUtils.isWindows()) {
-            return findSerialPortDevices0();
-        } else {
-            return null;
-        }
-    }
-
-
     private int doStreamRead(byte[] buffer, int offset, int length) throws Exception {
         int cnt = mFileInputStream.available();
         cnt = Math.min(cnt, length);
@@ -144,5 +137,17 @@ public class SerialPort {
 
     private native int write0(byte[] buffer, int offset, int length);
 
+    public static List<String> findSerialPorts() throws IOException {
+        if (OSUtils.isWindows()) {
+            return Arrays.asList(findSerialPortDevices0());
+        }
+        return SerialUtils.scanLinuxPorts();
+    }
+
+    /**
+     * Find System Serial Port devices
+     *
+     * @return device <code>AbsolutePath</code>
+     */
     private native static String[] findSerialPortDevices0();
 }
