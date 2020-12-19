@@ -20,7 +20,10 @@ import com.berrontech.dsensor.dataserver.common.util.OSUtils;
 import com.berrontech.dsensor.dataserver.weight.serial.util.SerialUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,8 +42,6 @@ import java.util.List;
 public class SerialPort {
     private static final int OPEN_SERIAL_FLAG = 0;
 
-    File device;
-    int baudrate;
 
     /**
      * Do not remove or rename the field mFd: it is used by native method close();
@@ -49,15 +50,16 @@ public class SerialPort {
     private FileDescriptor mFd;
     private FileInputStream mFileInputStream;
     private FileOutputStream mFileOutputStream;
+    private String deviceName;
+    private int baudrate;
 
-    public SerialPort(File device, int baudrate) {
-        this.device = device;
+    public SerialPort(String deviceName, int baudrate) {
+        this.deviceName = deviceName;
         this.baudrate = baudrate;
     }
 
     public void open() throws Exception {
-        int flags = OPEN_SERIAL_FLAG;
-        mFd = open0(device.getAbsolutePath(), baudrate, flags);
+        mFd = open0(deviceName, baudrate, OPEN_SERIAL_FLAG);
         if (mFd == null) {
             throw new IOException("Open Device File Descriptor failed!");
         }

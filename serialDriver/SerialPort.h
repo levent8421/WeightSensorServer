@@ -7,21 +7,47 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_berrontech_dsensor_dataserver_weight_serial_SerialPort_OPEN_SERIAL_FLAG
+#define com_berrontech_dsensor_dataserver_weight_serial_SerialPort_OPEN_SERIAL_FLAG 0L
 /*
  * Class:     com_berrontech_dsensor_dataserver_weight_serial_SerialPort
- * Method:    open
+ * Method:    findSerialPortDevices
+ * Signature: ()[Ljava/lang/String;
+ */
+JNIEXPORT jobjectArray JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_findSerialPortDevices0
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_berrontech_dsensor_dataserver_weight_serial_SerialPort
+ * Method:    open0
  * Signature: (Ljava/lang/String;II)Ljava/io/FileDescriptor;
  */
-JNIEXPORT jobject JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_open
+JNIEXPORT jobject JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_open0
   (JNIEnv *, jclass, jstring, jint, jint);
 
 /*
  * Class:     com_berrontech_dsensor_dataserver_weight_serial_SerialPort
- * Method:    close
+ * Method:    close0
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_close
+JNIEXPORT void JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_close0
   (JNIEnv *, jobject);
+
+/*
+ * Class:     com_berrontech_dsensor_dataserver_weight_serial_SerialPort
+ * Method:    read0
+ * Signature: ([BII)I
+ */
+JNIEXPORT jint JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_read0
+  (JNIEnv *, jobject, jbyteArray, jint, jint);
+
+/*
+ * Class:     com_berrontech_dsensor_dataserver_weight_serial_SerialPort
+ * Method:    write0
+ * Signature: ([BII)I
+ */
+JNIEXPORT jint JNICALL Java_com_berrontech_dsensor_dataserver_weight_serial_SerialPort_write0
+  (JNIEnv *, jobject, jbyteArray, jint, jint);
 
 #ifdef __cplusplus
 }

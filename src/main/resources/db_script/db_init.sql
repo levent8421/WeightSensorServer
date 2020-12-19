@@ -23,8 +23,8 @@ CREATE TABLE `t_application_config`
 LOCK TABLES `t_application_config` WRITE;
 
 INSERT INTO `t_application_config`
-VALUES (1, 'application.db_version', '9', now(), now(), false),          # for this database version
-       (2, 'application.db_version_name', '0.3.1', now(), now(), false), # db version name
+VALUES (1, 'application.db_version', '11', now(), now(), false),          # for this database version
+       (2, 'application.db_version_name', '0.4.1', now(), now(), false), # db version name
        (3, 'application.ui.enable_tabBar', 'true', now(), now(), false),
        (4, 'weight.soft_filter_level', '0', now(), now(), false),        # enable the Dashboard UI TabBar
        (5, 'extra.page_uri', 'http://56.58.0.1:8081/starbucks-camera/pages/tt.html', now(), now(),
@@ -40,12 +40,13 @@ DROP TABLE IF EXISTS `t_device_connection`;
 
 CREATE TABLE `t_device_connection`
 (
-    `id`          int(10)      NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    `type`        int(2)       NOT NULL COMMENT 'connection type, 1:serial,2:tcp',
-    `target`      varchar(255) NOT NULL COMMENT 'connection target',
-    `create_time` datetime     NOT NULL COMMENT 'time of create',
-    `update_time` datetime     NOT NULL COMMENT 'time of last update',
-    `deleted`     bit(1)       NOT NULL COMMENT 'delete flag',
+    `id`            int(10)      NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `type`          int(2)       NOT NULL COMMENT 'connection type, 1:serial,2:tcp',
+    `target`        varchar(255) NOT NULL COMMENT 'connection target',
+    `usb_device_id` varchar(255) null comment 'USB Device ID',
+    `create_time`   datetime     NOT NULL COMMENT 'time of create',
+    `update_time`   datetime     NOT NULL COMMENT 'time of last update',
+    `deleted`       bit(1)       NOT NULL COMMENT 'delete flag',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDb
   DEFAULT CHARSET = utf8;

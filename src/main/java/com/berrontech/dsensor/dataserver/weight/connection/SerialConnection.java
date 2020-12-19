@@ -3,12 +3,8 @@ package com.berrontech.dsensor.dataserver.weight.connection;
 
 import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.weight.serial.SerialPort;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -43,7 +39,7 @@ public class SerialConnection extends BasicConnection {
         if (serialPort == null) {
             try {
                 if (!StringUtils.isBlank(portName)) {
-                    serialPort = new SerialPort(new File(portName), baudrate);
+                    serialPort = new SerialPort(portName, baudrate);
                     serialPort.open();
                     setConnected(true);
                     threadPool = ThreadUtils.createSingleThreadPool(TAG);
