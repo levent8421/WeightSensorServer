@@ -93,7 +93,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         final String osName = OSUtils.getOsName();
         final String arch = OSUtils.getArch();
 
-        nativeLibraryLoader.loadLib(osName, arch, OSUtils.isWindows());
+        nativeLibraryLoader.loadLib(osName, arch, false);
     }
 
     @Override
@@ -670,7 +670,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         try {
             log.debug("#{} setElabelAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn);
             log.debug("#{} setElabelAddressForSn: sn={}, length={}", address, sn, sn.length());
-            val group = DigitalSensorUtils.tryLookupGroup(sensorManager, connectionId);
+            val group = sensorManager.FirstOrNull(connectionId);
             if (group != null) {
                 log.debug("#{} setElabelAddressForSn: group found", address);
                 log.debug("#{} setElabelAddressForSn: stop programing", address);
@@ -708,7 +708,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         try {
             log.debug("#{} setSensorAddressForSn: connId={}, address={}, sn={}", address, connectionId, address, sn);
             log.debug("#{} setSensorAddressForSn: sn={}, length={}", address, sn, sn.length());
-            val group = DigitalSensorUtils.tryLookupGroup(sensorManager, connectionId);
+            val group = sensorManager.FirstOrNull(connectionId);
             if (group != null) {
                 log.debug("#{} setSensorAddressForSn: group found", address);
                 log.debug("#{} setSensorAddressForSn: stop programing", address);
@@ -745,7 +745,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public String rebuildSnForElabel(Integer connectionId, Integer address) throws SnBuildException {
         String sn = null;
         try {
-            DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
+            DigitalSensorItem sensor = sensorManager.FirstOrNull(connectionId, address);
             if (sensor != null) {
                 sn = DigitalSensorParams.BuildNewELabelDeviceSn();
                 sensor.UnlockELabel();
@@ -766,7 +766,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public String rebuildSnForSensor(Integer connectionId, Integer address) throws SnBuildException {
         String sn = null;
         try {
-            DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
+            DigitalSensorItem sensor = sensorManager.FirstOrNull(connectionId, address);
             if (sensor != null) {
                 sn = DigitalSensorParams.BuildNewSensorDeviceSn();
                 sensor.Unlock();
@@ -787,7 +787,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     public void calibrateTemperatureSensor(Integer connectionId, Integer address, BigDecimal currentTemperature) throws CalibrationException {
         log.info("calibrateTemperatureSensor [{}], temp=[{}]", address, currentTemperature);
         try {
-            DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
+            DigitalSensorItem sensor = sensorManager.FirstOrNull(connectionId, address);
             if (sensor != null) {
                 if (sensor.getParams().getDeviceType() != DigitalSensorParams.EDeviceType.TempHumi) {
                     throw new Exception(String.format("This sensor(%d) is not a TemperatureSensor", sensor.getParams().getDeviceType()));
@@ -806,7 +806,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     @Override
     public WeightDataRecord getSensorRecord(Integer connectionId, Integer address) {
         log.info("getSensorRecord [{}:{}]", connectionId, address);
-        DigitalSensorItem sensor = DigitalSensorUtils.tryLookupSensor(sensorManager, connectionId, address);
+        DigitalSensorItem sensor = sensorManager.FirstOrNull(connectionId, address);
         if (sensor != null) {
             WeightDataRecord record = new WeightDataRecord();
             record.setSensorSn(sensor.getParams().getBackupSensorSn());

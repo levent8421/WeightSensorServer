@@ -246,30 +246,37 @@ public class DigitalSensorManager {
         return sensors;
     }
 
-    public DigitalSensorItem FirstOrNull(int connectionId, int address) {
+    public DigitalSensorGroup FirstOrNull(int connectionId) {
         if (Groups != null && Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 if (g.getConnectionId() == connectionId) {
-                    for (DigitalSensorItem s : g.getSensors()) {
-                        if (s.getParams().getAddress() == address) {
-                            return s;
-                        }
-                    }
+                    return g;
                 }
             }
         }
         return null;
     }
 
-    public void ClearAllCounters()
-    {
+    public DigitalSensorItem FirstOrNull(int connectionId, int address) {
+        DigitalSensorGroup g = FirstOrNull(connectionId);
+        if (g != null) {
+            for (DigitalSensorItem s : g.getSensors()) {
+                if (s.getParams().getAddress() == address) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void ClearAllCounters() {
         if (Groups != null && Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
-                    for (DigitalSensorItem s : g.getSensors()) {
-                        s.setTotalSuccess(0);
-                        s.setTotalErrors(0);
-                        s.setELabelTotalSuccess(0);
-                        s.setELabelTotalErrors(0);
+                for (DigitalSensorItem s : g.getSensors()) {
+                    s.setTotalSuccess(0);
+                    s.setTotalErrors(0);
+                    s.setELabelTotalSuccess(0);
+                    s.setELabelTotalErrors(0);
                 }
             }
         }
