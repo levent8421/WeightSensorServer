@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.upgrade;
 
-import java.io.File;
+import org.springframework.core.io.support.EncodedResource;
+
 import java.util.List;
 
 /**
@@ -27,10 +28,10 @@ public interface DatabaseUpgrader {
     /**
      * 执行数据库更新脚本
      *
-     * @param scriptFiles sql script files
+     * @param resources sql script resource
      * @throws Exception e
      */
-    void runUpgradeScript(List<File> scriptFiles) throws Exception;
+    void runUpgradeScript(List<EncodedResource> resources) throws Exception;
 
     /**
      * 重置数据库

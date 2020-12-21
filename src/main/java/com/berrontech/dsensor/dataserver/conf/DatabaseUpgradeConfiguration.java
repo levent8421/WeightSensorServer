@@ -19,11 +19,15 @@ import org.springframework.stereotype.Component;
 @Data
 public class DatabaseUpgradeConfiguration {
     /**
-     * 数据库版本配置文件位置
-     */
-    private String dbVersionFilePath = "/sdcard/scada_wsa/db/db_version.json";
-    /**
      * 数据库更新脚本位置
      */
-    private String scriptPath = "/sdcard/scada_wsa/db";
+    private String scriptPath = "classpath:/db_script";
+    /**
+     * 数据库初始化脚本
+     */
+    private String dbInitSqlFile = "db_init.sql";
+    /**
+     * Target db version
+     */
+    private int targetDbVersion = 11;
 }

@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "db-upgrade.db_init_sql_file",
+      "type": "java.lang.String",
+      "description": "Database init sql."
+    },
+    {
+      "name": "db-upgrade.target_db_version",
+      "type": "java.lang.String",
+      "description": "Description for db-upgrade.target_db_version."
+    }
+  ]
+}

@@ -1,13 +1,9 @@
 package com.berrontech.dsensor.dataserver.upgrade;
 
-import com.alibaba.fastjson.JSON;
 import com.berrontech.dsensor.dataserver.common.entity.ApplicationConfig;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
-import com.berrontech.dsensor.dataserver.common.io.IOUtils;
 import com.berrontech.dsensor.dataserver.common.util.NumberUtils;
-import com.berrontech.dsensor.dataserver.common.util.ParamChecker;
 import com.berrontech.dsensor.dataserver.common.util.VersionUtils;
-import com.berrontech.dsensor.dataserver.common.vo.DatabaseVersionConfig;
 import com.berrontech.dsensor.dataserver.conf.DatabaseUpgradeConfiguration;
 import com.berrontech.dsensor.dataserver.repository.mapper.DatabaseMetaDataMapper;
 import com.berrontech.dsensor.dataserver.service.general.ApplicationConfigService;
@@ -23,8 +19,6 @@ import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,17 +41,9 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
      */
     private static final String TABLE_NAME_APPLICATION_CONFIG = "t_application_config";
     /**
-     * 数据库初始化脚本
-     */
-    private static final String DATABASE_INIT_SCRIPT_RESOURCE_NAME = "classpath:/db_script/db_init.sql";
-    /**
      * 数据库更新脚本模板
      */
-    private static final String DATABASE_UPGRADE_SCRIPT_FILE_NAME_TEMPLATE = "upgrade_scada_wsa_%s.sql";
-    /**
-     * 脚本文件资源名模板
-     */
-    private static final String SCRIPT_RESOURCE_NAME_TEMPLATE = "file:%s";
+    private static final String DATABASE_UPGRADE_SCRIPT_FILE_NAME_TEMPLATE = "%s/upgrade_scada_wsa_%s.sql";
     /**
      * 更新脚本格式相关配置
      */
@@ -86,9 +72,9 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
 
     @Override
     public void checkForUpgrade() {
-        final String dbVersionConfigFile = databaseUpgradeConfiguration.getDbVersionFilePath();
-        log.debug("Application database upgrade with config file [{}]!", dbVersionConfigFile);
-        checkForUpgrade(dbVersionConfigFile);
+        final int targetDbVersion = databaseUpgradeConfiguration.getTargetDbVersion();
+        log.debug("Application startup success, check for database Update with targetVersion[{}]", targetDbVersion);
+        doDatabaseUpgrade(targetDbVersion);
     }
 
     @Override
@@ -109,56 +95,18 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
     }
 
     /**
-     * 检查更新
-     *
-     * @param configFilePath 数据库版本配置文件
-     */
-    private void checkForUpgrade(String configFilePath) {
-        final File configFile = new File(configFilePath);
-        if (!configFile.exists()) {
-            log.info("Can not found the dbVersion config file!");
-            return;
-        }
-        if (!configFile.isFile()) {
-            log.error("DbVersion Config file path [{}] is not a file!", configFilePath);
-            return;
-        }
-        final String configJson;
-        try {
-            configJson = IOUtils.readAsString(configFile);
-        } catch (IOException e) {
-            log.error("Error on read DbVersion config file!", e);
-            return;
-        }
-        final DatabaseVersionConfig databaseVersionConfig;
-        try {
-            databaseVersionConfig = JSON.parseObject(configJson, DatabaseVersionConfig.class);
-            ParamChecker.notNull(databaseVersionConfig, InternalServerErrorException.class,
-                    "Parse a null result DbVersion Config json!");
-            ParamChecker.notEmpty(databaseVersionConfig.getTargetDbVersion(), InternalServerErrorException.class,
-                    "No TargetDatabaseVersion in config file!");
-        } catch (Exception e) {
-            log.error("Error on parse BbVersion config json.", e);
-            return;
-        }
-        doDatabaseUpgrade(databaseVersionConfig);
-    }
-
-    /**
      * 执行数据库更新
      *
-     * @param config version config
+     * @param targetVersion database targetVersion
      */
-    private void doDatabaseUpgrade(DatabaseVersionConfig config) {
+    private void doDatabaseUpgrade(int targetVersion) {
         final ApplicationConfig versionConfig = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
         final String currentVersion = versionConfig.getValue();
-        final String targetVersion = config.getTargetDbVersion();
         try {
-            if (VersionUtils.compareDatabaseVersion(targetVersion, currentVersion) > 0) {
+            if (VersionUtils.compareDatabaseVersion(String.valueOf(targetVersion), currentVersion) > 0) {
                 final int from = NumberUtils.parseInt(currentVersion, 1);
-                final int target = NumberUtils.parseInt(targetVersion, 1);
-                final List<File> scriptList = lookupSqlScripts(from, target);
-                runUpgradeScript(scriptList);
+                final List<EncodedResource> resources = lookupSqlScripts(from, targetVersion);
+                runUpgradeScript(resources);
             } else {
                 log.info("Application database targetVersion=[{}], currentVersion=[{}], no upgrade required!",
                         targetVersion, currentVersion);
@@ -175,55 +123,41 @@ public class MysqlDatabaseUpgrader implements DatabaseUpgrader, ApplicationConte
      * @param target 目标版本
      * @return Script File List
      */
-    private List<File> lookupSqlScripts(int from, int target) {
-        final File path = new File(databaseUpgradeConfiguration.getScriptPath());
-        if (!path.exists() || !path.isDirectory()) {
-            throw new InternalServerErrorException("Database upgrade script path ["
-                    + path.getAbsolutePath()
-                    + "] could not be found!");
-        }
-        final List<File> files = new ArrayList<>();
+    private List<EncodedResource> lookupSqlScripts(int from, int target) {
+        final String updateScriptPath = databaseUpgradeConfiguration.getScriptPath();
+        final List<EncodedResource> resources = new ArrayList<>();
         for (int version = from + 1; version <= target; version++) {
-            final String scriptFileName = String.format(DATABASE_UPGRADE_SCRIPT_FILE_NAME_TEMPLATE, version);
-            final File scriptFile = new File(path, scriptFileName);
-            if (!scriptFile.exists() || !scriptFile.isFile()) {
-                throw new InternalServerErrorException("Database upgrade script file["
-                        + scriptFileName
-                        + "] could not be found!");
+            final String scriptResourceName = String.format(DATABASE_UPGRADE_SCRIPT_FILE_NAME_TEMPLATE, updateScriptPath, version);
+            final Resource resource = applicationContext.getResource(scriptResourceName);
+            if (resource == null) {
+                throw new InternalServerErrorException(String.format("Can not find resource [%s], target=[%s], current=[%s]", scriptResourceName, target, from));
             }
-            files.add(scriptFile);
+            log.info("Find database upgrade resource: [{}]", scriptResourceName);
+            resources.add(new EncodedResource(resource));
         }
-        return files;
+        return resources;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void runUpgradeScript(List<File> scriptFiles) {
-        for (File scriptFile : scriptFiles) {
-            runScript(scriptFile);
+    public void runUpgradeScript(List<EncodedResource> resources) {
+        for (EncodedResource resource : resources) {
+            runScript(resource);
         }
     }
 
     @Override
     public void resetDatabase() {
-        final Resource resource = applicationContext.getResource(DATABASE_INIT_SCRIPT_RESOURCE_NAME);
+        final String dbResetScriptName = databaseUpgradeConfiguration.getDbInitSqlFile();
+        final String dbScriptPath = databaseUpgradeConfiguration.getScriptPath();
+        final String resetScriptResourceName = String.format("%s/%s", dbScriptPath, dbResetScriptName);
+        final Resource resource = applicationContext.getResource(resetScriptResourceName);
+        if (resource == null) {
+            throw new InternalServerErrorException("Can not find database init script: " + dbResetScriptName);
+        }
+        log.info("Reset database with script: [{}]", resetScriptResourceName);
         final EncodedResource sqlResource = new EncodedResource(resource);
-        log.info("Database init with script: [{}]", DATABASE_INIT_SCRIPT_RESOURCE_NAME);
         runScript(sqlResource);
-    }
-
-    /**
-     * 执行数据库更新脚本文件
-     *
-     * @param scriptFile 脚本文件
-     */
-    private void runScript(File scriptFile) {
-        final String filePath = scriptFile.getAbsolutePath();
-        log.info("Running database upgrade script [{}]", filePath);
-        final String resourceName = String.format(SCRIPT_RESOURCE_NAME_TEMPLATE, filePath);
-        final EncodedResource resource = new EncodedResource(applicationContext.getResource(resourceName));
-        runScript(resource);
-        log.info("Run done database upgrade script [{}]", filePath);
     }
 
     private void runScript(EncodedResource resource) {

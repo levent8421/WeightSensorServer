@@ -8,12 +8,7 @@ server:
 tcp-api:
   ip: 127.0.0.1
   port: 8100
-serial:
-  lib-name: native_lib/libserial_port
 logging:
   config: classpath:logback-spring-test.xml
-db-upgrade:
-  db-version-file-path: /opt/weight_slot/db/db_version.json
-  script-path:  /opt/weight_slot/db
 log-conf:
   log-file-dir: /opt/weight_slot/log
