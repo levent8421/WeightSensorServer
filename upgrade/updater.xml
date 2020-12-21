@@ -11,10 +11,6 @@
     <property name="deploy_dir" value="/sdcard/scada_wsa"/>
     <!-- APP JAR 存放目录   -->
     <property name="app_dir" value="${deploy_dir}/app"/>
-    <!-- 数据库脚本存放目录  -->
-    <property name="sql_script_dir" value="${deploy_dir}/db"/>
-    <!-- 驱动文件所在目录 -->
-    <property name="so_dir" value="${deploy_dir}/so"/>
 
 
     <!-- 部署动作定义 -->
@@ -49,7 +45,7 @@
         <echo message="SCADA_WSA: end clean"/>
     </target>
     <!-- 拷贝文件到部署目录 -->
-    <target name="cover" depends="cover_app, cover_sql, cover_so">
+    <target name="cover" depends="cover_app">
         <echo message="SCADA_WSA: COPY FILE COMPLETED!"/>
     </target>
 
@@ -65,28 +61,6 @@
         <chmod perm="+x">
             <fileset dir="${app_dir}" includes="*.sh"/>
         </chmod>
-    </target>
-
-    <!-- 拷贝驱动文件到${so_dir}目录-->
-    <target name="cover_so">
-        <!-- 创建 ${deployDir}/app 目录-->
-        <mkdir dir="${so_dir}"/>
-        <!-- 拷贝文件到应用目录 -->
-        <copy todir="${so_dir}" overwrite="true" includeemptydirs="true" verbose="true">
-            <!-- 解压后的应用文件名 -->
-            <fileset dir="${fileDir}" includes="*.so"/>
-        </copy>
-    </target>
-
-    <!-- 拷贝数据库脚本文件到部署目录  -->
-    <target name="cover_sql">
-        <!-- 创建 ${deployDir}/app 目录 -->
-        <mkdir dir="${sql_script_dir}"/>
-        <!-- 拷贝文件到应用目录 -->
-        <copy todir="${sql_script_dir}" overwrite="true" includeemptydirs="true" verbose="true">
-            <!-- 解压后的应用文件名 -->
-            <fileset dir="${fileDir}/db" includes="*.sql, *.json"/>
-        </copy>
     </target>
 
     <!-- 应用停机  -->
