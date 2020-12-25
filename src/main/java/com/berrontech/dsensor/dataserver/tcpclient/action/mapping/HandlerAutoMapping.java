@@ -7,7 +7,6 @@ import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -33,15 +32,15 @@ public class HandlerAutoMapping implements ApplicationContextAware {
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        val beans = applicationContext.getBeansWithAnnotation(ActionHandlerMapping.class);
+        final Map<String, Object> beans = applicationContext.getBeansWithAnnotation(ActionHandlerMapping.class);
         for (Map.Entry<String, Object> entry : beans.entrySet()) {
-            val beanName = entry.getKey();
-            val bean = entry.getValue();
+            final String beanName = entry.getKey();
+            final Object bean = entry.getValue();
             if (!(bean instanceof ActionHandler)) {
                 throw new IllegalArgumentException(String.format("Class [%s][%s] must implement [%s]",
                         bean, beanName, ActionHandler.class));
             }
-            val action = bean.getClass().getAnnotation(ActionHandlerMapping.class).value();
+            final String action = bean.getClass().getAnnotation(ActionHandlerMapping.class).value();
             handlerTable.put(action, (ActionHandler) bean);
         }
         log.info("Mapped Actions [{}]", handlerTable.keySet());
@@ -54,26 +53,26 @@ public class HandlerAutoMapping implements ApplicationContextAware {
      * @return reply message
      */
     public Message handle(Message message) {
-        val action = message.getAction();
+        final String action = message.getAction();
         if (handlerTable.containsKey(action)) {
-            val handler = handlerTable.get(action);
+            final ActionHandler handler = handlerTable.get(action);
             try {
                 return handler.onMessage(message);
             } catch (BadRequestException e) {
-                val res = Payload.badRequest(e.getMessage(), null);
+                final Payload<?> res = Payload.badRequest(e.getMessage(), null);
                 log.warn("Error On Handle Message, BadRequest[{}]", message.getSeqNo(), e);
                 return MessageUtils.replyMessage(message, res);
             } catch (InternalServerErrorException e) {
-                val res = Payload.error(e.getMessage(), null);
+                final Payload<?> res = Payload.error(e.getMessage(), null);
                 log.warn("Error On Handle Message, InternalServerError[{}]", message.getSeqNo(), e);
                 return MessageUtils.replyMessage(message, res);
             } catch (Exception e) {
-                val res = Payload.error("Error:" + e.getClass().getSimpleName() + "[" + e.getMessage() + "]");
+                final Payload<?> res = Payload.error("Error:" + e.getClass().getSimpleName() + "[" + e.getMessage() + "]");
                 log.warn("Error On Handle Message, Unknown Exception[{}]", message.getSeqNo(), e);
                 return MessageUtils.replyMessage(message, res);
             }
         }
-        val badRequestPayload = Payload.badRequest("Invalidate Action!");
+        final Payload<?> badRequestPayload = Payload.badRequest("Invalidate Action!");
         return MessageUtils.replyMessage(message, badRequestPayload);
     }
 }

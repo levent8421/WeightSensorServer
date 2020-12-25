@@ -6,8 +6,8 @@ spring:
 server:
   port: 5601
 tcp-api:
-  ip: 127.0.0.1
-  port: 8100
+  ip: 192.168.3.4
+  port: 8888
 logging:
   config: classpath:logback-spring-test.xml
 log-conf:

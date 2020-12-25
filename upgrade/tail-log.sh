@@ -3,6 +3,7 @@
 log_dir=/mnt/hd0/scada_wsa/log
 current_date=`date +%Y-%m-%d`
 log_file="${log_dir}/weight-slot-${current_date}.log"
+echo "LOG FILE:${log_file}"
 
 if [[ ! -f ${log_file} ]]; then
 	echo "Could not find today log_file:${log_file}"
