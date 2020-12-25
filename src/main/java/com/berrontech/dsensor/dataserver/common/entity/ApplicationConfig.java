@@ -37,6 +37,10 @@ public class ApplicationConfig extends AbstractEntity {
      */
     public static final String ENABLE_TAB_BAR = "application.ui.enable_tabBar";
     /**
+     * 站点号
+     */
+    public static final String STATION_ID = "application.station_id";
+    /**
      * 配置名称
      */
     @Column(name = "name", nullable = false)

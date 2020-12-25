@@ -87,6 +87,7 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
     private final TemperatureHumiditySensorService temperatureHumiditySensorService;
     private final DistinctObjectBuffer<MemorySlot> weightChangedEventBuffer = new DistinctObjectBuffer<>();
     private final DistinctObjectBuffer<MemorySlot> stateChangedEventBuffer = new DistinctObjectBuffer<>();
+    private String stationId;
 
     public SimpleWeightNotifier(ApiClient apiClient,
                                 WeightSensorService weightSensorService,
@@ -210,9 +211,22 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
         heartbeat.setAppVersion(applicationConfiguration.getAppVersion());
         heartbeat.setDbVersion(getDbVersion());
         heartbeat.setTimestamp(timestamp);
+        heartbeat.setStationId(getStationId());
         val seqNo = MessageUtils.nextSeqNo();
         val message = MessageUtils.requestMessage(seqNo, ApplicationConstants.Actions.HEARTBEAT, heartbeat);
         sendMessage(message);
+    }
+
+    private String getStationId() {
+        if (stationId != null) {
+            return stationId;
+        }
+        final ApplicationConfig config = applicationConfigService.getConfig(ApplicationConfig.STATION_ID);
+        if (config == null) {
+            return null;
+        }
+        stationId = config.getValue();
+        return stationId;
     }
 
     @Override

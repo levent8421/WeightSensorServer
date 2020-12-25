@@ -34,4 +34,8 @@ public class Heartbeat {
      * Application Version
      */
     private String appVersion;
+    /**
+     * StationId
+     */
+    private String stationId;
 }
