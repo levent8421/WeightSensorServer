@@ -4,6 +4,7 @@ import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.QrCodeUtil;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.helper.ByteHelper;
+import com.berrontech.dsensor.dataserver.weight.utils.helper.DecimalHelper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -846,8 +847,8 @@ public class DigitalSensorItem {
 
             //Log.D($"#{Params.Address} Updated XSensors");
             for (int pos = 0; pos < packet.getContentLength(); pos += 4) {
-                float str = ByteHelper.bytesToFloat(packet.Content, pos, 4);
-                val v = BigDecimal.valueOf(str);
+                float value = ByteHelper.bytesToFloat(packet.Content, pos, 4);
+                val v = DecimalHelper.Parse(value);
                 int idx = pos / 4;
                 if (idx < Values.getXSensors().length) {
                     Values.getXSensors()[idx] = v;
@@ -1112,8 +1113,8 @@ public class DigitalSensorItem {
     public BigDecimal ReadParamAsDecimal(int param, BigDecimal defaultValue) throws IOException {
         try {
             DataPacket packet = ReadParam(param);
-            float str = ByteHelper.bytesToFloat(packet.Content, 1, 4);
-            BigDecimal d = BigDecimal.valueOf(str);
+            float value = ByteHelper.bytesToFloat(packet.Content, 1, 4);
+            BigDecimal d = DecimalHelper.Parse(value);
             log.info("#{} ReadParamAsDecimal: name={}, value={}", Params.getAddress(), param, d);
             return d;
         } catch (IOException ex) {
