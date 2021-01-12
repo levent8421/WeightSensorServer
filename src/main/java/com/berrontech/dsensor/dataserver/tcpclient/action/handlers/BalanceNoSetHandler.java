@@ -42,16 +42,23 @@ public class BalanceNoSetHandler implements ActionHandler {
     @Override
     @SuppressWarnings("unchecked")
     public Message onMessage(Message message) throws Exception {
-        final Map<String, String> data = (Map<String, String>) MessageUtils.asObject(message.getData(), Map.class);
+        final Map<Object, String> data = MessageUtils.asObject(message.getData(), Map.class);
         if (data == null) {
             throw new BadRequestException("Empty Param Data!");
         }
-        final Set<String> addressSet = data.keySet();
+        final Set<Object> addressSet = data.keySet();
         final Map<String, String> failureTable = new HashMap<>(16);
         boolean changed = false;
-        for (String addressStr : addressSet) {
-            val address = Integer.parseInt(addressStr);
-            val slotNo = data.get(addressStr);
+        for (Object addressObj : addressSet) {
+            final Integer address;
+            if (addressObj instanceof Integer) {
+                address = (Integer) addressObj;
+            } else if (addressObj instanceof String) {
+                address = Integer.parseInt((String) addressObj);
+            } else {
+                address = null;
+            }
+            final String slotNo = data.get(addressObj);
             try {
                 doSetSlotNo(address, slotNo);
                 changed = true;
@@ -76,6 +83,9 @@ public class BalanceNoSetHandler implements ActionHandler {
      * @param slotNo  slotNo
      */
     private void doSetSlotNo(Integer address, String slotNo) {
+        if (address == null) {
+            throw new BadRequestException("Can not resolve address for null!");
+        }
         final Slot slot = slotService.findByAddress(address);
         if (slot == null) {
             final String error = String.format("物理地址[%s]不存在!", address);
