@@ -11,11 +11,11 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Create By Levent8421
@@ -46,34 +46,68 @@ public class BalanceNoSetHandler implements ActionHandler {
         if (data == null) {
             throw new BadRequestException("Empty Param Data!");
         }
-        final Set<Object> addressSet = data.keySet();
-        final Map<String, String> failureTable = new HashMap<>(16);
-        boolean changed = false;
-        for (Object addressObj : addressSet) {
+
+        final Map<Integer, String> params = new HashMap<>(16);
+        for (Map.Entry<Object, String> entry : data.entrySet()) {
+            final Object addressObj = entry.getKey();
             final Integer address;
             if (addressObj instanceof Integer) {
                 address = (Integer) addressObj;
             } else if (addressObj instanceof String) {
                 address = Integer.parseInt((String) addressObj);
             } else {
-                address = null;
+                throw new BadRequestException("Can not resolve unknown type address: " + addressObj);
             }
-            final String slotNo = data.get(addressObj);
-            try {
-                doSetSlotNo(address, slotNo);
-                changed = true;
-            } catch (Exception e) {
-                final String error = String.format("%s:%s", e.getClass().getSimpleName(), e.getMessage());
-                log.debug("Error on set slotNo[{}] to address [{}],error=[{}]",
-                        slotNo, address, error);
-                failureTable.put(String.valueOf(address), error);
+            params.put(address, entry.getValue());
+        }
+        final Map<Integer, String> slotTable = loadSlotTableFromDatabase();
+        mergeParamsIntoSlotTable(slotTable, params);
+        final Map<Integer, String> failureTable = new HashMap<>(16);
+        final Map<Integer, String> checkedSlotTable = checkDuplicate(slotTable, failureTable);
+        boolean changed = false;
+        for (Map.Entry<Integer, String> entry : checkedSlotTable.entrySet()) {
+            final Integer address = entry.getKey();
+            if (!params.containsKey(address)) {
+                continue;
             }
+            doSetSlotNo(address, entry.getValue());
+            changed = true;
         }
         if (changed) {
             sensorMetaDataService.refreshSlotTable();
         }
-        val res = Payload.ok(failureTable);
-        return MessageUtils.replyMessage(message, res);
+        final Payload<Map<Integer, String>> payload = Payload.ok(failureTable);
+        return MessageUtils.replyMessage(message, payload);
+    }
+
+    private Map<Integer, String> checkDuplicate(Map<Integer, String> slotTable, Map<Integer, String> failureTable) {
+        final Map<Integer, String> res = new HashMap<>(16);
+        final Map<String, Integer> exists = new HashMap<>(16);
+        for (Map.Entry<Integer, String> entry : slotTable.entrySet()) {
+            final String slotNo = entry.getValue();
+            if (exists.containsKey(slotNo)) {
+                final String error = String.format("货道号重复：[%s,%s]", exists.get(slotNo), entry.getKey());
+                failureTable.put(entry.getKey(), error);
+            } else {
+                exists.put(slotNo, entry.getKey());
+                res.put(entry.getKey(), slotNo);
+            }
+        }
+        return res;
+    }
+
+    private void mergeParamsIntoSlotTable(Map<Integer, String> slotTable, Map<Integer, String> params) {
+        for (Map.Entry<Integer, String> entry : params.entrySet()) {
+            final Integer address = entry.getKey();
+            final String slotNo = entry.getValue();
+            slotTable.put(address, slotNo);
+        }
+    }
+
+    private Map<Integer, String> loadSlotTableFromDatabase() {
+        final List<Slot> slotList = slotService.all();
+        return slotList.stream()
+                .collect(Collectors.toMap(Slot::getAddress, Slot::getSlotNo));
     }
 
     /**
