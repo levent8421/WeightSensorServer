@@ -7,7 +7,7 @@ server:
   port: 5601
 tcp-api:
   ip: 127.0.0.1
-  port: 8100
+  port: 8888
 logging:
   config: classpath:logback-spring-dev.xml
 log-conf:

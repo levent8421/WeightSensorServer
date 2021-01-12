@@ -310,4 +310,26 @@ public class SlotController extends AbstractEntityController<Slot> {
         final int sensorNum = weightSensorService.resetSlotIdBySlotIds(param.getSlotIds());
         return GeneralResult.ok(sensorNum);
     }
+
+    /**
+     * 启用或停用货道
+     *
+     * @param id 货道ID
+     * @return GR
+     */
+    @PostMapping("/{id}/_toggle-enable")
+    public GeneralResult<Void> toggleSlotEnableState(@PathVariable("id") Integer id) {
+        final List<WeightSensor> sensors = weightSensorService.findBySlot(id);
+        if (sensors == null || sensors.size() <= 0) {
+            throw new BadRequestException("货道不存在或被合并！");
+        }
+        WeightSensor minSensor = sensors.get(0);
+        for (WeightSensor sensor : sensors) {
+            if (sensor.getAddress() < minSensor.getAddress()) {
+                minSensor = sensor;
+            }
+        }
+        weightController.enableOrDisableSlot(minSensor.getConnectionId(), minSensor.getAddress());
+        return GeneralResult.ok();
+    }
 }

@@ -12,6 +12,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class BalanceNoSetHandler implements ActionHandler {
         final Map<Integer, String> slotTable = loadSlotTableFromDatabase();
         mergeParamsIntoSlotTable(slotTable, params);
         final Map<Integer, String> failureTable = new HashMap<>(16);
-        final Map<Integer, String> checkedSlotTable = checkDuplicate(slotTable, failureTable);
+        final Map<Integer, String> checkedSlotTable = checkDuplicate(slotTable, params, failureTable);
         boolean changed = false;
         for (Map.Entry<Integer, String> entry : checkedSlotTable.entrySet()) {
             final Integer address = entry.getKey();
@@ -80,17 +81,23 @@ public class BalanceNoSetHandler implements ActionHandler {
         return MessageUtils.replyMessage(message, payload);
     }
 
-    private Map<Integer, String> checkDuplicate(Map<Integer, String> slotTable, Map<Integer, String> failureTable) {
+    private Map<Integer, String> checkDuplicate(Map<Integer, String> slotTable, Map<Integer, String> params, Map<Integer, String> failureTable) {
         final Map<Integer, String> res = new HashMap<>(16);
-        final Map<String, Integer> exists = new HashMap<>(16);
+        final Map<String, List<Integer>> exists = new HashMap<>(16);
         for (Map.Entry<Integer, String> entry : slotTable.entrySet()) {
             final String slotNo = entry.getValue();
-            if (exists.containsKey(slotNo)) {
-                final String error = String.format("货道号重复：[%s,%s]", exists.get(slotNo), entry.getKey());
-                failureTable.put(entry.getKey(), error);
-            } else {
-                exists.put(slotNo, entry.getKey());
-                res.put(entry.getKey(), slotNo);
+            final Integer address = entry.getKey();
+            final List<Integer> addressList = exists.computeIfAbsent(slotNo, k -> new ArrayList<>());
+            addressList.add(address);
+            if (addressList.size() > 1 && params.containsKey(address)) {
+                final String error = String.format("以下地址货道号重复：Duplicate slotNo for address: %s", addressList.toString());
+                failureTable.put(address, error);
+            }
+        }
+        for (Map.Entry<String, List<Integer>> entry : exists.entrySet()) {
+            final List<Integer> addressList = entry.getValue();
+            if (addressList.size() == 1) {
+                res.put(addressList.get(0), entry.getKey());
             }
         }
         return res;
