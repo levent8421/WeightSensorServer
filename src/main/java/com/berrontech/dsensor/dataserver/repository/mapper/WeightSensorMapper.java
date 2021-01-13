@@ -180,4 +180,28 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return 传感器数量
      */
     Integer selectCountBySlotId(@Param("slotId") Integer slotId);
+
+    /**
+     * select sensor,sensor.slot from sensor where sensor.slotId in (slotIds)
+     *
+     * @param slotIds slotIds
+     * @return sensors
+     */
+    List<WeightSensor> selectBySlotIdsWithSlot(@Param("slotIds") List<Integer> slotIds);
+
+    /**
+     * Select sensor where sensor.slot_id in (slotIds)
+     *
+     * @param slotIds slotIds
+     * @return sensor
+     */
+    List<WeightSensor> selectBySlotIds(@Param("slotIds") List<Integer> slotIds);
+
+    /**
+     * Select slot where slot.addr in (addrList)
+     *
+     * @param addrList addrList
+     * @return slots
+     */
+    List<WeightSensor> selectByAddressList(@Param("addrList") List<Integer> addrList);
 }

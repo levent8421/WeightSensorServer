@@ -171,4 +171,60 @@
         where ws.deleted = false
           and ws.slot_id = #{slotId}
     </select>
+    <select id="selectBySlotIdsWithSlot" resultMap="rm_with_all">
+        select
+        <include refid="columns"/>,
+        <include refid="com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper.columns"/>
+        from t_weight_sensor as ws left outer join t_slot as s on ws.slot_id=s.id where
+        <choose>
+            <when test="slotIds.size==0">
+                1=2
+            </when>
+            <when test="slotIds.size==1">
+                ws.slot_id=#{slotIds[0]}
+            </when>
+            <otherwise>
+                ws.slot_id in
+                <foreach collection="slotIds" item="slotId" open="(" close=")" separator=",">
+                    #{slotId}
+                </foreach>
+            </otherwise>
+        </choose>
+    </select>
+    <select id="selectBySlotIds" resultMap="rm_base">
+        <include refid="select"/>
+        and
+        <choose>
+            <when test="slotIds.size==0">
+                1=2
+            </when>
+            <when test="slotIds.size==1">
+                ws.slot_id = #{slotIds[0]}
+            </when>
+            <otherwise>
+                ws.slot_id in
+                <foreach collection="slotIds" item="slotId" open="(" close=")" separator=",">
+                    #{slotId}
+                </foreach>
+            </otherwise>
+        </choose>
+    </select>
+    <select id="selectByAddressList" resultMap="rm_base">
+        <include refid="select"/>
+        and
+        <choose>
+            <when test="addrList.size==0">
+                1=2
+            </when>
+            <when test="addrList.size==1">
+                ws.address=#{addrList[0]}
+            </when>
+            <otherwise>
+                ws.address in
+                <foreach collection="addrList" item="addr" open="(" close=")" separator=",">
+                    #{addr}
+                </foreach>
+            </otherwise>
+        </choose>
+    </select>
 </mapper>

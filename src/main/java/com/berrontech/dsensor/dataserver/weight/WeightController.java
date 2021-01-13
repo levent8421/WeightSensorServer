@@ -245,13 +245,4 @@ public interface WeightController {
      * @return record
      */
     WeightDataRecord getSensorRecord(Integer connectionId, Integer address);
-
-    /**
-     * 当货道状态是停用时启用货道
-     * 当货道状态时启用时停用货道
-     *
-     * @param connectionId 连接ID
-     * @param address      地址
-     */
-    void enableOrDisableSlot(Integer connectionId, Integer address);
 }

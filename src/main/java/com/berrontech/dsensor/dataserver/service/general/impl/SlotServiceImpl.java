@@ -189,4 +189,9 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
         final List<Integer> slotsIds = slots.stream().map(Slot::getId).collect(Collectors.toList());
         return weightSensorMapper.updateSlotIdBySlotIds(slotsIds, minAddSlot.getId());
     }
+
+    @Override
+    public List<Slot> findByAddressList(List<Integer> addrList) {
+        return slotMapper.selectByAddressList(addrList);
+    }
 }

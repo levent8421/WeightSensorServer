@@ -829,9 +829,4 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             throw new RuntimeException("Cannot found sensor");
         }
     }
-
-    @Override
-    public void enableOrDisableSlot(Integer connectionId, Integer address) {
-
-    }
 }

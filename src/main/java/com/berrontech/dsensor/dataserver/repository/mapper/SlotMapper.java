@@ -78,4 +78,12 @@ public interface SlotMapper extends AbstractMapper<Slot> {
      * @return rows
      */
     int deleteByAddress(@Param("addressList") List<Integer> addressList);
+
+    /**
+     * select slot where slot.address in ()addrList
+     *
+     * @param addrList addrList
+     * @return slots
+     */
+    List<Slot> selectByAddressList(@Param("addrList") List<Integer> addrList);
 }

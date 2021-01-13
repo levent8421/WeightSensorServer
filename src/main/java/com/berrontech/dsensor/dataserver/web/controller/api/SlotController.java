@@ -1,18 +1,23 @@
 package com.berrontech.dsensor.dataserver.web.controller.api;
 
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
+import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
+import com.berrontech.dsensor.dataserver.common.util.SlotGroupUtils;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
+import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.CompensationStateParam;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.web.vo.ResetSlotSensorsParam;
 import com.berrontech.dsensor.dataserver.web.vo.SlotMergeParam;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
+import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
@@ -44,14 +49,20 @@ public class SlotController extends AbstractEntityController<Slot> {
     private final SlotService slotService;
     private final WeightController weightController;
     private final WeightSensorService weightSensorService;
+    private final WeightDataHolder weightDataHolder;
+    private final WeightNotifier weightNotifier;
 
     public SlotController(SlotService slotService,
                           WeightController weightController,
-                          WeightSensorService weightSensorService) {
+                          WeightSensorService weightSensorService,
+                          WeightDataHolder weightDataHolder,
+                          WeightNotifier weightNotifier) {
         super(slotService);
         this.slotService = slotService;
         this.weightController = weightController;
         this.weightSensorService = weightSensorService;
+        this.weightDataHolder = weightDataHolder;
+        this.weightNotifier = weightNotifier;
     }
 
     /**
@@ -256,6 +267,7 @@ public class SlotController extends AbstractEntityController<Slot> {
         checkMergeSlotAddress(slots);
         checkMergeSlotSku(slots);
         final int sensorNum = slotService.mergeSlots(slots, weightSensorService);
+        weightNotifier.notifySlotMerged(slots);
         return GeneralResult.ok(sensorNum);
     }
 
@@ -307,8 +319,19 @@ public class SlotController extends AbstractEntityController<Slot> {
     public GeneralResult<Integer> resetSlotSensors(@RequestBody ResetSlotSensorsParam param) {
         notNull(param, BadRequestException.class, "no Params");
         notEmpty(param.getSlotIds(), BadRequestException.class, "No Slot IDs!");
-        final int sensorNum = weightSensorService.resetSlotIdBySlotIds(param.getSlotIds());
+        final List<Integer> slotIds = param.getSlotIds();
+        doUnmergedNotify(slotIds);
+        final int sensorNum = weightSensorService.resetSlotIdBySlotIds(slotIds);
         return GeneralResult.ok(sensorNum);
+    }
+
+    private void doUnmergedNotify(List<Integer> slotIds) {
+        final List<WeightSensor> sensorsWithSlot = weightSensorService.findBySlotIdsWithSlot(slotIds);
+        final List<Slot> slots = SlotGroupUtils.asSlotSensorsObjects(sensorsWithSlot);
+        final List<List<Slot>> groups = SlotGroupUtils.asSlotGroups(slots, slotService);
+        for (List<Slot> group : groups) {
+            weightNotifier.notifySlotUnmerged(group);
+        }
     }
 
     /**
@@ -318,18 +341,15 @@ public class SlotController extends AbstractEntityController<Slot> {
      * @return GR
      */
     @PostMapping("/{id}/_toggle-enable")
-    public GeneralResult<Void> toggleSlotEnableState(@PathVariable("id") Integer id) {
-        final List<WeightSensor> sensors = weightSensorService.findBySlot(id);
-        if (sensors == null || sensors.size() <= 0) {
-            throw new BadRequestException("货道不存在或被合并！");
+    public GeneralResult<Slot> toggleSlotEnableState(@PathVariable("id") Integer id) {
+        final Slot slot = slotService.require(id);
+        final MemorySlot memorySlot = weightDataHolder.getSlotTable().get(slot.getSlotNo());
+        final String slotNo = slot.getSlotNo();
+        if (Objects.equals(memorySlot.getState(), AbstractDevice485.STATE_DISABLE)) {
+            weightController.onSlotStateChanged(slotNo, AbstractDevice485.STATE_ONLINE);
+        } else {
+            weightController.onSlotStateChanged(slotNo, AbstractDevice485.STATE_DISABLE);
         }
-        WeightSensor minSensor = sensors.get(0);
-        for (WeightSensor sensor : sensors) {
-            if (sensor.getAddress() < minSensor.getAddress()) {
-                minSensor = sensor;
-            }
-        }
-        weightController.enableOrDisableSlot(minSensor.getConnectionId(), minSensor.getAddress());
-        return GeneralResult.ok();
+        return GeneralResult.ok(slot);
     }
 }

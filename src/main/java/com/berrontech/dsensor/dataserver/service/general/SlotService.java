@@ -113,4 +113,12 @@ public interface SlotService extends AbstractService<Slot> {
      * @return 合并传感器数量
      */
     int mergeSlots(List<Slot> slots, WeightSensorService weightSensorService);
+
+    /**
+     * Find slot by addr list
+     *
+     * @param addrList addrList
+     * @return slots
+     */
+    List<Slot> findByAddressList(List<Integer> addrList);
 }

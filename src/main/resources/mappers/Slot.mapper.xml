@@ -83,4 +83,22 @@
             #{address}
         </foreach>
     </update>
+    <select id="selectByAddressList" resultMap="rm_base">
+        <include refid="select"/>
+        and
+        <choose>
+            <when test="addrList.size==0">
+                1=2
+            </when>
+            <when test="addrList.size==1">
+                s.address=#{addrList[0]}
+            </when>
+            <otherwise>
+                s.address in
+                <foreach collection="addrList" item="slotId" open="(" separator="," close=")">
+                    #{slotId}
+                </foreach>
+            </otherwise>
+        </choose>
+    </select>
 </mapper>

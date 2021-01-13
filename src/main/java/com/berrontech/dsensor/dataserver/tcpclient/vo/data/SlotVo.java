@@ -24,6 +24,7 @@ public class SlotVo {
         vo.setNo(slot.getSlotNo());
         vo.setHasElabel(slot.getHasElabel());
         vo.setState(AbstractDevice485.getStateString(slot.getState()));
+        vo.setStateCode(SlotState.asStateCode(vo.getState()));
         return vo;
     }
 
@@ -40,8 +41,10 @@ public class SlotVo {
     private Integer id;
     private String no;
     private String state;
+    private Integer stateCode;
     private Boolean hasElabel;
     private String eLabelState;
+    private Integer eLabelStateCode;
     private SkuVo sku;
 
     private WeightDataVo data;

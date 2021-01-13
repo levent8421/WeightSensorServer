@@ -21,10 +21,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
-import com.berrontech.dsensor.dataserver.tcpclient.vo.data.Heartbeat;
-import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SkuVo;
-import com.berrontech.dsensor.dataserver.tcpclient.vo.data.SlotVo;
-import com.berrontech.dsensor.dataserver.tcpclient.vo.data.WeightDataVo;
+import com.berrontech.dsensor.dataserver.tcpclient.vo.data.*;
 import com.berrontech.dsensor.dataserver.weight.holder.*;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +66,14 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
      * Action 上报货道列表
      */
     private static final String ACTION_BALANCE_LIST = "notify.balance.list";
+    /**
+     * 货道合并通知
+     */
+    private static final String ACTION_BALANCE_MERGED = "notify.balance.merged";
+    /**
+     * 货道拆分通知
+     */
+    private static final String ACTION_BALANCE_UNMERGED = "notify.balance.unmerged";
     /**
      * API客户端引用
      */
@@ -385,5 +390,19 @@ public class SimpleWeightNotifier implements WeightNotifier, MessageListener, Ap
             slotService.updateState(slot.getId(), slot.getState());
         }
         stateChangedEventBuffer.push(SlotStateUtils.filterNotifySlots(slots), MemorySlot::getSlotNo);
+    }
+
+    @Override
+    public void notifySlotMerged(List<Slot> slots) {
+        final SlotGroup slotGroup = SlotGroup.of(slots);
+        final Message message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_BALANCE_MERGED, slotGroup);
+        sendMessage(message);
+    }
+
+    @Override
+    public void notifySlotUnmerged(List<Slot> slots) {
+        final SlotGroup slotGroup = SlotGroup.of(slots);
+        final Message message = MessageUtils.asMessage(Message.TYPE_REQUEST, nextSeqNo(), ACTION_BALANCE_UNMERGED, slotGroup);
+        sendMessage(message);
     }
 }

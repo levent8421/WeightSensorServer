@@ -6,6 +6,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumidity
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryWeightSensor;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Create By Levent8421
@@ -89,4 +90,18 @@ public interface WeightNotifier {
      * @param slots memory slot collection
      */
     void notifySlotStateChanged(Collection<MemorySlot> slots);
+
+    /**
+     * 货道合并通知
+     *
+     * @param slots 货道列表
+     */
+    void notifySlotMerged(List<Slot> slots);
+
+    /**
+     * 货道拆分通知
+     *
+     * @param slots 货道列表
+     */
+    void notifySlotUnmerged(List<Slot> slots);
 }

@@ -177,4 +177,20 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @return 传感器数量
      */
     int getSensorCountBySlot(Integer slotId);
+
+    /**
+     * Find sensors by slotIds and fetch slot
+     *
+     * @param slotIds slotIds
+     * @return sensors
+     */
+    List<WeightSensor> findBySlotIdsWithSlot(List<Integer> slotIds);
+
+    /**
+     * Find sensor by slotIds
+     *
+     * @param slotIds slotIds
+     * @return sensors
+     */
+    List<WeightSensor> findBySlotIds(List<Integer> slotIds);
 }
