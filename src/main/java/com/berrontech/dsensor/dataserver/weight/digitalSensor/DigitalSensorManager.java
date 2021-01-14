@@ -373,9 +373,7 @@ public class DigitalSensorManager {
                         try {
                             if (Objects.equals(s.getSubGroup(), slotNo)) {
                                 found = true;
-                                s.SetEnabled(true);
-                            } else {
-                                s.SetEnabled(false);
+                                s.SetEnabled(enable);
                             }
                         } catch (Exception ex) {
                             log.warn("#{} EnableSlot({}):{} failed: {}", s.getParams().getAddress(), slotNo, enable, ex.getMessage());
