@@ -364,19 +364,19 @@ public class DigitalSensorManager {
     }
 
 
-    public boolean EnableSlot(Collection<String> slotNo, boolean enable) {
+    public boolean EnableSlot(Collection<String> slotNos, boolean enable) {
         boolean found = false;
         if (Groups.size() > 0) {
             for (DigitalSensorGroup g : Groups) {
                 for (DigitalSensorItem s : g.getSensors()) {
                     synchronized (s.getDriver().getLock()) {
                         try {
-                            if (Objects.equals(s.getSubGroup(), slotNo)) {
+                            if (slotNos.contains(s.getSubGroup())) {
                                 found = true;
                                 s.SetEnabled(enable);
                             }
                         } catch (Exception ex) {
-                            log.warn("#{} EnableSlot({}):{} failed: {}", s.getParams().getAddress(), slotNo, enable, ex.getMessage());
+                            log.warn("#{} EnableSlot({}):{} failed: {}", s.getParams().getAddress(), slotNos, enable, ex.getMessage());
                         }
                     }
                 }

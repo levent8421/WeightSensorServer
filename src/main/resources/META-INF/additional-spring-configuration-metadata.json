@@ -9,6 +9,11 @@
       "name": "db-upgrade.target_db_version",
       "type": "java.lang.String",
       "description": "Description for db-upgrade.target_db_version."
+    },
+    {
+      "name": "db-upgrade.target_db_verssion",
+      "type": "java.lang.String",
+      "description": "Description for db-upgrade.target_db_verssion."
     }
   ]
 }

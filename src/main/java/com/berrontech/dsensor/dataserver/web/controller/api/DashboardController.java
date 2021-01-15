@@ -12,12 +12,12 @@ import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumiditySensor;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
-import lombok.val;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -92,17 +92,17 @@ public class DashboardController extends AbstractController {
      */
     @GetMapping("/system-infos")
     public GeneralResult<Map<String, Object>> systemInfos() {
-        val res = new HashMap<String, Object>(16);
-        final ApplicationConfig dbVersion = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION);
-        final ApplicationConfig dbVersionName = applicationConfigService.getConfig(ApplicationConfig.DB_VERSION_NAME);
+        final Map<String, Object> res = new HashMap<>(16);
         final String appVersion = applicationConfiguration.getAppVersion();
-
-        res.put("dbVersion", dbVersion.getValue());
-        res.put("dbVersionName", dbVersionName.getValue());
         res.put("appVersion", appVersion);
         res.put("appName", ApplicationConstants.Context.APP_NAME);
         res.put("pid", ProcessUtils.getProcessId());
         res.put("libPath", serialConfiguration.getLibName());
+
+        final List<ApplicationConfig> configs = applicationConfigService.all();
+        for (ApplicationConfig config : configs) {
+            res.put(config.getName(), config.getValue());
+        }
         return GeneralResult.ok(res);
     }
 
