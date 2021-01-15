@@ -204,4 +204,12 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return slots
      */
     List<WeightSensor> selectByAddressList(@Param("addrList") List<Integer> addrList);
+
+    /**
+     * Select sensor, sensor.slot where sensor.slot_id=slotId
+     *
+     * @param slotId slotId
+     * @return sensors
+     */
+    List<WeightSensor> selectBySlotIdWithSlot(@Param("slotId") Integer slotId);
 }

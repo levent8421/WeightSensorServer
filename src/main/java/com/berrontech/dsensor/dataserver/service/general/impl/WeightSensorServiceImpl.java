@@ -278,4 +278,9 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     public List<WeightSensor> findBySlotIds(List<Integer> slotIds) {
         return weightSensorMapper.selectBySlotIds(slotIds);
     }
+
+    @Override
+    public List<WeightSensor> findBySlotIdWithSlot(Integer slotId) {
+        return weightSensorMapper.selectBySlotIdWithSlot(slotId);
+    }
 }

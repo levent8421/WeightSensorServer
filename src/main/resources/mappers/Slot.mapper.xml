@@ -101,4 +101,10 @@
             </otherwise>
         </choose>
     </select>
+    <select id="selectSlotGroupByPrimarySlot" resultMap="rm_base">
+        select
+        <include refid="columns"/>
+        from t_slot as s left outer join t_weight_sensor as ws on s.address=ws.address where (s.deleted=false and
+        ws.deleted=false) and ws.slot_id=#{id}
+    </select>
 </mapper>

@@ -86,4 +86,12 @@ public interface SlotMapper extends AbstractMapper<Slot> {
      * @return slots
      */
     List<Slot> selectByAddressList(@Param("addrList") List<Integer> addrList);
+
+    /**
+     * select sub slots and primary slot by primary slot id
+     *
+     * @param id primary slot id
+     * @return slots
+     */
+    List<Slot> selectSlotGroupByPrimarySlot(@Param("id") Integer id);
 }

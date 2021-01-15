@@ -121,4 +121,12 @@ public interface SlotService extends AbstractService<Slot> {
      * @return slots
      */
     List<Slot> findByAddressList(List<Integer> addrList);
+
+    /**
+     * find slot group by primary slot
+     *
+     * @param id primary slot id
+     * @return slots
+     */
+    List<Slot> findSlotGroupByPrimarySlot(Integer id);
 }

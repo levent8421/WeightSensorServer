@@ -194,4 +194,9 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     public List<Slot> findByAddressList(List<Integer> addrList) {
         return slotMapper.selectByAddressList(addrList);
     }
+
+    @Override
+    public List<Slot> findSlotGroupByPrimarySlot(Integer id) {
+        return slotMapper.selectSlotGroupByPrimarySlot(id);
+    }
 }

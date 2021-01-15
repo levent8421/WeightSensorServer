@@ -263,12 +263,38 @@ public class SlotController extends AbstractEntityController<Slot> {
         if (param.getSlotIds().size() < MIN_MERGE_SLOTS) {
             throw new BadRequestException("Require 2 or more slots!");
         }
-        final List<Slot> slots = slotService.findByIds(param.getSlotIds());
+        final List<Slot> paramSlots = slotService.findByIds(param.getSlotIds());
+        final List<Slot> slots = normalizeMergeSlot(paramSlots);
+        normalizeMergeParamsLog(paramSlots, slots);
         checkMergeSlotAddress(slots);
         checkMergeSlotSku(slots);
         final int sensorNum = slotService.mergeSlots(slots, weightSensorService);
         weightNotifier.notifySlotMerged(slots);
         return GeneralResult.ok(sensorNum);
+    }
+
+    private void normalizeMergeParamsLog(List<Slot> params, List<Slot> slots) {
+        log.info("Normalize merge slot params [{}] to [{}]",
+                params.stream().map(Slot::getSlotNo).collect(Collectors.toList()),
+                slots.stream().map(Slot::getSlotNo).collect(Collectors.toList()));
+    }
+
+    private List<Slot> normalizeMergeSlot(List<Slot> slotList) {
+        Slot primarySlot = slotList.get(0);
+        for (Slot slot : slotList) {
+            if (slot.getAddress() < primarySlot.getAddress()) {
+                primarySlot = slot;
+            }
+        }
+        final List<Slot> allSlots = slotService.findSlotGroupByPrimarySlot(primarySlot.getId());
+        final Map<Integer, Slot> slots = new HashMap<>(16);
+        for (Slot slot : slotList) {
+            slots.put(slot.getId(), slot);
+        }
+        for (Slot slot : allSlots) {
+            slots.put(slot.getId(), slot);
+        }
+        return new ArrayList<>(slots.values());
     }
 
     private void checkMergeSlotSku(List<Slot> slots) {

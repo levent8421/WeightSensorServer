@@ -227,4 +227,11 @@
             </otherwise>
         </choose>
     </select>
+    <select id="selectBySlotIdWithSlot" resultMap="rm_with_all">
+        select
+        <include refid="columns"/>,
+        <include refid="com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper.columns"/>
+        from t_weight_sensor as ws left outer join t_slot as s on ws.slot_id=s.id where (s.deleted=false and
+        ws.deleted=false) and ws.slot_id=#{slotId}
+    </select>
 </mapper>
