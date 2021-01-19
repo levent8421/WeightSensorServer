@@ -251,7 +251,7 @@ public class SlotController extends AbstractEntityController<Slot> {
     }
 
     /**
-     * 个兵货道
+     * 合并货道
      *
      * @param param params
      * @return GR
@@ -264,7 +264,11 @@ public class SlotController extends AbstractEntityController<Slot> {
             throw new BadRequestException("Require 2 or more slots!");
         }
         final List<Slot> paramSlots = slotService.findByIds(param.getSlotIds());
-        final List<Slot> slots = normalizeMergeSlot(paramSlots);
+        final List<Slot> slots = new ArrayList<>();
+        final boolean changed = normalizeMergeSlot(paramSlots, slots);
+        if (!changed) {
+            return GeneralResult.badRequest("货道已经被合并，无需再次合并！", 0);
+        }
         normalizeMergeParamsLog(paramSlots, slots);
         checkMergeSlotAddress(slots);
         checkMergeSlotSku(slots);
@@ -279,7 +283,7 @@ public class SlotController extends AbstractEntityController<Slot> {
                 slots.stream().map(Slot::getSlotNo).collect(Collectors.toList()));
     }
 
-    private List<Slot> normalizeMergeSlot(List<Slot> slotList) {
+    private boolean normalizeMergeSlot(List<Slot> slotList, List<Slot> dest) {
         Slot primarySlot = slotList.get(0);
         for (Slot slot : slotList) {
             if (slot.getAddress() < primarySlot.getAddress()) {
@@ -288,13 +292,18 @@ public class SlotController extends AbstractEntityController<Slot> {
         }
         final List<Slot> allSlots = slotService.findSlotGroupByPrimarySlot(primarySlot.getId());
         final Map<Integer, Slot> slots = new HashMap<>(16);
-        for (Slot slot : slotList) {
-            slots.put(slot.getId(), slot);
-        }
         for (Slot slot : allSlots) {
             slots.put(slot.getId(), slot);
         }
-        return new ArrayList<>(slots.values());
+        boolean changed = false;
+        for (Slot slot : slotList) {
+            if (!slots.containsKey(slot.getId())) {
+                changed = true;
+            }
+            slots.put(slot.getId(), slot);
+        }
+        dest.addAll(slots.values());
+        return changed;
     }
 
     private void checkMergeSlotSku(List<Slot> slots) {
