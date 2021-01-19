@@ -495,6 +495,7 @@ public class DigitalSensorItem {
                         Values.setHighGross(-Values.getHighGross());
                     }
                     Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 14, 4));
+                    Values.UpdateDisplayWeight(getParams().getFactoryUnit(), getParams().getSafeDisplayUnit());
                     Values.CheckStatus(packet.Content[1], Params.getCapacity(), Params.getIncrement());
                     rst = true;
 
@@ -572,6 +573,7 @@ public class DigitalSensorItem {
                         stableMark = DigitalSensorValues.StableMark;
                     }
                     /////////////////////////////////////
+                    Values.UpdateDisplayWeight(getParams().getFactoryUnit(), getParams().getSafeDisplayUnit());
                     Values.CheckStatus(stableMark, Params.getCapacity(), Params.getIncrement());
                     if (Passenger.getMaterial().getAPW() > 0) {
                         // apw from passenger will replace local apw

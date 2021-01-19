@@ -27,7 +27,7 @@ server:
 db-upgrade:
   db_init_sql_file: db_init.sql
   script-path: classpath:/db_script
-  target_db_verssion: 11
+  target_db_verssion: 12
 serial:
   lib-name: native_lib/libserial_port
 app:

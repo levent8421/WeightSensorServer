@@ -84,6 +84,7 @@ public class DigitalSensorUtils {
                         params.setBackupSensorSn(sen.getSensorSn());
                         params.setBackupELabelSn(sen.getElabelSn());
                         params.setNegativeMode(StringUtils.isNotBlank(sen.getConfigStr()));
+                        params.setAutoDisplayUnit(weightDataHolder.getAutoDisplayUnit());
                         sensor.getValues().setZeroOffset(sen.getZeroReference() == null ? 0 : sen.getZeroReference().floatValue());
                         if (sen.getHasElabel()) {
 //                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
