@@ -54,4 +54,8 @@ public class WeightDataHolder implements Serializable {
      * 软滤波等级
      */
     private Integer softFilterLevel;
+    /**
+     * Auto Display Unit
+     */
+    private Boolean autoDisplayUnit = false;
 }

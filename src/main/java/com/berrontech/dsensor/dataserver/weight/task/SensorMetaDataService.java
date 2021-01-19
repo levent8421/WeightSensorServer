@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.*;
+import com.berrontech.dsensor.dataserver.common.util.BooleanUtils;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.SlotStateUtils;
 import com.berrontech.dsensor.dataserver.service.general.*;
@@ -87,6 +88,7 @@ public class SensorMetaDataService implements ThreadFactory {
             weightDataHolder.setTemperatureHumiditySensors(temperatureHumiditySensors);
 
             this.loadSoftFilterLevel();
+            this.loadAutoDisplayUnit();
 
             this.buildMemorySlotTable();
             this.buildTemperatureHumiditySensorTable();
@@ -96,6 +98,14 @@ public class SensorMetaDataService implements ThreadFactory {
         } catch (Exception e) {
             log.error("Error on reload sensor meta data!", e);
         }
+    }
+
+    private void loadAutoDisplayUnit() {
+        ApplicationConfig config = applicationConfigService.getConfig(ApplicationConfig.AUTO_DISPLAY_UNIT);
+        if (config == null) {
+            config = applicationConfigService.setConfig(ApplicationConfig.AUTO_DISPLAY_UNIT, BooleanUtils.FALSE_STR);
+        }
+        weightDataHolder.setAutoDisplayUnit(BooleanUtils.asBoolean(config.getValue()));
     }
 
     private void loadSoftFilterLevel() {

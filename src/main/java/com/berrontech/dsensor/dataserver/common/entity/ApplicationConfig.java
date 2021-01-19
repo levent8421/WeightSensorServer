@@ -41,6 +41,10 @@ public class ApplicationConfig extends AbstractEntity {
      */
     public static final String STATION_ID = "application.station_id";
     /**
+     * Auto Display unit
+     */
+    public static final String AUTO_DISPLAY_UNIT = "application.display.auto_unit";
+    /**
      * 配置名称
      */
     @Column(name = "name", nullable = false)
