@@ -1,6 +1,7 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
 
+import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.weight.utils.KeyValueList;
 import lombok.Data;
 
@@ -21,6 +22,9 @@ public class DigitalSensorParams {
     private double Point2Weight = 10;
     private BigDecimal Increment = new BigDecimal("0.01");
     private BigDecimal Capacity = BigDecimal.valueOf(10E10);
+    private String FactoryUnit = "kg";
+    private String DisplayUnit = null;
+    private boolean AutoDisplayUnit = true;
     private double GeoFactor = 1;
     private double StableSpeed = 0.5;
     private double ZeroCapture = 0.5;
@@ -45,13 +49,27 @@ public class DigitalSensorParams {
     public int ELabelModel = EELabelModel.None;
     private boolean Enabled = true;
 
-    public static int toELabelAddress(int address)
-    {
+
+    public String getSafeDisplayUnit() {
+        if (AutoDisplayUnit && TextUtils.isTrimedEmpty(DisplayUnit)) {
+            if (Capacity != null && Capacity.compareTo(BigDecimal.ONE) < 0) {
+                return "g";
+            } else if (Increment != null && Increment.compareTo(BigDecimal.TEN) >= 0) {
+                return "t";
+            } else {
+                return "kg";
+            }
+        }
+        return DisplayUnit == null ? FactoryUnit : DisplayUnit;
+    }
+
+    public static int toELabelAddress(int address) {
         if (address < DataPacket.AddressELabelStart) {
             return address + DataPacket.AddressELabelStart;
         }
         return address;
     }
+
     public int getELabelAddress() {
         return toELabelAddress(Address);
     }
@@ -153,12 +171,10 @@ public class DigitalSensorParams {
         return '?';
     }
 
-    private static String IntToCh(int val, int len)
-    {
+    private static String IntToCh(int val, int len) {
         StringBuilder sb = new StringBuilder();
         int max = 10 + 16;
-        while (len-- > 0)
-        {
+        while (len-- > 0) {
             sb.insert(0, IntToCh(val % max));
             val /= max;
         }

@@ -456,7 +456,7 @@ public class DigitalSensorItem {
         }
     }
 
-    public void UpdateHighResolution(boolean skipUnStable) throws Exception {
+    public boolean UpdateHighResolution(boolean skipUnStable) throws Exception {
         try {
             DataPacket packet = DataPacket.BuildGetHighResolution(Params.getAddress());
             synchronized (Driver.getLock()) {
@@ -464,6 +464,13 @@ public class DigitalSensorItem {
             }
             SetCommResult(true);
             byte counter = packet.Content[0];
+            boolean needLoadCap = false;
+            boolean rst = false;
+
+            if (HighResCounter == 0 || counter == 0) {
+                needLoadCap = true;
+            }
+
             if (counter == 0) {
                 if (HighResCounter == 0) {
                     if (isPowerUpZero()) {
@@ -489,11 +496,18 @@ public class DigitalSensorItem {
                     }
                     Values.setZeroOffset(ByteHelper.bytesToFloat(packet.Content, 14, 4));
                     Values.CheckStatus(packet.Content[1], Params.getCapacity(), Params.getIncrement());
+                    rst = true;
 
                     TryNotifyListener();
                 }
+                if (needLoadCap)
+                {
+                    Params.setCapacity(GetCapacity());
+                    Params.setIncrement(GetIncrement());
+                }
             }
             //log.debug("#{} UpdateHighResolution Done", Params.getAddress());
+            return rst;
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -511,7 +525,20 @@ public class DigitalSensorItem {
 //            ticks = System.currentTimeMillis() - ticks;
 //            log.debug("#{} UpdateHighResolution2 done, usedMs={}", Params.getAddress(), ticks);
             SetCommResult(true);
+
+            if (HighResCounter == 0)
+            {
+                UpdateParams();
+            }
+
             byte counter = packet.Content[0];
+            boolean needLoadCap = false;
+            boolean rst = false;
+
+            if (HighResCounter == 0 || counter == 0) {
+                needLoadCap = true;
+            }
+
             if (counter == 0) {
                 if (HighResCounter == 0) {
                     if (isPowerUpZero()) {
@@ -523,12 +550,10 @@ public class DigitalSensorItem {
                         SetZeroOffset(false, Values.getZeroOffset());
                     }
                 }
-                return false;
             } else {
                 boolean stable = DigitalSensorValues.isStableMark(packet.Content[1]);
                 if (!stable && skipUnStable) {
                     // skip unstable values
-                    return false;
                 } else {
                     HighResCounter = counter;
                     float highgross = Values.getHighGross();
@@ -559,10 +584,16 @@ public class DigitalSensorItem {
                         setCountError(0);
                     }
                     TryNotifyListener();
-                    return true;
+                    rst = true;
+                }
+                if (needLoadCap)
+                {
+                    Params.setCapacity(GetCapacity());
+                    Params.setIncrement(GetIncrement());
                 }
             }
             //log.debug("#{} UpdateHighResolution2 Done", Params.getAddress());
+            return rst;
         } catch (Exception ex) {
             SetCommResult(false);
             throw ex;
@@ -817,7 +848,8 @@ public class DigitalSensorItem {
             number = Passenger.getMaterial().getNumber();
             name = Passenger.getMaterial().getName();
             bin = getSubGroup();
-            wgt = Values.getNetWeight() + " " + Values.getUnit();
+            //wgt = Values.getNetWeight() + " " + Values.getUnit();
+            wgt = Values.getDisplayNetWeight() + " " + Params.getSafeDisplayUnit();
             //pcs = String.valueOf(Values.getPieceCount());
             pcs = String.format("%d", LastNotifyPCS);
             acc = LastNotifyAccuracy;
@@ -825,7 +857,8 @@ public class DigitalSensorItem {
             number = " ";
             name = " ";
             bin = getSubGroup();
-            wgt = Values.getNetWeight() + " " + Values.getUnit();
+            //wgt = Values.getNetWeight() + " " + Values.getUnit();
+            wgt = Values.getDisplayNetWeight() + " " + Params.getSafeDisplayUnit();
             pcs = " ";
             acc = true;
         }

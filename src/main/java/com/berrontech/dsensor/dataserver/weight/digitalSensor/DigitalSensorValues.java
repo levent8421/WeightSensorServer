@@ -1,9 +1,11 @@
 package com.berrontech.dsensor.dataserver.weight.digitalSensor;
 
+import com.berrontech.dsensor.dataserver.weight.utils.helper.WeightHelper;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 
 @Data
 public class DigitalSensorValues {
@@ -96,6 +98,17 @@ public class DigitalSensorValues {
 
     public BigDecimal getNetWeight() {
         return getGrossWeight().subtract(getTareWeight());
+    }
+
+    private BigDecimal DisplayNetWeight;
+
+    public void UpdateDisplayWeight(String factoryUnit, String displayUnit)
+    {
+        if (Objects.equals(displayUnit, factoryUnit)) {
+            DisplayNetWeight = getNetWeight();
+        } else {
+            DisplayNetWeight = WeightHelper.toUnit(getNetWeight(), factoryUnit, displayUnit);
+        }
     }
 
 
