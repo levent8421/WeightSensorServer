@@ -28,7 +28,7 @@ public class ApiClientCheckerTask {
         this.weightNotifier = weightNotifier;
     }
 
-    @Scheduled(fixedRate = 3000)
+//    @Scheduled(fixedRate = 3000)
     public void check() {
         if (!apiClient.isConnected()) {
             try {

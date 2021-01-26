@@ -12,7 +12,7 @@ import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageLogger;
-import com.berrontech.dsensor.dataserver.tcpclient.client.tcp.ConnectionConfiguration;
+import com.berrontech.dsensor.dataserver.tcpclient.client.ConnectionConfiguration;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 import com.berrontech.dsensor.dataserver.upgrade.DatabaseUpgrader;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractController;

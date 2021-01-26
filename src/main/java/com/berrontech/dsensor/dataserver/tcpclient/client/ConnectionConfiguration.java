@@ -1,4 +1,4 @@
-package com.berrontech.dsensor.dataserver.tcpclient.client.tcp;
+package com.berrontech.dsensor.dataserver.tcpclient.client;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

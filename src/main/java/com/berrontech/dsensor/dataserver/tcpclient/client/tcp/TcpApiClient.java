@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.tcpclient.client.tcp;
 import com.berrontech.dsensor.dataserver.common.context.ApplicationConstants;
 import com.berrontech.dsensor.dataserver.tcpclient.action.mapping.HandlerAutoMapping;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
+import com.berrontech.dsensor.dataserver.tcpclient.client.ConnectionConfiguration;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListener;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageLogger;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
@@ -13,6 +14,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.vo.Payload;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -39,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @Slf4j
+@ConditionalOnMissingBean(ApiClient.class)
 public class TcpApiClient implements ApiClient, DisposableBean,
         MessageReadingTask.MessageReadListener,
         MessageSendingTask.MessageSendListener,
