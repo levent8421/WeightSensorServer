@@ -1,6 +1,6 @@
 package com.berrontech.dsensor.dataserver.tcpclient.client;
 
-import com.berrontech.dsensor.dataserver.tcpclient.client.tcp.MessageInfo;
+import com.berrontech.dsensor.dataserver.tcpclient.client.impl.MessageInfo;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
 
 /**

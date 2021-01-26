@@ -1,9 +1,7 @@
 package com.berrontech.dsensor.dataserver.tcpclient.client.nio;
 
 import com.berrontech.dsensor.dataserver.tcpclient.client.nio.handler.ChannelHandlerMapping;
-import com.berrontech.dsensor.dataserver.tcpclient.client.nio.handler.ChannelStatusHandler;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import lombok.Data;
@@ -37,11 +35,11 @@ public class ClientChannelInitializer extends ChannelInitializer implements Appl
     @Data
     private static class HandlerInfo {
         private int order;
-        private ChannelHandler handler;
+        private HandlerFactory handler;
     }
 
     private ApplicationContext applicationContext;
-    private List<ChannelHandler> handlerInfos;
+    private List<HandlerFactory> handlerInfos;
 
     @PostConstruct
     public void initHandler() {
@@ -50,13 +48,13 @@ public class ClientChannelInitializer extends ChannelInitializer implements Appl
         for (Map.Entry<String, Object> entry : beans.entrySet()) {
             log.debug("Registering handler [{}]", entry.getKey());
             final Object handlerObject = entry.getValue();
-            if (!(handlerObject instanceof ChannelHandler)) {
+            if (!(handlerObject instanceof HandlerFactory)) {
                 throw new IllegalArgumentException("Can not convert [" + handlerObject.getClass().getName() + "] to ChannelHandler!");
             }
-            final ChannelHandler handler = (ChannelHandler) handlerObject;
+            final HandlerFactory factory = (HandlerFactory) handlerObject;
             final HandlerInfo handlerInfo = new HandlerInfo();
-            handlerInfo.setHandler(handler);
-            final int order = handler.getClass().getAnnotation(ChannelHandlerMapping.class).order();
+            handlerInfo.setHandler(factory);
+            final int order = factory.getOrder();
             handlerInfo.setOrder(order);
             handlerInfos.add(handlerInfo);
         }
@@ -67,8 +65,8 @@ public class ClientChannelInitializer extends ChannelInitializer implements Appl
     @Override
     protected void initChannel(Channel channel) throws Exception {
         final ChannelPipeline pipeline = channel.pipeline();
-        for (ChannelHandler handler : handlerInfos) {
-            pipeline.addLast(handler);
+        for (HandlerFactory factory : handlerInfos) {
+            pipeline.addLast(factory.createHandler());
         }
     }
 

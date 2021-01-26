@@ -2,6 +2,9 @@ package com.berrontech.dsensor.dataserver.tcpclient.client.nio;
 
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListener;
+import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListenerManager;
+import com.berrontech.dsensor.dataserver.tcpclient.client.MessageMetadata;
+import com.berrontech.dsensor.dataserver.tcpclient.client.impl.MessageInfo;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.TcpConnectionException;
 import com.berrontech.dsensor.dataserver.tcpclient.vo.Message;
@@ -11,7 +14,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -33,11 +35,14 @@ public class ChannelBasedApiClient implements ApiClient {
     private EventLoopGroup eventLoopGroup;
     private final ClientChannelInitializer channelInitializer;
     private final ChannelStatus channelStatus;
+    private final MessageListenerManager messageListenerManager;
 
     public ChannelBasedApiClient(ClientChannelInitializer channelInitializer,
-                                 ChannelStatus channelStatus) {
+                                 ChannelStatus channelStatus,
+                                 MessageListenerManager messageListenerManager) {
         this.channelInitializer = channelInitializer;
         this.channelStatus = channelStatus;
+        this.messageListenerManager = messageListenerManager;
     }
 
     private void nettyShutdown() {
@@ -64,11 +69,11 @@ public class ChannelBasedApiClient implements ApiClient {
     }
 
     @Override
-    public void connect() throws TcpConnectionException {
+    public void connect() {
         nettyShutdown();
         final Bootstrap bootstrap = buildServerBootstrap();
         try {
-            bootstrap.connect("192.168.1.129", 8888).sync();
+            bootstrap.connect(channelStatus.getHost(), channelStatus.getPort()).sync();
         } catch (InterruptedException e) {
             log.error("Error on create socket connection!", e);
         }
@@ -81,31 +86,23 @@ public class ChannelBasedApiClient implements ApiClient {
                 .channel(NioSocketChannel.class)
                 .handler(channelInitializer);
         return bootstrap;
-
     }
 
     @Override
     public void send(Message message, int timeout, MessageListener listener) throws MessageException {
-
+        final ChannelHandlerContext context = channelStatus.getChannelHandlerContext();
+        if (context == null) {
+            log.warn("Ignore message [{}/{}/{}]", message.getType(), message.getAction(), message.getSeqNo());
+            final MessageInfo messageInfo = new MessageInfo(this, message, listener, timeout, MessageMetadata.MAX_RETRY);
+            listener.onError(messageInfo, new IllegalStateException("Connection not connected!"));
+            return;
+        }
+        context.writeAndFlush(message);
+        messageListenerManager.register(this, message, listener, timeout, MessageMetadata.MAX_RETRY);
     }
 
     @Override
     public void disconnect() {
         nettyShutdown();
-    }
-
-    @Override
-    public InputStream getInputStream() throws TcpConnectionException {
-        return null;
-    }
-
-    @Override
-    public OutputStream getOutputStream() throws TcpConnectionException {
-        return null;
-    }
-
-    @Override
-    public void checkTimeout() {
-
     }
 }

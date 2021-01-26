@@ -1,10 +1,10 @@
 package com.berrontech.dsensor.dataserver.tcpclient.client.nio.handler;
 
 import com.berrontech.dsensor.dataserver.tcpclient.client.nio.ChannelStatus;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Create By Levent8421
@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Levent8421
  */
-@ChannelHandlerMapping(order = 1)
 @Slf4j
+@ChannelHandler.Sharable
 public class ChannelStatusHandler extends SimpleChannelInboundHandler {
     private final ChannelStatus status;
 
@@ -43,7 +43,7 @@ public class ChannelStatusHandler extends SimpleChannelInboundHandler {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext channelHandlerContext, Object o) throws Exception {
 
     }
 }

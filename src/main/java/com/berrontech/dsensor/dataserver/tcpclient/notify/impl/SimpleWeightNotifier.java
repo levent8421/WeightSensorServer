@@ -15,7 +15,7 @@ import com.berrontech.dsensor.dataserver.service.general.TemperatureHumiditySens
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.client.ApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListener;
-import com.berrontech.dsensor.dataserver.tcpclient.client.tcp.MessageInfo;
+import com.berrontech.dsensor.dataserver.tcpclient.client.impl.MessageInfo;
 import com.berrontech.dsensor.dataserver.tcpclient.exception.MessageException;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
@@ -27,7 +27,6 @@ import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;

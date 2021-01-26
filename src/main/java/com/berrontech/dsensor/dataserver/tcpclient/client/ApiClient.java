@@ -46,25 +46,4 @@ public interface ApiClient {
      * Disconnect
      */
     void disconnect();
-
-    /**
-     * Get Input Stream
-     *
-     * @return InputStream
-     * @throws TcpConnectionException e
-     */
-    InputStream getInputStream() throws TcpConnectionException;
-
-    /**
-     * Get Output Stream
-     *
-     * @return OutputStream
-     * @throws TcpConnectionException e
-     */
-    OutputStream getOutputStream() throws TcpConnectionException;
-
-    /**
-     * Check Message Timeout
-     */
-    void checkTimeout();
 }
