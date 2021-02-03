@@ -31,6 +31,6 @@ db-upgrade:
 serial:
   lib-name: native_lib/libserial_port
 app:
-  app-version: 0.4.1
+  app-version: 0.3.1
 log-conf:
   log-keep-days: 30

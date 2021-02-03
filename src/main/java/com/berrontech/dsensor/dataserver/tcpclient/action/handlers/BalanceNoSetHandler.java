@@ -89,11 +89,20 @@ public class BalanceNoSetHandler implements ActionHandler {
             final Integer address = entry.getKey();
             final List<Integer> addressList = exists.computeIfAbsent(slotNo, k -> new ArrayList<>());
             addressList.add(address);
-            if (addressList.size() > 1 && params.containsKey(address)) {
-                final String error = String.format("以下地址货道号重复：Duplicate slotNo for address: %s", addressList.toString());
-                failureTable.put(address, error);
-            }
         }
+        exists.entrySet().stream()
+                .filter(e -> e.getValue().size() > 1)
+                .forEach(e -> {
+                    final List<Integer> addressList = e.getValue();
+                    final String error = String.format("以下地址货道号重复：Duplicate slotNo for address: %s", addressList.toString());
+                    log.warn("Duplicate : {}", error);
+                    for (Integer address : e.getValue()) {
+                        if (!params.containsKey(address)) {
+                            continue;
+                        }
+                        failureTable.put(address, error);
+                    }
+                });
         for (Map.Entry<String, List<Integer>> entry : exists.entrySet()) {
             final List<Integer> addressList = entry.getValue();
             if (addressList.size() == 1) {
