@@ -14,6 +14,7 @@ import com.berrontech.dsensor.dataserver.weight.holder.MemoryTemperatureHumidity
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -82,6 +83,30 @@ public class DashboardController extends AbstractController {
         final DashboardData dashboardData = new DashboardData();
         dashboardData.setSlotData(slotData);
         dashboardData.setTemperatureHumidityData(temperatureHumidityData);
+        return GeneralResult.ok(dashboardData);
+    }
+
+    /**
+     * 数据看板界面数据
+     *
+     * @param prefix 货道前缀
+     * @return GR
+     */
+    @GetMapping("/_data-for-prefix")
+    public GeneralResult<DashboardData> fetchDashboardDataByPrefix(@RequestParam("prefix") String prefix) {
+        final Map<String, MemorySlot> slotTable = weightDataHolder.getSlotTable();
+        final Map<String, MemorySlot> res = new HashMap<>(16);
+        synchronized (weightDataHolder) {
+            for (Map.Entry<String, MemorySlot> entry : slotTable.entrySet()) {
+                final String slotNo = entry.getKey();
+                final MemorySlot slot = entry.getValue();
+                if (slotNo.startsWith(prefix)) {
+                    res.put(slotNo, slot);
+                }
+            }
+        }
+        final DashboardData dashboardData = new DashboardData();
+        dashboardData.setSlotData(res);
         return GeneralResult.ok(dashboardData);
     }
 

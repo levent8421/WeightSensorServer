@@ -34,6 +34,11 @@ public class Slot extends AbstractEntity {
     @Column(name = "slot_no", nullable = false)
     private String slotNo;
     /**
+     * 皮重
+     */
+    @Column(name = "tare_value", length = 10, nullable = false)
+    private BigDecimal tareValue;
+    /**
      * SKU 号
      */
     @Column(name = "sku_no")

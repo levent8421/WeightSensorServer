@@ -23,12 +23,13 @@ CREATE TABLE `t_application_config`
 LOCK TABLES `t_application_config` WRITE;
 
 INSERT INTO `t_application_config`
-VALUES (1, 'application.db_version', '11', now(), now(), false),          # for this database version
-       (2, 'application.db_version_name', '0.4.1', now(), now(), false), # db version name
+VALUES (1, 'application.db_version', '13', now(), now(), false),         # for this database version
+       (2, 'application.db_version_name', '0.4.3', now(), now(), false), # db version name
        (3, 'application.ui.enable_tabBar', 'true', now(), now(), false),
        (4, 'weight.soft_filter_level', '0', now(), now(), false),        # enable the Dashboard UI TabBar
        (5, 'extra.page_uri', 'http://56.58.0.1:8081/starbucks-camera/pages/tt.html', now(), now(),
-        false);
+        false),
+       (6, 'application.display.auto_unit', 'true', now(), now(), false);
 
 UNLOCK TABLES;
 
@@ -60,20 +61,21 @@ DROP TABLE IF EXISTS `t_slot`;
 
 CREATE TABLE `t_slot`
 (
-    `id`                       int(10)      NOT NULL AUTO_INCREMENT COMMENT 'ID',
-    `address`                  int(10)      NOT NULL COMMENT 'hardware address for 485',
-    `slot_no`                  varchar(100) NOT NULL COMMENT 'slot name',
-    `sku_no`                   varchar(255)          DEFAULT NULL COMMENT 'sku number',
-    `sku_name`                 varchar(255)          DEFAULT NULL COMMENT 'sku name',
-    `sku_apw`                  decimal(10, 3)        DEFAULT NULL COMMENT 'sku average single weight',
-    `sku_tolerance`            decimal(10, 3)        DEFAULT NULL COMMENT 'sku max tolerance',
-    `sku_shelf_life_open_days` int(11)               DEFAULT NULL COMMENT 'sku shelf_life_open_days',
-    `has_elabel`               bit(1)       NOT NULL COMMENT 'enable eLabel flag',
-    `state`                    int(2)       NOT NULL DEFAULT '0' COMMENT 'slot state',
-    `sku_update_time`          datetime     NULL COMMENT 'SKU update time',
-    `create_time`              datetime     NOT NULL COMMENT 'time of create',
-    `update_time`              datetime     NOT NULL COMMENT 'time of last update',
-    `deleted`                  bit(1)       NOT NULL COMMENT 'delete flag',
+    `id`                       int(10)        NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `address`                  int(10)        NOT NULL COMMENT 'hardware address for 485',
+    `slot_no`                  varchar(100)   NOT NULL COMMENT 'slot name',
+    `tare_value`               decimal(10, 3) not null default 0 comment 'Tare value',
+    `sku_no`                   varchar(255)            DEFAULT NULL COMMENT 'sku number',
+    `sku_name`                 varchar(255)            DEFAULT NULL COMMENT 'sku name',
+    `sku_apw`                  decimal(10, 3)          DEFAULT NULL COMMENT 'sku average single weight',
+    `sku_tolerance`            decimal(10, 3)          DEFAULT NULL COMMENT 'sku max tolerance',
+    `sku_shelf_life_open_days` int(11)                 DEFAULT NULL COMMENT 'sku shelf_life_open_days',
+    `has_elabel`               bit(1)         NOT NULL COMMENT 'enable eLabel flag',
+    `state`                    int(2)         NOT NULL DEFAULT '0' COMMENT 'slot state',
+    `sku_update_time`          datetime       NULL COMMENT 'SKU update time',
+    `create_time`              datetime       NOT NULL COMMENT 'time of create',
+    `update_time`              datetime       NOT NULL COMMENT 'time of last update',
+    `deleted`                  bit(1)         NOT NULL COMMENT 'delete flag',
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDb
   DEFAULT CHARSET = utf8;

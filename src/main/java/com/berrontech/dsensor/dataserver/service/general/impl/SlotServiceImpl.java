@@ -14,6 +14,7 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -106,6 +107,7 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
         slot.setSlotNo(defaultSlotNo(sensor));
         slot.setHasElabel(sensor.getHasElabel());
         slot.setState(WeightSensor.STATE_ONLINE);
+        slot.setTareValue(BigDecimal.ZERO);
         save(slot);
         sensor.setSlotId(slot.getId());
         return slot;

@@ -15,6 +15,7 @@ import com.berrontech.dsensor.dataserver.web.vo.CompensationStateParam;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.web.vo.ResetSlotSensorsParam;
 import com.berrontech.dsensor.dataserver.web.vo.SlotMergeParam;
+import com.berrontech.dsensor.dataserver.weight.TareException;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
@@ -23,6 +24,7 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -384,6 +386,51 @@ public class SlotController extends AbstractEntityController<Slot> {
             weightController.onSlotStateChanged(slotNo, AbstractDevice485.STATE_ONLINE);
         } else {
             weightController.onSlotStateChanged(slotNo, AbstractDevice485.STATE_DISABLE);
+        }
+        return GeneralResult.ok(slot);
+    }
+
+    /**
+     * 去皮
+     *
+     * @param id id
+     * @return GR
+     */
+    @PostMapping("/{id}/_tare")
+    public GeneralResult<Slot> tare(@PathVariable("id") Integer id) {
+        final Slot slot = slotService.require(id);
+        try {
+            final BigDecimal tareValue = weightController.doTare(slot.getSlotNo(), null);
+            slot.setTareValue(tareValue);
+            slotService.updateById(slot);
+        } catch (TareException e) {
+            log.warn("Error on do tare for slot[{}/{}] with null value!", slot.getSlotNo(), slot.getId());
+        }
+        return GeneralResult.ok(slot);
+    }
+
+    /**
+     * 预置皮重
+     *
+     * @param id    id
+     * @param param 参数
+     * @return GR
+     */
+    @PostMapping("/{id}/_tare-with-value")
+    public GeneralResult<Slot> tareWithValue(@PathVariable("id") Integer id,
+                                             @RequestBody Slot param) {
+        final Class<BadRequestException> err = BadRequestException.class;
+        notNull(param, err, "No params");
+        notNull(param.getTareValue(), err, "tareValue is required!");
+        final BigDecimal tareValue = param.getTareValue();
+        final Slot slot = slotService.require(id);
+        try {
+            final BigDecimal endTareValue = weightController.doTare(slot.getSlotNo(), tareValue);
+            slot.setTareValue(endTareValue);
+            slotService.updateById(slot);
+        } catch (TareException e) {
+            log.warn("Error on tare for slot[{}/{}] with value [{}]", slot.getSlotNo(), slot.getId(), tareValue);
+            throw new BadRequestException(e.getMessage(), e);
         }
         return GeneralResult.ok(slot);
     }

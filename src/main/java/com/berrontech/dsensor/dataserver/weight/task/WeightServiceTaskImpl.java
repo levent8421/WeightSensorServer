@@ -9,10 +9,7 @@ import com.berrontech.dsensor.dataserver.common.util.ThreadUtils;
 import com.berrontech.dsensor.dataserver.conf.SerialConfiguration;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
-import com.berrontech.dsensor.dataserver.weight.CalibrationException;
-import com.berrontech.dsensor.dataserver.weight.NativeLibraryLoader;
-import com.berrontech.dsensor.dataserver.weight.SnBuildException;
-import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.*;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceDetails;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
@@ -828,5 +825,20 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         } else {
             throw new RuntimeException("Cannot found sensor");
         }
+    }
+
+    @Override
+    public void calibrateWeightSensorZero(Integer connectionId, Integer address) throws CalibrationException {
+
+    }
+
+    @Override
+    public void calibrateWeightSensorSpan(Integer connectionId, Integer address, BigDecimal span) throws CalibrationException {
+
+    }
+
+    @Override
+    public BigDecimal doTare(String slotNo, BigDecimal tare) throws TareException {
+        return tare == null ? BigDecimal.ZERO : tare;
     }
 }
