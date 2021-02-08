@@ -7,6 +7,8 @@ import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
 import com.berrontech.dsensor.dataserver.web.vo.MergeSensorsParam;
+import com.berrontech.dsensor.dataserver.web.vo.WeightSensorCalibrateParam;
+import com.berrontech.dsensor.dataserver.weight.CalibrationException;
 import com.berrontech.dsensor.dataserver.weight.SnBuildException;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
@@ -293,5 +295,47 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
             return GeneralResult.error(errStr);
         }
         return GeneralResult.ok();
+    }
+
+    /**
+     * 零点校准
+     *
+     * @param id ID
+     * @return GR
+     */
+    @PostMapping("/{id}/_calibrate-zero")
+    public GeneralResult<WeightSensor> calibrateZero(@PathVariable("id") Integer id) {
+        final WeightSensor sensor = weightSensorService.require(id);
+        try {
+            weightController.calibrateWeightSensorZero(sensor.getConnectionId(), sensor.getAddress());
+        } catch (CalibrationException e) {
+            log.warn("Error on calibrate weight sensor zero:", e);
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
+        return GeneralResult.ok(sensor);
+    }
+
+    /**
+     * 砝码校准
+     *
+     * @param id    id
+     * @param param params
+     * @return GR
+     */
+    @PostMapping("/{id}/_calibrate-span")
+    public GeneralResult<WeightSensor> calibrateSpan(@PathVariable("id") Integer id,
+                                                     @RequestBody WeightSensorCalibrateParam param) {
+        final Class<BadRequestException> err = BadRequestException.class;
+        notNull(param, err, "No params!");
+        notNull(param.getSpan(), err, "Span is required!");
+        final WeightSensor sensor = weightSensorService.require(id);
+
+        try {
+            weightController.calibrateWeightSensorSpan(sensor.getConnectionId(), sensor.getAddress(), param.getSpan());
+        } catch (CalibrationException e) {
+            log.warn("Error on calibrate sensor [{}] with span [{}]", sensor.getAddress(), param.getSpan());
+            throw new InternalServerErrorException(e.getMessage(), e);
+        }
+        return GeneralResult.ok(sensor);
     }
 }
