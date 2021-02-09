@@ -261,19 +261,21 @@ public interface WeightController {
      * @param connectionId 连接ID
      * @param address      传感器地址
      * @param span         砝码重量
+     * @param unitCode     单位代码 @see WeightUnit
      * @throws CalibrationException 标定错误
      */
-    void calibrateWeightSensorSpan(Integer connectionId, Integer address, BigDecimal span) throws CalibrationException;
+    void calibrateWeightSensorSpan(Integer connectionId, Integer address, BigDecimal span, int unitCode) throws CalibrationException;
 
     /**
      * 去皮
      *
-     * @param slotNo 货道号
-     * @param tare   皮重：
-     *               若传入皮重未null，则使用当前重量作为皮重
-     *               若当前无重量（设备离线或未准备就绪）则抛出异常
+     * @param slotNo   货道号
+     * @param tare     皮重：
+     *                 若传入皮重未null，则使用当前重量作为皮重
+     *                 若当前无重量（设备离线或未准备就绪）则抛出异常
+     * @param unitCode 单位代码 @see WeightUnit
      * @return 去皮后的皮重，不允许返回空值
      * @throws TareException 去皮错误
      */
-    BigDecimal doTare(String slotNo, BigDecimal tare) throws TareException;
+    BigDecimal doTare(String slotNo, BigDecimal tare, int unitCode) throws TareException;
 }

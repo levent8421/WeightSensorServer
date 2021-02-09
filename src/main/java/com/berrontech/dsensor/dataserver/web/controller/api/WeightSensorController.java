@@ -11,6 +11,7 @@ import com.berrontech.dsensor.dataserver.web.vo.WeightSensorCalibrateParam;
 import com.berrontech.dsensor.dataserver.weight.CalibrationException;
 import com.berrontech.dsensor.dataserver.weight.SnBuildException;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.WeightUnit;
 import com.berrontech.dsensor.dataserver.weight.task.SensorMetaDataService;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -331,7 +332,7 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
         final WeightSensor sensor = weightSensorService.require(id);
 
         try {
-            weightController.calibrateWeightSensorSpan(sensor.getConnectionId(), sensor.getAddress(), param.getSpan());
+            weightController.calibrateWeightSensorSpan(sensor.getConnectionId(), sensor.getAddress(), param.getSpan(), WeightUnit.KG);
         } catch (CalibrationException e) {
             log.warn("Error on calibrate sensor [{}] with span [{}]", sensor.getAddress(), param.getSpan());
             throw new InternalServerErrorException(e.getMessage(), e);

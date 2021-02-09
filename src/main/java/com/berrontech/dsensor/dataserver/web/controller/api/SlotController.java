@@ -17,6 +17,7 @@ import com.berrontech.dsensor.dataserver.web.vo.ResetSlotSensorsParam;
 import com.berrontech.dsensor.dataserver.web.vo.SlotMergeParam;
 import com.berrontech.dsensor.dataserver.weight.TareException;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
+import com.berrontech.dsensor.dataserver.weight.WeightUnit;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
 import com.berrontech.dsensor.dataserver.weight.holder.WeightDataHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -400,7 +401,7 @@ public class SlotController extends AbstractEntityController<Slot> {
     public GeneralResult<Slot> tare(@PathVariable("id") Integer id) {
         final Slot slot = slotService.require(id);
         try {
-            final BigDecimal tareValue = weightController.doTare(slot.getSlotNo(), null);
+            final BigDecimal tareValue = weightController.doTare(slot.getSlotNo(), null, WeightUnit.KG);
             slot.setTareValue(tareValue);
             slotService.updateById(slot);
         } catch (TareException e) {
@@ -425,7 +426,7 @@ public class SlotController extends AbstractEntityController<Slot> {
         final BigDecimal tareValue = param.getTareValue();
         final Slot slot = slotService.require(id);
         try {
-            final BigDecimal endTareValue = weightController.doTare(slot.getSlotNo(), tareValue);
+            final BigDecimal endTareValue = weightController.doTare(slot.getSlotNo(), tareValue, WeightUnit.KG);
             slot.setTareValue(endTareValue);
             slotService.updateById(slot);
         } catch (TareException e) {

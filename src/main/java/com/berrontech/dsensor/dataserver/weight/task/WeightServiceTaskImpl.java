@@ -841,7 +841,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public void calibrateWeightSensorSpan(Integer connectionId, Integer address, BigDecimal span) throws CalibrationException {
+    public void calibrateWeightSensorSpan(Integer connectionId, Integer address, BigDecimal span, int unitCode) throws CalibrationException {
         DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
         if (s == null) {
             throw new CalibrationException("#" + connectionId + "-" + address + " not exists, cannot calibrate span");
@@ -854,7 +854,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
     }
 
     @Override
-    public BigDecimal doTare(String slotNo, BigDecimal tare) throws TareException {
+    public BigDecimal doTare(String slotNo, BigDecimal tare, int unitCode) throws TareException {
         DigitalSensorItem s = sensorManager.FirstOrNull(slotNo);
         if (s == null) {
             throw new TareException(slotNo + " not exists, cannot do tare");
