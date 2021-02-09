@@ -829,16 +829,48 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
 
     @Override
     public void calibrateWeightSensorZero(Integer connectionId, Integer address) throws CalibrationException {
-
+        DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
+        if (s == null) {
+            throw new CalibrationException("#" + connectionId + "-" + address + " not exists, cannot calibrate zero");
+        }
+        try {
+            s.CalibrateZero();
+        } catch (Exception ex) {
+            throw new CalibrationException("#" + connectionId + "-" + address + " calibrate zero failed: " + ex.getMessage());
+        }
     }
 
     @Override
     public void calibrateWeightSensorSpan(Integer connectionId, Integer address, BigDecimal span) throws CalibrationException {
-
+        DigitalSensorItem s = sensorManager.FirstOrNull(connectionId, address);
+        if (s == null) {
+            throw new CalibrationException("#" + connectionId + "-" + address + " not exists, cannot calibrate span");
+        }
+        try {
+            s.CalibrateSpan(span.floatValue());
+        } catch (Exception ex) {
+            throw new CalibrationException("#" + connectionId + "-" + address + " calibrate span failed: " + ex.getMessage());
+        }
     }
 
     @Override
     public BigDecimal doTare(String slotNo, BigDecimal tare) throws TareException {
-        return tare == null ? BigDecimal.ZERO : tare;
+        DigitalSensorItem s = sensorManager.FirstOrNull(slotNo);
+        if (s == null) {
+            throw new TareException(slotNo + " not exists, cannot do tare");
+        }
+        if (tare == null) {
+            if (!s.isOnline()) {
+                throw new TareException(slotNo + " offline, cannot do tare");
+            }
+            s.DoTare();
+        } else {
+            if (tare.equals(BigDecimal.ZERO)) {
+                s.ClearTare();
+            } else {
+                s.SetTare(tare);
+            }
+        }
+        return s.getValues().getTareWeight();
     }
 }
