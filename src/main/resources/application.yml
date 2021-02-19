@@ -25,9 +25,9 @@ server:
     threads:
       min-spare: 2
 db-upgrade:
-  db_init_sql_file: db_init.sql
+  db-init-sql-file: db_init.sql
   script-path: classpath:/db_script
-  target_db_verssion: 12
+  target-db-version: 13
 serial:
   lib-name: native_lib/libserial_port
 app:

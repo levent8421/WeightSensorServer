@@ -325,7 +325,6 @@ public class DigitalSensorGroup {
                         idx = 0;
                     }
                     try {
-
                         DigitalSensorItem sensor = Sensors.get(idx);
                         if (sensor != null) {
                             if (sensor.getParams().isXSensor()) {
@@ -396,7 +395,7 @@ public class DigitalSensorGroup {
                                 } else {
                                     if (sensor.UpdateHighResolution2(OnlyShowStable)) {
                                         //log.debug("#{} UpdateELabel in UpdateHighResolution2", Params.getAddress());
-                                        sensor.UpdateELabel();
+                                        tryUpdateElabel(sensor);
                                         //log.debug("#{} UpdateELabel in UpdateHighResolution2 done", Params.getAddress());
                                         val s2 = ClusterSensors.stream()
                                                 .filter(s -> s.getChildren().contains(sensor))
@@ -410,7 +409,7 @@ public class DigitalSensorGroup {
                                 }
                             }
                         } catch (TimeoutException ex) {
-                            log.debug("#{} Packet Lost", sensor.getParams().getAddress());
+                            log.debug("#{} Packet Lost,error=[{}/{}]", sensor.getParams().getAddress(), ex.getClass().getSimpleName(), ex.getMessage());
                         } catch (IOException ex) {
                             // port closed
                             try {
@@ -439,6 +438,15 @@ public class DigitalSensorGroup {
                 Reading = false;
             }
         });
+    }
+
+    private void tryUpdateElabel(DigitalSensorItem sensor) {
+        try {
+            sensor.UpdateELabel();
+        } catch (Exception e) {
+            log.warn("#{} Error on update sensor ELabel,error=[{}/{}]",
+                    sensor.getParams().getAddress(), e.getClass().getSimpleName(), e.getMessage());
+        }
     }
 
     public void stopReading() {
