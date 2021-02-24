@@ -71,7 +71,12 @@ public class BalanceNoSetHandler implements ActionHandler {
             if (!params.containsKey(address)) {
                 continue;
             }
-            doSetSlotNo(address, entry.getValue());
+            try {
+                doSetSlotNo(address, entry.getValue());
+            } catch (Exception e) {
+                failureTable.put(address, e.getMessage());
+                log.warn("Can not set slotNo[{}] for address[{}]", entry.getValue(), entry.getKey(), e);
+            }
             changed = true;
         }
         if (changed) {
