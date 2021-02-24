@@ -17,7 +17,7 @@ import java.util.List;
  * Class Name: MessagePackageDecoder
  * Author: Levent8421
  * Description:
- * Byte -> messageObject decoder
+ * Byte to  messageObject decoder
  *
  * @author Levent8421
  */

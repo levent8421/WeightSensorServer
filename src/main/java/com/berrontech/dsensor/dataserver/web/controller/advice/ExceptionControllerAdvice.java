@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * 控制器的异常统一处理
  *
  * @author 郭文梁
- * @data 2019/4/20 0020
  */
 @Slf4j
 @ControllerAdvice

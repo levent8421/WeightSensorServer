@@ -8,7 +8,6 @@ import java.lang.reflect.Type;
  * 资源找不到异常
  *
  * @author 郭文梁
- * @data 2019/4/17 0017
  */
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException() {

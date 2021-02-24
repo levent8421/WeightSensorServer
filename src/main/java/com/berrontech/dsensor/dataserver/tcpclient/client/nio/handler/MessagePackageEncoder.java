@@ -14,7 +14,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
  * Class Name: MessagePackageEncoder
  * Author: Levent8421
  * Description:
- * Message Package Encoder messageObject -> bytes
+ * Message Package Encoder messageObject to bytes
  *
  * @author Levent8421
  */

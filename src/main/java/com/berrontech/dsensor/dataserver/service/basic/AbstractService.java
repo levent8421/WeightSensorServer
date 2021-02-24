@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
  * 基础业务服务行为定义
  *
  * @author 郭文梁
- * @data 2019/5/18 0018
  */
 public interface AbstractService<Entity extends AbstractEntity> {
     /**
@@ -166,7 +165,8 @@ public interface AbstractService<Entity extends AbstractEntity> {
     /**
      * 处理实体类中的路径url等信息
      *
-     * @param e 实体对象
+     * @param e   实体对象
+     * @param <T> 数据类型
      */
     <T extends Entity> void resolvePath(T e);
 
@@ -174,6 +174,7 @@ public interface AbstractService<Entity extends AbstractEntity> {
      * 处理实体类中的路径url等信息
      *
      * @param source entity list
+     * @param <T>    数据类型
      * @return entity list
      */
     default <T extends Entity> List<T> resolvePath(List<T> source) {
@@ -183,6 +184,7 @@ public interface AbstractService<Entity extends AbstractEntity> {
     /**
      * 处理实体类中的路径url等信息
      *
+     * @param <T>    数据类型
      * @param source entity pageInfo
      */
     default <T extends Entity> void resolvePath(PageInfo<T> source) {

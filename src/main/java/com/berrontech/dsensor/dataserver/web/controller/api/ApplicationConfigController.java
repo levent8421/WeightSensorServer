@@ -34,7 +34,6 @@ public class ApplicationConfigController extends AbstractEntityController<Applic
 
     /**
      * 获取配置参数
-     *
      * @param name config name
      * @return GR
      */

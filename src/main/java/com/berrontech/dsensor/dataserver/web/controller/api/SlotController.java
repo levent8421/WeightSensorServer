@@ -104,6 +104,7 @@ public class SlotController extends AbstractEntityController<Slot> {
     /**
      * 设置全部补偿状态
      *
+     * @param param 参数
      * @return 补偿状态
      */
     @PostMapping("/_all-compensation")

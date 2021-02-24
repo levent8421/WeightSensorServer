@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
  * 该Mapper无任何业务功能，不参与系统业务流程
  *
  * @author 郭文梁
- * @data 2019/4/15 0015
  */
 @Mapper
 @SuppressWarnings("unused")

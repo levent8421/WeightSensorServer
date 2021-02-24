@@ -6,7 +6,6 @@ package com.berrontech.dsensor.dataserver.common.fn;
  * Setter函数
  *
  * @author 郭文梁
- * @data 2019/4/25 0025
  */
 @FunctionalInterface
 public interface SetterFunction<P> {

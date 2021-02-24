@@ -10,7 +10,6 @@ import org.springframework.web.servlet.ModelAndView;
  * 控制器基类
  *
  * @author 郭文梁
- * @data 2019/5/18 0018
  */
 public abstract class AbstractController {
     private static final String ERROR_VIEW_NAME = "sys-error";

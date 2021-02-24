@@ -13,7 +13,6 @@ import java.util.Map;
  * 参数检查相关工具
  *
  * @author 郭文梁
- * @data 2019/5/27 0027
  */
 public class ParamChecker {
     private static final int[] ID_NUMBER_WEIGHT_TABLE = {7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2};

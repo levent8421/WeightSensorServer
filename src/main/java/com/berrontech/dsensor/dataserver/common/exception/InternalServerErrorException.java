@@ -6,7 +6,6 @@ package com.berrontech.dsensor.dataserver.common.exception;
  * 服务器异常
  *
  * @author 郭文梁
- * @data 2019/4/17 0017
  */
 public class InternalServerErrorException extends RuntimeException {
     public InternalServerErrorException() {

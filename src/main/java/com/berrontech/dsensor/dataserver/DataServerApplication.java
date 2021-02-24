@@ -6,12 +6,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import tk.mybatis.spring.annotation.MapperScan;
 
 /**
- * Create By Levent8421
- * Create Time: 2020/6/9 18:58
- * Class Name: DataServerApplication
- * Author: Levent8421
- * Description:
- * DataServer Application Entry
+ * <p style="color: #3171FA">Create By Levent8421 </p><br>
+ *     <img src="">
+ * Create Time: 2020/6/9 18:58 <br>
+ * Class Name: DataServerApplication <br>
+ * Author: Levent8421 <br>
+ * Description: <br>
+ * DataServer Application Entry <br>
  *
  * @author Levent8421
  */

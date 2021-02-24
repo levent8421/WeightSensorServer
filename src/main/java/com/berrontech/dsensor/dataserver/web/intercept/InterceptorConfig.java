@@ -11,7 +11,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * 拦截器配置
  *
  * @author 郭文梁
- * @data 2019/5/20 0020
  */
 @Configuration
 @Component

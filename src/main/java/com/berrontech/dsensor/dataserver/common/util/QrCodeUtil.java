@@ -20,7 +20,6 @@ import java.util.HashMap;
  * 二维码工具类
  *
  * @author 郭文梁
- * @data 2019/5/11 0011
  */
 @Slf4j
 public class QrCodeUtil {

@@ -6,7 +6,6 @@ package com.berrontech.dsensor.dataserver.common.exception;
  * 权限被拒绝异常
  *
  * @author 郭文梁
- * @data 2019/5/24 0024
  */
 public class PermissionDeniedException extends RuntimeException {
     public PermissionDeniedException() {

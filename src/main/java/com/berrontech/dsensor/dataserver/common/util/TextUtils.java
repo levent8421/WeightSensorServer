@@ -16,7 +16,6 @@ import java.nio.charset.StandardCharsets;
  * 文本相关工具类
  *
  * @author 郭文梁
- * @data 2019/4/20 0020
  */
 public class TextUtils {
     /**

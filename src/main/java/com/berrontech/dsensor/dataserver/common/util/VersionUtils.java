@@ -19,9 +19,9 @@ public class VersionUtils {
 
     /**
      * 比较两个版本号
-     * 如果versionA > versionB 返回 一个正整数
-     * 如果versionA < versionB 返回一个负整数
-     * 如果versionA = versionB 返回0
+     * 如果versionA 大于 versionB 返回 一个正整数
+     * 如果versionA 小于 versionB 返回一个负整数
+     * 如果versionA 等于 versionB 返回0
      *
      * @param versionA versionA
      * @param versionB versionB

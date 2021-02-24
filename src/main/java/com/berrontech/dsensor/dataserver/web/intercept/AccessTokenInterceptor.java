@@ -16,7 +16,6 @@ import java.util.Map;
  * 令牌拦截器
  *
  * @author 郭文梁
- * @data 2019/5/24 0024
  */
 @Slf4j
 public class AccessTokenInterceptor implements HandlerInterceptor {

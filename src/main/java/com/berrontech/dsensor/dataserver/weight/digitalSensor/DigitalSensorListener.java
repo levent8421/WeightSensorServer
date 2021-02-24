@@ -24,6 +24,7 @@ public interface DigitalSensorListener {
      * 通知数量改变
      *
      * @param sensor sensor
+     * @param force  是否强制
      * @return success
      */
     boolean onPieceCountChanged(DigitalSensorItem sensor, boolean force);
@@ -55,19 +56,26 @@ public interface DigitalSensorListener {
     /**
      * 通知温度,湿度变化
      *
-     * @param sensor
+     * @param sensor 传感器
+     * @return 是否通知成功
      */
     boolean onNotifyXSensorTempHumi(DigitalSensorItem sensor);
 
     /**
      * 通知传感器SN变化
-     * @param sensor
+     *
+     * @param sn     序列号
+     * @param sensor 传感器
+     * @return 是否通知成功
      */
     boolean onNotifySensorSnChanged(DigitalSensorItem sensor, String sn);
 
     /**
      * 通知ELabel SN变化
-     * @param sensor
+     *
+     * @param sn     序列号
+     * @param sensor 传感器
+     * @return 是否通知成功
      */
     boolean onNotifyELabelSnChanged(DigitalSensorItem sensor, String sn);
 

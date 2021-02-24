@@ -16,7 +16,6 @@ import java.util.Date;
  * 基础实体类
  *
  * @author 郭文梁
- * @data 2019/5/16 0016
  */
 @Data
 public abstract class AbstractEntity implements Serializable {

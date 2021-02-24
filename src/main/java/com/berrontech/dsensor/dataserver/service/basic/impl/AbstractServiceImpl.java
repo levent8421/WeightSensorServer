@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
  * 基础业务行为实现
  *
  * @author 郭文梁
- * @data 2019/5/18 0018
  */
 @Service
 @Slf4j

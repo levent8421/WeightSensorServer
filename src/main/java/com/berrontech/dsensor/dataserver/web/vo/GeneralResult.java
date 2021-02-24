@@ -12,7 +12,6 @@ import static org.springframework.http.HttpStatus.*;
  * 通用API返回对象
  *
  * @author 郭文梁
- * @data 2019/4/15 0015
  */
 @Data
 @AllArgsConstructor

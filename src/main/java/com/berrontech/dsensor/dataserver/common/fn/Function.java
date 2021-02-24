@@ -6,7 +6,6 @@ package com.berrontech.dsensor.dataserver.common.fn;
  * 一个参数 一个返回值的函数
  *
  * @author 郭文梁
- * @data 2019/6/12 0012
  */
 @FunctionalInterface
 public interface Function<T, R> {

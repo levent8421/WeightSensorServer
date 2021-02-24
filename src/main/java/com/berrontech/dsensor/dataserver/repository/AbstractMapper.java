@@ -9,7 +9,6 @@ import tk.mybatis.mapper.common.*;
  * 基础Mapper
  *
  * @author 郭文梁
- * @data 2019/5/18 0018
  */
 public interface AbstractMapper<T extends AbstractEntity>
         extends Mapper<T>,

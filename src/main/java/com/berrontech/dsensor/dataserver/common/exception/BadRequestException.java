@@ -6,7 +6,6 @@ package com.berrontech.dsensor.dataserver.common.exception;
  * 请求客户端异常
  *
  * @author 郭文梁
- * @data 2019/4/22 0022
  */
 public class BadRequestException extends RuntimeException {
     public BadRequestException() {

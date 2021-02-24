@@ -9,7 +9,6 @@ import com.berrontech.dsensor.dataserver.service.basic.AbstractService;
  * 数据对象控制器
  *
  * @author 郭文梁
- * @data 2019/5/18 0018
  */
 public abstract class AbstractEntityController<Entity extends AbstractEntity> extends AbstractController {
     /**
