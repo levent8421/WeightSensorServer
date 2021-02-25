@@ -88,7 +88,7 @@ public class DigitalSensorValues {
     public static BigDecimal Round(double src, BigDecimal round) {
         long intPart = Math.round(src / round.doubleValue());
         BigDecimal rst = BigDecimal.valueOf(intPart);
-        rst.divide(round);
+        rst = rst.multiply(round);
         return rst;
     }
 
