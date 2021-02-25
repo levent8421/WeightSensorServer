@@ -12,3 +12,4 @@ logging:
   config: classpath:logback-spring-release.xml
 log-conf:
   log-file-dir: /mnt/hd0/scada_wsa/log
+  log-keep-days: 36500

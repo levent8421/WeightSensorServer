@@ -25,7 +25,7 @@ public class LogScheduleTask {
      * 测试时可使用如下注解
      * <code>@Scheduled(fixedRate = 3000)</code>
      */
-    @Scheduled(fixedRate = 24 * 60 * 60 * 1000)
+    @Scheduled(cron = "0 0 0 * * ?")
     public void cleanupLog() {
         log.info("LogFile Cleanup task start!");
         logManager.cleanup();
