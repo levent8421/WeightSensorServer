@@ -6,6 +6,7 @@ import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.SlotStateUtils;
 import com.berrontech.dsensor.dataserver.service.general.*;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
+import com.berrontech.dsensor.dataserver.weight.ProtocolVersion;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.dto.DeviceState;
 import com.berrontech.dsensor.dataserver.weight.dto.SystemError;
@@ -87,8 +88,10 @@ public class SensorMetaDataService implements ThreadFactory {
             final List<TemperatureHumiditySensor> temperatureHumiditySensors = temperatureHumiditySensorService.all();
             weightDataHolder.setTemperatureHumiditySensors(temperatureHumiditySensors);
 
-            this.loadSoftFilterLevel();
-            this.loadAutoDisplayUnit();
+            final Map<String, String> configTable = loadAllConfs();
+            this.loadSoftFilterLevel(configTable.get(ApplicationConfig.SOFT_FILTER_LEVEL));
+            this.loadAutoDisplayUnit(configTable.get(ApplicationConfig.AUTO_DISPLAY_UNIT));
+            this.loadProtocolVersion(configTable.get(ApplicationConfig.PROTOCOL_VERSION));
 
             this.buildMemorySlotTable();
             this.buildTemperatureHumiditySensorTable();
@@ -100,19 +103,35 @@ public class SensorMetaDataService implements ThreadFactory {
         }
     }
 
-    private void loadAutoDisplayUnit() {
-        ApplicationConfig config = applicationConfigService.getConfig(ApplicationConfig.AUTO_DISPLAY_UNIT);
-        if (config == null) {
-            config = applicationConfigService.setConfig(ApplicationConfig.AUTO_DISPLAY_UNIT, BooleanUtils.FALSE_STR);
+    private Map<String, String> loadAllConfs() {
+        final List<ApplicationConfig> configs = applicationConfigService.all();
+        final Map<String, String> configTable = new HashMap<>(16);
+        for (ApplicationConfig config : configs) {
+            configTable.put(config.getName(), config.getValue());
         }
-        weightDataHolder.setAutoDisplayUnit(BooleanUtils.asBoolean(config.getValue()));
+        return configTable;
     }
 
-    private void loadSoftFilterLevel() {
-        final ApplicationConfig softFilterLevelConfig = applicationConfigService.getConfig(ApplicationConfig.SOFT_FILTER_LEVEL);
+    private void loadProtocolVersion(String config) {
+        int protocolVersion = ProtocolVersion.VERSION_21;
+        if (config != null) {
+            protocolVersion = Integer.parseInt(config);
+        }
+        weightDataHolder.setProtocolVersion(protocolVersion);
+    }
+
+    private void loadAutoDisplayUnit(String config) {
+        if (config == null) {
+            final ApplicationConfig autoUnitConfig = applicationConfigService.setConfig(ApplicationConfig.AUTO_DISPLAY_UNIT, BooleanUtils.FALSE_STR);
+            config = autoUnitConfig.getValue();
+        }
+        weightDataHolder.setAutoDisplayUnit(BooleanUtils.asBoolean(config));
+    }
+
+    private void loadSoftFilterLevel(String config) {
         int softFilterLevel = 0;
-        if (softFilterLevelConfig != null) {
-            softFilterLevel = Integer.parseInt(softFilterLevelConfig.getValue());
+        if (config != null) {
+            softFilterLevel = Integer.parseInt(config);
         }
         weightDataHolder.setSoftFilterLevel(softFilterLevel);
     }

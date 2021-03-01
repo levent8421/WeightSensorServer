@@ -58,4 +58,8 @@ public class WeightDataHolder implements Serializable {
      * Auto Display Unit
      */
     private Boolean autoDisplayUnit = false;
+    /**
+     * 协议版本
+     */
+    private int protocolVersion;
 }

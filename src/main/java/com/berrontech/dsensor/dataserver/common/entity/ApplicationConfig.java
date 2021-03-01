@@ -45,6 +45,10 @@ public class ApplicationConfig extends AbstractEntity {
      */
     public static final String AUTO_DISPLAY_UNIT = "application.display.auto_unit";
     /**
+     * 协议版本
+     */
+    public static final String PROTOCOL_VERSION = "weight.protocol_version";
+    /**
      * 配置名称
      */
     @Column(name = "name", nullable = false)

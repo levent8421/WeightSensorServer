@@ -6,6 +6,9 @@ alter table t_weight_sensor
     add column type int(3) not null default 1 comment 'Weight sensor type' after has_elabel;
 
 
+insert into t_application_config (name, value, create_time, update_time, deleted)
+values ('weight.protocol_version', '1', now(), now(), false);
+
 # add config application.db_version_name
 update t_application_config
 set value       = '0.4.4',
