@@ -303,6 +303,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             for (val sensor : sensors) {
                 try {
                     sensor.DoZero(true);
+                    sensor.ClearTare();
                     log.info("#{} Slot({}) set to zero", sensor.getParams().getAddress(), slotNo);
                 } catch (Exception ex) {
                     log.warn("#{} Slot({}) Do zero failed,{}", sensor.getParams().getAddress(), slotNo, ex.getMessage());
@@ -863,7 +864,12 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
             if (!s.isOnline()) {
                 throw new TareException(slotNo + " offline, cannot do tare");
             }
-            s.DoTare();
+            try {
+                s.UpdateHighResolution2(false);
+                s.DoTare();
+            } catch (Exception ex) {
+                throw new TareException(slotNo + " do tare failed: " + ex.getMessage());
+            }
         } else {
             if (tare.equals(BigDecimal.ZERO)) {
                 s.ClearTare();
