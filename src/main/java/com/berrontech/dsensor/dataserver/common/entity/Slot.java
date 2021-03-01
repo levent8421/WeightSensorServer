@@ -79,6 +79,11 @@ public class Slot extends AbstractEntity {
     @Column(name = "state")
     private Integer state;
     /**
+     * 是否不可拆分，true:不可拆分 false:可拆分
+     */
+    @Column(name = "indivisible", nullable = false, length = 1)
+    private Boolean indivisible;
+    /**
      * 传感器列表
      */
     private List<WeightSensor> sensors;

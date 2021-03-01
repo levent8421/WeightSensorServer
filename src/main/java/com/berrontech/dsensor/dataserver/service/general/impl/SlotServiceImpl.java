@@ -108,6 +108,7 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
         slot.setHasElabel(sensor.getHasElabel());
         slot.setState(WeightSensor.STATE_ONLINE);
         slot.setTareValue(BigDecimal.ZERO);
+        slot.setIndivisible(false);
         save(slot);
         sensor.setSlotId(slot.getId());
         return slot;

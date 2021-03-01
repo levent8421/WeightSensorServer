@@ -212,4 +212,13 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return sensors
      */
     List<WeightSensor> selectBySlotIdWithSlot(@Param("slotId") Integer slotId);
+
+    /**
+     * 通过ID更新传感器类型
+     *
+     * @param id   id
+     * @param type type
+     * @return rows
+     */
+    int updateTypeById(@Param("id") Integer id, @Param("type") Integer type);
 }

@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/scada_wsa?userSSL=false&useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=GMT%2B8
     username: root
-    password: 123456
+    password: monolithiot
 server:
   port: 5601
 tcp-api:
@@ -11,4 +11,4 @@ tcp-api:
 logging:
   config: classpath:logback-spring-dev.xml
 log-conf:
-  log-file-dir: E:\FileWork
+  log-file-dir: /mnt/hd0/scada_wsa/log

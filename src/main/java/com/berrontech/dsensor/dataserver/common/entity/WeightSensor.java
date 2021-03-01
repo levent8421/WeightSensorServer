@@ -21,6 +21,30 @@ import javax.persistence.Table;
 @Table(name = "t_weight_sensor")
 public class WeightSensor extends AbstractDevice485 {
     /**
+     * 类型：默认
+     */
+    public static final int TYPE_DEFAULT = 0x00;
+    /**
+     * 类型：普通货道
+     */
+    public static final int TYPE_NORMAL = 0x01;
+    /**
+     * 类型：灵活货道
+     */
+    public static final int TYPE_MERGEABLE = 0x02;
+    /**
+     * 类型：地堆货道
+     */
+    public static final int TYPE_LARGE = 0x03;
+    /**
+     * 类型：冰箱货道
+     */
+    public static final int TYPE_FRIDGE = 0x04;
+    /**
+     * 类型：吊篮货道
+     */
+    public static final int TYPE_BASKETS = 0x05;
+    /**
      * 默认零点参考
      */
     public static final double DEFAULT_ZERO_REFERENCE = 0D;
@@ -48,6 +72,11 @@ public class WeightSensor extends AbstractDevice485 {
      */
     @Column(name = "has_elabel", nullable = false, length = 1)
     private Boolean hasElabel;
+    /**
+     * 传感器类型
+     */
+    @Column(name = "type", length = 3, nullable = false)
+    private Integer type;
     /**
      * 传感器SN
      */

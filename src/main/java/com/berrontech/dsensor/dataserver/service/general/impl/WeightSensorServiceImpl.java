@@ -121,6 +121,7 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
         weightSensor.setDeviceSn(sensor.getDeviceSn());
         weightSensor.setZeroReference(WeightSensor.DEFAULT_ZERO_REFERENCE);
         weightSensor.setHasElabel(sensor.getHasElable());
+        weightSensor.setType(WeightSensor.TYPE_NORMAL);
         return weightSensor;
     }
 
@@ -282,5 +283,14 @@ public class WeightSensorServiceImpl extends AbstractServiceImpl<WeightSensor> i
     @Override
     public List<WeightSensor> findBySlotIdWithSlot(Integer slotId) {
         return weightSensorMapper.selectBySlotIdWithSlot(slotId);
+    }
+
+    @Override
+    public void updateType(Integer id, Integer type) {
+        final int rows = weightSensorMapper.updateTypeById(id, type);
+        if (rows != 1) {
+            final String error = String.format("Can not update type[%s] for sensor[%s], rows=%s", type, id, rows);
+            throw new InternalServerErrorException(error);
+        }
     }
 }

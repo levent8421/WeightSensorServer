@@ -3,6 +3,7 @@ package com.berrontech.dsensor.dataserver.web.controller.api;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import com.berrontech.dsensor.dataserver.common.util.ParamChecker;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
 import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
@@ -338,5 +339,23 @@ public class WeightSensorController extends AbstractEntityController<WeightSenso
             throw new InternalServerErrorException(e.getMessage(), e);
         }
         return GeneralResult.ok(sensor);
+    }
+
+    /**
+     * 设置传感器类型
+     *
+     * @param id    传感器ID
+     * @param param {type}
+     * @return GR
+     */
+    @PostMapping("/{id}/type")
+    public GeneralResult<Void> updateType(@PathVariable("id") Integer id, @RequestBody WeightSensor param) {
+        final Class<BadRequestException> e = BadRequestException.class;
+        ParamChecker.notNull(id, e, "Id is required!");
+        ParamChecker.notNull(param, e, "No available param!");
+        ParamChecker.notNull(param.getType(), e, "type is required!");
+
+        weightSensorService.updateType(id, param.getType());
+        return GeneralResult.ok();
     }
 }

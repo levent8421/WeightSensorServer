@@ -201,4 +201,12 @@ public interface WeightSensorService extends AbstractService<WeightSensor> {
      * @return sensors
      */
     List<WeightSensor> findBySlotIdWithSlot(Integer slotId);
+
+    /**
+     * 更新传感器类型
+     *
+     * @param id   id
+     * @param type 类型
+     */
+    void updateType(Integer id, Integer type);
 }

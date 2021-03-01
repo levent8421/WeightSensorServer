@@ -4,6 +4,7 @@ import com.berrontech.dsensor.dataserver.tcpclient.client.MessageListenerManager
 import com.berrontech.dsensor.dataserver.tcpclient.client.nio.ChannelBasedApiClient;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -116,7 +117,8 @@ public class TcpApiRunner implements ApplicationRunner, Runnable, ThreadFactory 
                 doHeartbeat();
             }
         } catch (Exception e) {
-            log.error("Error on do Check connection!", e);
+            final String error = ExceptionUtils.getMessage(e);
+            log.error("Check and reconnect TCP! error=[{}]", error);
         }
     }
 

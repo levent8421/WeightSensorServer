@@ -359,9 +359,20 @@ public class SlotController extends AbstractEntityController<Slot> {
         notNull(param, BadRequestException.class, "no Params");
         notEmpty(param.getSlotIds(), BadRequestException.class, "No Slot IDs!");
         final List<Integer> slotIds = param.getSlotIds();
+        final List<Slot> slots = slotService.findByIds(slotIds);
+        checkIndivisible(slots);
         doUnmergedNotify(slotIds);
         final int sensorNum = weightSensorService.resetSlotIdBySlotIds(slotIds);
         return GeneralResult.ok(sensorNum);
+    }
+
+    private void checkIndivisible(List<Slot> slots) {
+        for (Slot slot : slots) {
+            if (slot.getIndivisible()) {
+                final String error = String.format("货道[%s]已被锁定，不可拆分！", slot.getSlotNo());
+                throw new BadRequestException(error);
+            }
+        }
     }
 
     private void doUnmergedNotify(List<Integer> slotIds) {
