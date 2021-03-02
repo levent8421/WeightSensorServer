@@ -4,6 +4,7 @@ import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.common.exception.InternalServerErrorException;
+import com.berrontech.dsensor.dataserver.common.exception.PermissionDeniedException;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.TextUtils;
 import com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper;
@@ -202,4 +203,15 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
     public List<Slot> findSlotGroupByPrimarySlot(Integer id) {
         return slotMapper.selectSlotGroupByPrimarySlot(id);
     }
+
+    @Override
+    public int updateSlotsIndivisible(Integer id) {
+        List<Slot> address = weightSensorMapper.selectWeightSensorAddress(id);
+        int slotAddress = slotMapper.updateSlotIndivisible(address);
+        if(slotAddress == 0){
+            throw new PermissionDeniedException();
+        }
+        return slotAddress;
+    }
+
 }

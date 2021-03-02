@@ -2,7 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.berrontech.dsensor.dataserver.repository.mapper.SlotMapper">
     <sql id="columns">
-        s.id            as s_id,
+        s
+        .
+        id
+        as s_id,
         s.address       as s_address,
         s.slot_no       as s_slot_no,
         s.sku_no        as s_sku_no,
@@ -107,4 +110,12 @@
         from t_slot as s left outer join t_weight_sensor as ws on s.address=ws.address where (s.deleted=false and
         ws.deleted=false) and ws.slot_id=#{id}
     </select>
+    <update id="updateSlotIndivisible" parameterType="com.berrontech.dsensor.dataserver.common.entity.Slot">
+        UPDATE t_slot
+        SET indivisible = 1
+        WHERE address IN
+        <foreach collection="address" item="address" index="index" open="(" close=")" separator=",">
+            #{address.address}
+        </foreach>
+    </update>
 </mapper>

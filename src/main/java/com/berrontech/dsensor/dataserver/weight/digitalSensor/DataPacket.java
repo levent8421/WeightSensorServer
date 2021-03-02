@@ -8,24 +8,35 @@ import lombok.extern.slf4j.Slf4j;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Data
-public class DataPacket {
-    // 0x02 0xFD len:1 ver:1 cmd:1 content:n checksum:1
-    // |heads   |len  |data
+public abstract class DataPacket {
+    // Ver  |heads      |len    |data                                    |
+    // V21:  0x02 0xFD   len:1   ver:1 addr:1 cmd:1 content:n xor:1
+    // V22:  0x02 0xFD   len:1   ver:1 addr:1 cmd:1 content:n ~cs:1 xor:1
+
     public static final String DefaultCharsetName = "UTF-8";
+
     public static final byte Head1 = 0x02;
     public static final byte Head2 = (byte) 0xFD;
-    private int Version = 0x21;
+
+    public static final int  Version21 = 0x21;
+    public static final int  Version22 = 0x22;
+
+    public abstract int getVersion();
+
     private int Address = 0x00;
     private int Cmd = 0;
     public byte[] Content;
-    private int Checksum;
+    private byte[] Checksum;
 
     public int getContentLength() {
         return (Content == null ? 0 : Content.length);
     }
+
+    public abstract int getChecksumLength();
 
     // special addresses
     public static final int AddressDefault = 0x00;
@@ -40,23 +51,16 @@ public class DataPacket {
 
 
     public int GetLength() {
-        return (1 + 1 + 1 + getContentLength() + 1);
+        return (1 + 1 + 1 + getContentLength() + getChecksumLength());
     }
 
-    public int CalcChecksum() {
-        int cs = Version;
-        cs ^= Address;
-        cs ^= Cmd;
-        if (Content != null) {
-            for (byte b : Content) {
-                cs ^= (b & 0xFF);
-            }
-        }
-        return cs;
+    public abstract byte[] CalcChecksum();
+
+    public boolean isChecksumOK() {
+        return Arrays.equals(CalcChecksum(), Checksum);
     }
 
     public byte[] ToBytes() {
-        // 0x02 0xFD len:1 ver:1 cmd:1 content:n checksum:1
         // |heads   |len  |data                           |
         byte[] bts = new byte[1 + 1 + 1 + GetLength()];
         bts[0] = Head1;
@@ -68,17 +72,39 @@ public class DataPacket {
         if (getContent() != null) {
             System.arraycopy(getContent(), 0, bts, 6, getContent().length);
         }
-        bts[bts.length - 1] = (byte) (CalcChecksum() & 0xFF);
+        byte[] cs = CalcChecksum();
+        System.arraycopy(cs, 0, bts, bts.length - cs.length, cs.length);
         return bts;
     }
 
-    public static DataPacket ParseData(byte[] data) {
-        DataPacket pack = new DataPacket();
-        pack.setVersion(data[0] & 0xFF);
-        pack.setAddress(data[1] & 0xFF);
-        pack.setCmd(data[2] & 0xFF);
-        pack.setContent(Arrays.copyOfRange(data, 3, data.length - 1));
-        pack.setChecksum(data[data.length - 1] & 0xFF);
+    public static DataPacket ParseData(byte[] data) throws TimeoutException {
+        DataPacket pack = null;
+        int ver = data[0] & 0xFF;
+        switch (ver)
+        {
+            case Version21:
+            {
+                pack = new DataPacket21();
+                pack.setAddress(data[1] & 0xFF);
+                pack.setCmd(data[2] & 0xFF);
+                pack.setContent(Arrays.copyOfRange(data, 3, data.length - 1));
+                pack.setChecksum(Arrays.copyOfRange(data, data.length - 1, data.length));
+                break;
+            }
+            case Version22:
+            {
+                pack = new DataPacket22();
+                pack.setAddress(data[1] & 0xFF);
+                pack.setCmd(data[2] & 0xFF);
+                pack.setContent(Arrays.copyOfRange(data, 3, data.length - 2));
+                pack.setChecksum(Arrays.copyOfRange(data, data.length - 2, data.length));
+                break;
+            }
+            default:
+            {
+                throw new TimeoutException(String.format("Unknow pack version: 0x%X", ver));
+            }
+        }
         return pack;
     }
 
@@ -247,69 +273,67 @@ public class DataPacket {
         int ErrUnknow = 0xFF;
     }
 
-    public static DataPacket Build(int address, int cmd, byte[] content) {
-        DataPacket pack = new DataPacket();
-        pack.setAddress(address);
-        pack.setCmd(cmd);
-        pack.setContent(content);
-        pack.setChecksum(pack.CalcChecksum());
-        return pack;
+    public DataPacket Build(int address, int cmd, byte[] content) {
+        setAddress(address);
+        setCmd(cmd);
+        setContent(content);
+        return this;
     }
 
-    public static DataPacket Build(int address, int cmd) {
+    public DataPacket Build(int address, int cmd) {
         return Build(address, cmd, null);
     }
 
-    public static DataPacket BuildGetRawCount(int address) {
+    public DataPacket BuildGetRawCount(int address) {
         return Build(address, ESendCmd.RawCount);
     }
 
-    public static DataPacket BuildGetWeight(int address) {
+    public DataPacket BuildGetWeight(int address) {
         return Build(address, ESendCmd.Weight);
     }
 
-    public static DataPacket BuildGetHighResolution(int address) {
+    public DataPacket BuildGetHighResolution(int address) {
         return Build(address, ESendCmd.HighResolution);
     }
 
-    public static DataPacket BuildGetXSensors(int address) {
+    public DataPacket BuildGetXSensors(int address) {
         return Build(address, ESendCmd.XSensors);
     }
 
-    public static DataPacket BuildSetAddress(int address, int newAddress) {
+    public DataPacket BuildSetAddress(int address, int newAddress) {
         byte[] content = new byte[]{
                 (byte) (newAddress & 0xFF),
         };
         return Build(address, ESendCmd.SetAddress, content);
     }
 
-    public static DataPacket BuildReadParam(int address, int param) {
+    public DataPacket BuildReadParam(int address, int param) {
         byte[] content = new byte[]{
                 (byte) (param & 0xFF),
         };
         return Build(address, ESendCmd.ReadParam, content);
     }
 
-    public static DataPacket BuildWriteParam(int address, int param, byte value) {
+    public DataPacket BuildWriteParam(int address, int param, byte value) {
         byte[] bts = new byte[]{value};
         return BuildWriteParam(address, param, bts);
     }
 
-    public static DataPacket BuildWriteParam(int address, int param, int value) {
+    public DataPacket BuildWriteParam(int address, int param, int value) {
         byte[] bts = ByteHelper.intToBytes(value);
         return BuildWriteParam(address, param, bts);
     }
 
-    public static DataPacket BuildWriteParam(int address, int param, float value) {
+    public DataPacket BuildWriteParam(int address, int param, float value) {
         byte[] bts = ByteHelper.floatToBytes(value);
         return BuildWriteParam(address, param, bts);
     }
 
-    public static DataPacket BuildWriteParam(int address, int param, BigDecimal value) {
+    public DataPacket BuildWriteParam(int address, int param, BigDecimal value) {
         return BuildWriteParam(address, param, value.floatValue());
     }
 
-    public static DataPacket BuildWriteParam(int address, int param, String value, int maxLen) throws Exception {
+    public DataPacket BuildWriteParam(int address, int param, String value, int maxLen) throws Exception {
         if (value == null) {
             value = "";
         }
@@ -320,14 +344,14 @@ public class DataPacket {
         return BuildWriteParam(address, param, bts);
     }
 
-    public static DataPacket BuildWriteParam(int address, int param, byte[] value) {
+    public DataPacket BuildWriteParam(int address, int param, byte[] value) {
         byte[] content = new byte[value.length + 1];
         content[0] = (byte) (param & 0xFF);
         System.arraycopy(value, 0, content, 1, value.length);
         return Build(address, ESendCmd.WriteParam, content);
     }
 
-    public static DataPacket BuildCalibrate(int address, int point, float weight) {
+    public DataPacket BuildCalibrate(int address, int point, float weight) {
         byte[] val = ByteHelper.floatToBytes(weight);
         byte[] content = new byte[val.length + 1];
         content[0] = (byte) (point & 0xFF);
@@ -335,14 +359,14 @@ public class DataPacket {
         return Build(address, ESendCmd.Calibrate, content);
     }
 
-    public static DataPacket BuildDoZero(int address, boolean save) {
+    public DataPacket BuildDoZero(int address, boolean save) {
         byte[] content = new byte[]{
                 (byte) (save ? 1 : 0),
         };
         return Build(address, ESendCmd.DoZero, content);
     }
 
-    public static DataPacket BuildDoZero(int address, boolean save, float weight) {
+    public DataPacket BuildDoZero(int address, boolean save, float weight) {
         byte[] bts = ByteHelper.floatToBytes(weight);
         byte[] content = new byte[bts.length + 1];
         content[0] = (byte) (save ? 1 : 0);
@@ -350,14 +374,14 @@ public class DataPacket {
         return Build(address, ESendCmd.DoZero, content);
     }
 
-    public static DataPacket BuildSetWorkMode(int address, int mode) {
+    public DataPacket BuildSetWorkMode(int address, int mode) {
         byte[] content = new byte[]{
                 (byte) (mode & 0xFF),
         };
         return Build(address, ESendCmd.SetWorkMode, content);
     }
 
-    public static DataPacket BuildSetAddressByDeviceSn(int newAddress, String sn) throws Exception {
+    public DataPacket BuildSetAddressByDeviceSn(int newAddress, String sn) throws Exception {
         if (sn == null) {
             sn = "";
         }
@@ -371,7 +395,7 @@ public class DataPacket {
     }
 
 
-    public static DataPacket BuildUpgrade(int address, int packNo, byte[] data) {
+    public DataPacket BuildUpgrade(int address, int packNo, byte[] data) {
         if (data == null) {
             data = new byte[0];
         }
@@ -381,7 +405,7 @@ public class DataPacket {
         return Build(address, ESendCmd.Upgrade, content);
     }
 
-    public static DataPacket BuildUpgradeHead(int address, int flushAddress, int dataSize) {
+    public DataPacket BuildUpgradeHead(int address, int flushAddress, int dataSize) {
         byte[] bts1 = ByteHelper.intToBytes(flushAddress);
         byte[] bts2 = ByteHelper.intToBytes(dataSize);
         byte[] content = new byte[bts1.length + bts2.length];
@@ -390,19 +414,19 @@ public class DataPacket {
         return BuildUpgrade(address, (byte) EUpgradePackNo.Head, content);
     }
 
-    public static DataPacket BuildUpgradeEnd(int address) {
+    public DataPacket BuildUpgradeEnd(int address) {
         return BuildUpgrade(address, EUpgradePackNo.End, null);
     }
 
-    public static DataPacket BuildUpgradeData(int address, int packNo, byte[] data) {
+    public DataPacket BuildUpgradeData(int address, int packNo, byte[] data) {
         return BuildUpgrade(address, packNo, data);
     }
 
-    public static DataPacket BuildUpgradeQuery(int address) {
+    public DataPacket BuildUpgradeQuery(int address) {
         return BuildUpgrade(address, EUpgradePackNo.Query, null);
     }
 
-    public static DataPacket BuildUpgradeStart(int address, int deviceType, int delay) {
+    public DataPacket BuildUpgradeStart(int address, int deviceType, int delay) {
         byte[] bts = ByteHelper.intToBytes(delay);
         byte[] content = new byte[bts.length + 1];
         content[0] = (byte) (deviceType & 0xFF);
@@ -410,7 +434,7 @@ public class DataPacket {
         return BuildUpgrade(address, (byte) (EUpgradePackNo.Start & 0xFF), content);
     }
 
-    public static DataPacket BuildELabelCmd(int address, int cmd, int page, int totalPage, byte[] data) {
+    public DataPacket BuildELabelCmd(int address, int cmd, int page, int totalPage, byte[] data) {
         byte[] content = new byte[3 + (data == null ? 0 : data.length)];
         content[0] = (byte) (cmd & 0xFF);
         content[1] = (byte) (page & 0xFF);

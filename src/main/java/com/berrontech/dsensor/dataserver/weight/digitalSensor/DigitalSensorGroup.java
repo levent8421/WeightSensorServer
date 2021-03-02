@@ -780,7 +780,7 @@ public class DigitalSensorGroup {
 
     public void SetAddressByDeviceSn(int address, String sn) throws Exception {
         log.info("#{} SetAddressByDeviceSn: address={}, sn={}", DataPacket.AddressConditionalBroadcast, address, sn);
-        DataPacket packet = DataPacket.BuildSetAddressByDeviceSn(address, sn);
+        DataPacket packet = Driver.SpawnNewPacket().BuildSetAddressByDeviceSn(address, sn);
         synchronized (Driver.getLock()) {
             Driver.WriteRead(packet, getReadTimeout() + 1000);
         }

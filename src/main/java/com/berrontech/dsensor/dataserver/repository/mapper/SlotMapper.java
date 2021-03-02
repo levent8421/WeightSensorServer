@@ -94,4 +94,13 @@ public interface SlotMapper extends AbstractMapper<Slot> {
      * @return slots
      */
     List<Slot> selectSlotGroupByPrimarySlot(@Param("id") Integer id);
+
+    /**
+     * Update slot indivisible
+     *
+     * @param address address
+     * @return slot
+     */
+    int updateSlotIndivisible(@Param("address") List<Slot> address);
+
 }

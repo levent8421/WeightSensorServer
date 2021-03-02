@@ -294,7 +294,7 @@ public class DigitalSensorItem {
     public void SetAddress() throws Exception {
         try {
             log.info("#{} SetAddress", Params.getAddress());
-            DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressDefault, Params.getAddress());
+            DataPacket packet = Driver.SpawnNewPacket().BuildSetAddress(DataPacket.AddressDefault, Params.getAddress());
             synchronized (getDriver().getLock()) {
                 getDriver().WriteRead(packet, getWriteParamTimeout());
             }
@@ -310,7 +310,7 @@ public class DigitalSensorItem {
         try {
             int labelAddr = Params.getELabelAddress();
             log.info("#{} SetELabelAddress: {}", Params.getAddress(), labelAddr);
-            DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressDefault, labelAddr);
+            DataPacket packet = Driver.SpawnNewPacket().BuildSetAddress(DataPacket.AddressDefault, labelAddr);
             synchronized (getDriver().getLock()) {
                 Driver.WriteRead(packet, getWriteParamTimeout());
             }
@@ -325,7 +325,7 @@ public class DigitalSensorItem {
     public void ModifyAddress(int newAddress) throws Exception {
         try {
             log.info("#{} ModifyAddress: {}", Params.getAddress(), newAddress);
-            DataPacket packet = DataPacket.BuildSetAddress(Params.getAddress(), newAddress);
+            DataPacket packet = Driver.SpawnNewPacket().BuildSetAddress(Params.getAddress(), newAddress);
             synchronized (Driver.getLock()) {
                 Driver.WriteRead(packet, getWriteParamTimeout());
             }
@@ -340,7 +340,7 @@ public class DigitalSensorItem {
     public void ClearAddress() throws Exception {
         try {
             log.info("#{} ClearAddress", Params.getAddress());
-            DataPacket packet = DataPacket.BuildSetAddress(Params.getAddress(), DataPacket.AddressDefault);
+            DataPacket packet = Driver.SpawnNewPacket().BuildSetAddress(Params.getAddress(), DataPacket.AddressDefault);
             synchronized (Driver.getLock()) {
                 Driver.WriteRead(packet, getWriteParamTimeout());
             }
@@ -355,7 +355,7 @@ public class DigitalSensorItem {
     public static void clearAllAddress(DigitalSensorDriver driver) {
         try {
             log.info("#{} ClearAllAddress", DataPacket.AddressBroadcast);
-            DataPacket packet = DataPacket.BuildSetAddress(DataPacket.AddressBroadcast, DataPacket.AddressDefault);
+            DataPacket packet = driver.SpawnNewPacket().BuildSetAddress(DataPacket.AddressBroadcast, DataPacket.AddressDefault);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
@@ -367,7 +367,7 @@ public class DigitalSensorItem {
     public static void setAllWorkMode(DigitalSensorDriver driver, int mode) {
         try {
             log.info("#{} SetAllWorkMode: {}", DataPacket.AddressBroadcast, mode);
-            DataPacket packet = DataPacket.BuildSetWorkMode(DataPacket.AddressBroadcast, mode);
+            DataPacket packet = driver.SpawnNewPacket().BuildSetWorkMode(DataPacket.AddressBroadcast, mode);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
@@ -424,7 +424,7 @@ public class DigitalSensorItem {
 
     public void UpdateRawCount() throws Exception {
         try {
-            DataPacket packet = DataPacket.BuildGetRawCount(Params.getAddress());
+            DataPacket packet = Driver.SpawnNewPacket().BuildGetRawCount(Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
             }
@@ -440,7 +440,7 @@ public class DigitalSensorItem {
 
     public void UpdateWeight() throws Exception {
         try {
-            DataPacket packet = DataPacket.BuildGetWeight(Params.getAddress());
+            DataPacket packet = Driver.SpawnNewPacket().BuildGetWeight(Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout());
             }
@@ -458,7 +458,7 @@ public class DigitalSensorItem {
 
     public boolean UpdateHighResolution(boolean skipUnStable) throws Exception {
         try {
-            DataPacket packet = DataPacket.BuildGetHighResolution(Params.getAddress());
+            DataPacket packet = Driver.SpawnNewPacket().BuildGetHighResolution(Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
             }
@@ -519,7 +519,7 @@ public class DigitalSensorItem {
         try {
 //            log.debug("#{} UpdateHighResolution2", Params.getAddress());
 //            long ticks = System.currentTimeMillis();
-            DataPacket packet = DataPacket.BuildGetHighResolution(Params.getAddress());
+            DataPacket packet = Driver.SpawnNewPacket().BuildGetHighResolution(Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
             }
@@ -874,7 +874,7 @@ public class DigitalSensorItem {
     public boolean UpdateXSensors() {
         try {
             //Log.D($"#{Params.Address} UpdateXSensors");
-            DataPacket packet = DataPacket.BuildGetXSensors(Params.getAddress());
+            DataPacket packet = Driver.SpawnNewPacket().BuildGetXSensors(Params.getAddress());
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getReadTimeout(), READWRITE_RETRY_DEFAULT);
             }
@@ -908,7 +908,7 @@ public class DigitalSensorItem {
     public void DoZero(boolean save) throws Exception {
         try {
             log.info("#{} DoZero: save={}", Params.getAddress(), save);
-            DataPacket packet = DataPacket.BuildDoZero(Params.getAddress(), save);
+            DataPacket packet = Driver.SpawnNewPacket().BuildDoZero(Params.getAddress(), save);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getDoZeroTimeout());
             }
@@ -924,7 +924,7 @@ public class DigitalSensorItem {
     public void SetZeroOffset(boolean save, float offset) throws Exception {
         try {
             log.info("#{} SetZeroOffset: save={}, offset={}", Params.getAddress(), save, offset);
-            DataPacket packet = DataPacket.BuildDoZero(Params.getAddress(), save, offset);
+            DataPacket packet = Driver.SpawnNewPacket().BuildDoZero(Params.getAddress(), save, offset);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getDoZeroTimeout());
             }
@@ -940,7 +940,7 @@ public class DigitalSensorItem {
     public static void doAllZero(DigitalSensorDriver driver, boolean save) {
         try {
             log.info("#{} DoAllFactoryZero: save={}", DataPacket.AddressBroadcast, save);
-            DataPacket packet = DataPacket.BuildDoZero(DataPacket.AddressBroadcast, save);
+            DataPacket packet = driver.SpawnNewPacket().BuildDoZero(DataPacket.AddressBroadcast, save);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
@@ -995,7 +995,7 @@ public class DigitalSensorItem {
             log.info("#{} CalibrateZero", Params.getAddress());
             int point = DataPacket.ECalibrationPoint.PointZero;
             float val = 0;
-            DataPacket packet = DataPacket.BuildCalibrate(Params.getAddress(), point, val);
+            DataPacket packet = Driver.SpawnNewPacket().BuildCalibrate(Params.getAddress(), point, val);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getCalibrateTimeout());
             }
@@ -1020,7 +1020,7 @@ public class DigitalSensorItem {
         try {
             log.info("#{} CalibrateMiddle: value={}", Params.getAddress(), val);
             int point = DataPacket.ECalibrationPoint.PointMiddle;
-            DataPacket packet = DataPacket.BuildCalibrate(Params.getAddress(), point, val);
+            DataPacket packet = Driver.SpawnNewPacket().BuildCalibrate(Params.getAddress(), point, val);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getCalibrateTimeout());
             }
@@ -1045,7 +1045,7 @@ public class DigitalSensorItem {
         try {
             log.info("#{} CalibrateSpan: value={}", Params.getAddress(), val);
             int point = DataPacket.ECalibrationPoint.PointSpan;
-            DataPacket packet = DataPacket.BuildCalibrate(Params.getAddress(), point, val);
+            DataPacket packet = Driver.SpawnNewPacket().BuildCalibrate(Params.getAddress(), point, val);
             synchronized (Driver.getLock()) {
                 packet = Driver.WriteRead(packet, getCalibrateTimeout());
             }
@@ -1071,7 +1071,7 @@ public class DigitalSensorItem {
     }
 
     public DataPacket ReadParam(int param, int retries) throws Exception {
-        DataPacket packet = DataPacket.BuildReadParam(Params.getAddress(), param);
+        DataPacket packet = Driver.SpawnNewPacket().BuildReadParam(Params.getAddress(), param);
         log.info("#{} ReadParam: name={}, retries={}", packet.getAddress(), param, retries);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
@@ -1092,7 +1092,7 @@ public class DigitalSensorItem {
     }
 
     public DataPacket ReadELabelParam(int param, int retries) throws Exception {
-        DataPacket packet = DataPacket.BuildReadParam(Params.getELabelAddress(), param);
+        DataPacket packet = Driver.SpawnNewPacket().BuildReadParam(Params.getELabelAddress(), param);
         log.info("#{} ReadELabelParam: name={}, retries={}", packet.getAddress(), param, retries);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
@@ -1252,43 +1252,43 @@ public class DigitalSensorItem {
 
     public int WriteParam(int param, int value) throws Exception {
         log.info("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
-        DataPacket packet = DataPacket.BuildWriteParam(Params.getAddress(), param, value);
+        DataPacket packet = Driver.SpawnNewPacket().BuildWriteParam(Params.getAddress(), param, value);
         return WriteParam(packet);
     }
 
     public int WriteELabelParam(int param, int value) throws Exception {
         log.info("#{} WriteELabelParam: name={}, value={}", Params.getELabelAddress(), param, value);
-        DataPacket packet = DataPacket.BuildWriteParam(Params.getELabelAddress(), param, value);
+        DataPacket packet = Driver.SpawnNewPacket().BuildWriteParam(Params.getELabelAddress(), param, value);
         return WriteParam(packet);
     }
 
     public int WriteParam(int param, BigDecimal value) throws Exception {
         log.info("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
-        DataPacket packet = DataPacket.BuildWriteParam(Params.getAddress(), param, value);
+        DataPacket packet = Driver.SpawnNewPacket().BuildWriteParam(Params.getAddress(), param, value);
         return WriteParam(packet);
     }
 
     public int WriteParam(int param, float value) throws Exception {
         log.info("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
-        DataPacket packet = DataPacket.BuildWriteParam(Params.getAddress(), param, value);
+        DataPacket packet = Driver.SpawnNewPacket().BuildWriteParam(Params.getAddress(), param, value);
         return WriteParam(packet);
     }
 
     public int WriteParam(int param, String value, int maxLen) throws Exception {
         log.debug("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value);
-        DataPacket packet = DataPacket.BuildWriteParam(Params.getAddress(), param, value, maxLen);
+        DataPacket packet = Driver.SpawnNewPacket().BuildWriteParam(Params.getAddress(), param, value, maxLen);
         return WriteParam(packet);
     }
 
     public int WriteParam(int param, byte[] value) throws Exception {
         log.debug("#{} WriteParam: name={}, value={}", Params.getAddress(), param, value.length);
-        DataPacket packet = DataPacket.BuildWriteParam(Params.getAddress(), param, value);
+        DataPacket packet = Driver.SpawnNewPacket().BuildWriteParam(Params.getAddress(), param, value);
         return WriteParam(packet);
     }
 
     public int WriteELabelParam(int param, String value, int maxLen) throws Exception {
         log.debug("#{} WriteELabelParam: name={}, value={}", Params.getELabelAddress(), param, value);
-        DataPacket packet = DataPacket.BuildWriteParam(Params.getELabelAddress(), param, value, maxLen);
+        DataPacket packet = Driver.SpawnNewPacket().BuildWriteParam(Params.getELabelAddress(), param, value, maxLen);
         return WriteParam(packet);
     }
 
@@ -1344,7 +1344,7 @@ public class DigitalSensorItem {
         try {
             log.info("#{} SetAllCreepCorrect: value={}", DataPacket.AddressBroadcast, value);
             int param = DataPacket.EParam.CreepCorrect;
-            DataPacket packet = DataPacket.BuildWriteParam(DataPacket.AddressBroadcast, param, (float) value);
+            DataPacket packet = driver.SpawnNewPacket().BuildWriteParam(DataPacket.AddressBroadcast, param, (float) value);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
@@ -1357,7 +1357,7 @@ public class DigitalSensorItem {
         try {
             log.info("#{} SetAllZeroCapture: value={}", DataPacket.AddressBroadcast, value);
             int param = DataPacket.EParam.ZeroCapture;
-            DataPacket packet = DataPacket.BuildWriteParam(DataPacket.AddressBroadcast, param, (float) value);
+            DataPacket packet = driver.SpawnNewPacket().BuildWriteParam(DataPacket.AddressBroadcast, param, (float) value);
             synchronized (driver.getLock()) {
                 driver.Write(packet);
             }
@@ -1651,7 +1651,7 @@ public class DigitalSensorItem {
     public DataPacket OperateELabel(int cmd, int page, int totalPage, byte[] data) throws Exception {
 
         int address = Params.getELabelAddress();
-        DataPacket packet = DataPacket.BuildELabelCmd(address, cmd, page, totalPage, data);
+        DataPacket packet = Driver.SpawnNewPacket().BuildELabelCmd(address, cmd, page, totalPage, data);
 
         long endTime = System.currentTimeMillis() + getReadTimeout();
         synchronized (Driver.getLock()) {
@@ -1922,7 +1922,7 @@ public class DigitalSensorItem {
         int result = DataPacket.EResult.ErrUnknow;
 
         log.debug("#{} UpgradeQuery", Params.getAddress());
-        DataPacket packet = DataPacket.BuildUpgradeQuery(Params.getAddress());
+        DataPacket packet = Driver.SpawnNewPacket().BuildUpgradeQuery(Params.getAddress());
         try {
             packet = UpgradeWriteRead(packet, getUpgradeReadTimeout());
             SetCommResult(true);
@@ -1945,7 +1945,7 @@ public class DigitalSensorItem {
 
     protected boolean UpgradeStart(int deviceType) throws Exception {
         log.debug("#{} UpgradeStart: DeviceType={}", Params.getAddress(), deviceType);
-        DataPacket packet = DataPacket.BuildUpgradeStart(Params.getAddress(), deviceType, 1000);
+        DataPacket packet = Driver.SpawnNewPacket().BuildUpgradeStart(Params.getAddress(), deviceType, 1000);
         try {
             packet = UpgradeWriteRead(packet, getUpgradeReadTimeout());
             SetCommResult(true);
@@ -1972,7 +1972,7 @@ public class DigitalSensorItem {
         }
         int result = DataPacket.EResult.ErrUnknow;
         log.debug("#{} UpgradeSendHead: address=0x{}, size={}({})", Params.getAddress(), Integer.toHexString(flushAddress), roundSize, dataSize);
-        DataPacket packet = DataPacket.BuildUpgradeHead(Params.getAddress(), flushAddress, roundSize);
+        DataPacket packet = Driver.SpawnNewPacket().BuildUpgradeHead(Params.getAddress(), flushAddress, roundSize);
         try {
             packet = UpgradeWriteRead(packet, getEmptyFlashTimeout());
             SetCommResult(true);
@@ -1995,7 +1995,7 @@ public class DigitalSensorItem {
     protected boolean UpgradeSendEnd() throws Exception {
         int result = DataPacket.EResult.ErrUnknow;
         log.debug("#{} UpgradeSendEnd", Params.getAddress());
-        DataPacket packet = DataPacket.BuildUpgradeEnd(Params.getAddress());
+        DataPacket packet = Driver.SpawnNewPacket().BuildUpgradeEnd(Params.getAddress());
         Driver.Write(packet);
         Thread.sleep(100);
         Driver.Write(packet);
@@ -2005,7 +2005,7 @@ public class DigitalSensorItem {
     protected boolean UpgradeSendData(int packNo, byte[] data) throws Exception {
         int result = DataPacket.EResult.ErrUnknow;
         log.debug("#{} UpgradeSendData: packNo={}, dataLen={}", Params.getAddress(), packNo, data.length);
-        DataPacket packet = DataPacket.BuildUpgradeData(Params.getAddress(), packNo, data);
+        DataPacket packet = Driver.SpawnNewPacket().BuildUpgradeData(Params.getAddress(), packNo, data);
         try {
             packet = UpgradeWriteRead(packet, getWriteParamTimeout());
             SetCommResult(true);
@@ -2076,22 +2076,26 @@ public class DigitalSensorItem {
                 // check status
                 if (!sensor.UpgradeQuery(version)) {
                     try {
-                        log.debug("Try start device boot");
+                        log.info("Try start device boot");
                         // unlock first
                         sensor.Unlock();
                         // start to bootloader
                         if (sensor.UpgradeStart(deviceType)) {
-                            log.debug("Call boot done");
+                            log.info("Call boot done");
                         } else {
-                            log.debug("Call boot failed, try upgrading directly");
+                            log.info("Call boot failed, try upgrading directly");
                         }
                     } catch (TimeoutException ex) {
                         // ignore
-                        log.debug("Start boot failed, try upgrading directly");
+                        log.info("Start boot failed, try upgrading directly");
                     }
                 }
                 // build default sensor for upgrading
                 sensor = NewDefaultSensor(Driver, Group);
+
+                log.info("Upgrade always in Version21");
+                Driver.PackVersion = DataPacket.Version21;
+
                 // handshake
                 while (Upgrading) {
                     if (sensor.UpgradeQuery(version)) {
@@ -2161,7 +2165,7 @@ public class DigitalSensorItem {
                     if (sensor.UpgradeSendEnd()) {
                         // finish upgrading
                     }
-                    log.debug("Upgrading Finished");
+                    log.info("Upgrading Finished");
                     if (p != null) {
                         p.onProgress(totalSize, totalSize);
                     }

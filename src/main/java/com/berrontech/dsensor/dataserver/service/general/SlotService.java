@@ -129,4 +129,13 @@ public interface SlotService extends AbstractService<Slot> {
      * @return slots
      */
     List<Slot> findSlotGroupByPrimarySlot(Integer id);
+
+    /**
+     * Modify the cargo Lane individual field
+     *
+     * @param id slot id
+     * @return  slots
+     */
+    int updateSlotsIndivisible(Integer id);
+
 }
