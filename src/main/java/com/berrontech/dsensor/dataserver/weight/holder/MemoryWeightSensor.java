@@ -42,6 +42,7 @@ public class MemoryWeightSensor implements Serializable {
         mws.setZeroReference(sensor.getZeroReference());
         mws.setConfigStr(sensor.getConfigStr());
         mws.setHasElable(sensor.getHasElabel());
+        mws.setType(sensor.getType());
         return mws;
     }
 
@@ -56,4 +57,5 @@ public class MemoryWeightSensor implements Serializable {
     private int state;
     private MemoryWeightData weightData;
     private Boolean hasElable;
+    private int type;
 }
