@@ -1,8 +1,10 @@
 package com.berrontech.dsensor.dataserver.tcpclient.action.handlers;
 
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
+import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
+import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.action.ActionHandler;
 import com.berrontech.dsensor.dataserver.tcpclient.action.mapping.ActionHandlerMapping;
 import com.berrontech.dsensor.dataserver.tcpclient.util.MessageUtils;
@@ -39,11 +41,16 @@ public class BalanceSkuSetHandler implements ActionHandler {
     private final SlotService slotService;
     private final WeightController weightController;
     private final WeightDataHolder weightDataHolder;
+    private final WeightSensorService weightSensorService;
 
-    public BalanceSkuSetHandler(SlotService slotService, WeightController weightController, WeightDataHolder weightDataHolder) {
+    public BalanceSkuSetHandler(SlotService slotService,
+                                WeightController weightController,
+                                WeightDataHolder weightDataHolder,
+                                WeightSensorService weightSensorService) {
         this.slotService = slotService;
         this.weightController = weightController;
         this.weightDataHolder = weightDataHolder;
+        this.weightSensorService = weightSensorService;
     }
 
     @Override
@@ -54,13 +61,14 @@ public class BalanceSkuSetHandler implements ActionHandler {
         assert params != null;
 
         final Map<String, String> failureSlotNos = new HashMap<>(16);
+        final Map<String, WeightSensor> slotNoSensorMap = weightSensorTable();
         for (SkuParam param : params) {
             if (param == null) {
                 log.warn("Receive a null param(On set sku api[{}])!", message.getSeqNo());
                 continue;
             }
             try {
-                doSetSku(param);
+                doSetSku(param, slotNoSensorMap);
             } catch (Exception e) {
                 failureSlotNos.put(param.getSlotNo(), String.format("%s:%s", e.getClass().getSimpleName(), e.getMessage()));
                 log.warn("API message[{}], Error on set slot [{}] sku to [{}],error=[{},{}]",
@@ -71,11 +79,30 @@ public class BalanceSkuSetHandler implements ActionHandler {
         return MessageUtils.replyMessage(message, payload);
     }
 
-    private void doSetSku(SkuParam param) {
+    private Map<String, WeightSensor> weightSensorTable() {
+        final List<WeightSensor> sensors = weightSensorService.listWithSlot();
+        final Map<String, WeightSensor> slotNoSensorTable = new HashMap<>(16);
+        for (WeightSensor sensor : sensors) {
+            final Slot slot = sensor.getSlot();
+            if (slot == null) {
+                continue;
+            }
+            final String slotNo = slot.getSlotNo();
+            slotNoSensorTable.put(slotNo, sensor);
+        }
+        return slotNoSensorTable;
+    }
+
+    private void doSetSku(SkuParam param, Map<String, WeightSensor> slotNoSensorMap) {
         checkParam(param);
+        final String slotNo = param.getSlotNo();
+        if (!slotNoSensorMap.containsKey(slotNo)) {
+            final String errors = String.format("Can not set SKU for merged slot[%s]!被合并货道[%s]不能设置SKU", slotNo, slotNo);
+            throw new BadRequestException(errors);
+        }
         // ------DATABASE OPERATION START------
         final Slot queryParam = new Slot();
-        queryParam.setSlotNo(param.getSlotNo());
+        queryParam.setSlotNo(slotNo);
         if (StringUtils.isNotBlank(param.getSkuNo())) {
             queryParam.setSkuName(param.getName());
             queryParam.setSkuNo(param.getSkuNo());
@@ -96,7 +123,6 @@ public class BalanceSkuSetHandler implements ActionHandler {
         sku.setApw(param.getApw());
         sku.setTolerance(param.getTolerance());
         weightController.setSku(slotNo, sku);
-
         final MemorySlot slot = weightDataHolder.getSlotTable().get(slotNo);
         if (slot == null) {
             // 货道数据库内容已更新 但内存数据未更新
