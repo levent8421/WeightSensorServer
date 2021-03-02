@@ -244,10 +244,4 @@
         set type=#{type}
         where id = #{id}
     </update>
-    <select id="selectWeightSensorAddress"
-            resultType="com.berrontech.dsensor.dataserver.common.entity.Slot">
-        SELECT s.address
-        FROM t_weight_sensor AS w
-                 INNER JOIN t_slot AS s ON w.slot_id = #{slot_id} and w.address = s.address
-    </select>
 </mapper>

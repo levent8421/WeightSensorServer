@@ -9,6 +9,8 @@ import lombok.Data;
  * @date 2021/3/2 16:27
  */
 @Data
-public class LaneLockPassword {
+public class SlotLockParam {
     private String password;
+    private Integer slotId;
+    private Boolean indivisible;
 }

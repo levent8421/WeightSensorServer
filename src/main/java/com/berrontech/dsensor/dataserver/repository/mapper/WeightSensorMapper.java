@@ -222,13 +222,4 @@ public interface WeightSensorMapper extends AbstractMapper<WeightSensor> {
      * @return rows
      */
     int updateTypeById(@Param("id") Integer id, @Param("type") Integer type);
-
-    /**
-     * 通过slotId查询WeightSensor表和Slot表联查得到Slot表中的address字段
-     *
-     * @param id slotId
-     * @return WeightSensor
-     */
-    List<Slot> selectWeightSensorAddress(@Param("slot_id") Integer id);
-
 }

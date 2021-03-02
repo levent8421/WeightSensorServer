@@ -112,10 +112,10 @@
     </select>
     <update id="updateSlotIndivisible" parameterType="com.berrontech.dsensor.dataserver.common.entity.Slot">
         UPDATE t_slot
-        SET indivisible = 1
+        SET indivisible = #{indivisible}
         WHERE address IN
-        <foreach collection="address" item="address" index="index" open="(" close=")" separator=",">
-            #{address.address}
+        <foreach collection="addresses" item="address" open="(" close=")" separator=",">
+            #{address}
         </foreach>
     </update>
 </mapper>

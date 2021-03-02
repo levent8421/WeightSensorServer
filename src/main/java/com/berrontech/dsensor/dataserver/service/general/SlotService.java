@@ -133,9 +133,10 @@ public interface SlotService extends AbstractService<Slot> {
     /**
      * Modify the cargo Lane individual field
      *
-     * @param id slot id
-     * @return  slots
+     * @param id          slot id
+     * @param indivisible 是否锁定
+     * @return slots
      */
-    int updateSlotsIndivisible(Integer id);
+    int updateSlotsIndivisible(Integer id, boolean indivisible);
 
 }

@@ -7,6 +7,7 @@ import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
 import com.berrontech.dsensor.dataserver.common.exception.PermissionDeniedException;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
+import com.berrontech.dsensor.dataserver.common.util.ParamChecker;
 import com.berrontech.dsensor.dataserver.common.util.SlotGroupUtils;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
@@ -449,18 +450,22 @@ public class SlotController extends AbstractEntityController<Slot> {
     /**
      * 锁定货道
      *
-     * @param id
-     * @param applicationPassword
-     * @return
+     * @param id    货道ID
+     * @param param 请求体参数
+     * @return GR
      */
     @PostMapping("/{id}/_lock")
     public GeneralResult<Integer> lock(@PathVariable("id") Integer id,
-                                    @RequestBody LaneLockPassword applicationPassword) {
-        if (!Objects.equals(ApplicationConstants.Context.APPLICATION_PASSWORD, applicationPassword.getPassword())) {
-            throw new PermissionDeniedException();
+                                       @RequestBody SlotLockParam param) {
+        ParamChecker.notNull(param, BadRequestException.class, "no available param!");
+        ParamChecker.notEmpty(param.getPassword(), BadRequestException.class, "Password is required!");
+        ParamChecker.notNull(param.getIndivisible(), BadRequestException.class, "Indivisible is required!");
+
+        if (!Objects.equals(ApplicationConstants.Context.APPLICATION_PASSWORD, param.getPassword())) {
+            throw new PermissionDeniedException("密码不正确");
         }
-        int slot = slotService.updateSlotsIndivisible(id);
-        return GeneralResult.ok(slot);
+        final int rows = slotService.updateSlotsIndivisible(id, param.getIndivisible());
+        return GeneralResult.ok(rows);
     }
 
 }
