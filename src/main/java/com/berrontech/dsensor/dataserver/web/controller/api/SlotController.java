@@ -5,16 +5,14 @@ import com.berrontech.dsensor.dataserver.common.entity.AbstractDevice485;
 import com.berrontech.dsensor.dataserver.common.entity.Slot;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
 import com.berrontech.dsensor.dataserver.common.exception.BadRequestException;
+import com.berrontech.dsensor.dataserver.common.exception.PermissionDeniedException;
 import com.berrontech.dsensor.dataserver.common.util.CollectionUtils;
 import com.berrontech.dsensor.dataserver.common.util.SlotGroupUtils;
 import com.berrontech.dsensor.dataserver.service.general.SlotService;
 import com.berrontech.dsensor.dataserver.service.general.WeightSensorService;
 import com.berrontech.dsensor.dataserver.tcpclient.notify.WeightNotifier;
 import com.berrontech.dsensor.dataserver.web.controller.AbstractEntityController;
-import com.berrontech.dsensor.dataserver.web.vo.CompensationStateParam;
-import com.berrontech.dsensor.dataserver.web.vo.GeneralResult;
-import com.berrontech.dsensor.dataserver.web.vo.ResetSlotSensorsParam;
-import com.berrontech.dsensor.dataserver.web.vo.SlotMergeParam;
+import com.berrontech.dsensor.dataserver.web.vo.*;
 import com.berrontech.dsensor.dataserver.weight.TareException;
 import com.berrontech.dsensor.dataserver.weight.WeightController;
 import com.berrontech.dsensor.dataserver.weight.WeightUnit;
@@ -447,4 +445,22 @@ public class SlotController extends AbstractEntityController<Slot> {
         }
         return GeneralResult.ok(slot);
     }
+
+    /**
+     * 锁定货道
+     *
+     * @param id
+     * @param applicationPassword
+     * @return
+     */
+    @PostMapping("/{id}/_lock")
+    public GeneralResult<Integer> lock(@PathVariable("id") Integer id,
+                                    @RequestBody LaneLockPassword applicationPassword) {
+        if (!Objects.equals(ApplicationConstants.Context.APPLICATION_PASSWORD, applicationPassword.getPassword())) {
+            throw new PermissionDeniedException();
+        }
+        int slot = slotService.updateSlotsIndivisible(id);
+        return GeneralResult.ok(slot);
+    }
+
 }

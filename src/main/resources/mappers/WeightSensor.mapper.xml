@@ -2,7 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.berrontech.dsensor.dataserver.repository.mapper.WeightSensorMapper">
     <sql id="columns">
-        ws.id            as ws_id,
+        ws
+        .
+        id
+        as ws_id,
         ws.connection_id as ws_connection_id,
         ws.address       as ws_address,
         ws.device_sn     as ws_device_sn,
@@ -241,4 +244,10 @@
         set type=#{type}
         where id = #{id}
     </update>
+    <select id="selectWeightSensorAddress"
+            resultType="com.berrontech.dsensor.dataserver.common.entity.Slot">
+        SELECT s.address
+        FROM t_weight_sensor AS w
+                 INNER JOIN t_slot AS s ON w.slot_id = #{slot_id} and w.address = s.address
+    </select>
 </mapper>

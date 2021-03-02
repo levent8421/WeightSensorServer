@@ -84,6 +84,10 @@ public class ApplicationConstants {
          * Application Name
          */
         public static final String APP_NAME = "balance";
+        /**
+         * Application Password
+         */
+        public static final String APPLICATION_PASSWORD = "monolithiot";
     }
 
     /**
