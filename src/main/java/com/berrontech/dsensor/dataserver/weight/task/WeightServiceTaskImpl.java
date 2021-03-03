@@ -195,7 +195,7 @@ public class WeightServiceTaskImpl implements WeightServiceTask, WeightControlle
         }
         log.debug("Try build connection");
         DigitalSensorUtils.buildDigitalSensorGroups(scanManager, Collections.singletonList(connection));
-        scanManager.open();
+        scanManager.openForScan();
         for (val g : scanManager.getGroups()) {
             log.debug("Try start scan: connId={}, commMode={}, serialName={}, netAddr={}:{}", g.getConnectionId(), g.getCommMode(), g.getCommSerial(), g.getCommAddress(), g.getCommPort());
             g.startScan(new DigitalSensorScanListener() {

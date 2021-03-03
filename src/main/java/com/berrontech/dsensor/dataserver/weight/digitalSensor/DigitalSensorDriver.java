@@ -25,6 +25,7 @@ public class DigitalSensorDriver {
 
     public void OpenCom(String portName, int baudrate) {
         try {
+            log.info("Open serial[{}:{}]", portName, baudrate);
             setConnection(new SerialConnection().setParam(portName, baudrate));
             connection.open();
         } catch (Exception ex) {
@@ -34,9 +35,21 @@ public class DigitalSensorDriver {
 
     public void OpenNet(String address, int port) {
         try {
+            log.info("Open net[{}:{}] async", address, port);
             TCPConnection conn = new TCPConnection().setParam(address, port);
             setConnection(conn);
-            conn.openWithWatchDog();
+            conn.openWithWatchDog();    // open async
+        } catch (Exception ex) {
+            log.error("Open net[{}:{}] failed", address, port, ex);
+        }
+    }
+
+    public void OpenNetForScan(String address, int port) {
+        try {
+            log.info("Open net[{}:{}] at once", address, port);
+            TCPConnection conn = new TCPConnection().setParam(address, port);
+            setConnection(conn);
+            conn.open();    // open at once
         } catch (Exception ex) {
             log.error("Open net[{}:{}] failed", address, port, ex);
         }
