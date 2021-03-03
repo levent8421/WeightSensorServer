@@ -212,7 +212,7 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
         final List<Integer> slotIds = slots.stream()
                 .map(Slot::getId)
                 .collect(Collectors.toList());
-        final int rows = slotMapper.updateSlotIndivisible(slotIds, true);
+        final int rows = slotMapper.updateSlotIndivisible(slotIds, indivisible);
         if (rows <= 0) {
             throw new InternalServerErrorException(String.format("Error on update indivisible for slot[%s],rows=%s", slotIds, rows));
         }
