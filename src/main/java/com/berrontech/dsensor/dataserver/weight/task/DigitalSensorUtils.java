@@ -2,6 +2,7 @@ package com.berrontech.dsensor.dataserver.weight.task;
 
 import com.berrontech.dsensor.dataserver.common.entity.DeviceConnection;
 import com.berrontech.dsensor.dataserver.common.entity.WeightSensor;
+import com.berrontech.dsensor.dataserver.weight.ProtocolVersion;
 import com.berrontech.dsensor.dataserver.weight.digitalSensor.*;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySku;
 import com.berrontech.dsensor.dataserver.weight.holder.MemorySlot;
@@ -24,6 +25,18 @@ public class DigitalSensorUtils {
         sensorManager.shutdown();
         sensorManager.getGroups().clear();
         log.debug("connection count={}", weightDataHolder.getConnections().size());
+        int protocol = DataPacket.Version21;
+        switch (weightDataHolder.getProtocolVersion()) {
+            default:
+            case ProtocolVersion.VERSION_21: {
+                protocol = DataPacket.Version21;
+                break;
+            }
+            case ProtocolVersion.VERSION_22: {
+                protocol = DataPacket.Version22;
+                break;
+            }
+        }
         for (DeviceConnection conn : weightDataHolder.getConnections()) {
             try {
                 int count1 = (int) weightDataHolder.getWeightSensors().stream().filter((a) -> a.getConnectionId().equals(conn.getId())).count();
@@ -36,6 +49,7 @@ public class DigitalSensorUtils {
                 }
 
                 DigitalSensorGroup group = sensorManager.NewGroup();
+                group.getDriver().setPackVersion(protocol);
                 switch (conn.getType()) {
                     //switch (2) {
                     default: {
@@ -89,6 +103,15 @@ public class DigitalSensorUtils {
                         if (sen.getHasElabel()) {
 //                            params.setELabelModel(DigitalSensorParams.EELabelModel.V3);
                             params.setELabelModel(DigitalSensorParams.EELabelModel.V4);
+                        }
+                        switch (sen.getType()) {
+                            case WeightSensor.TYPE_BASKETS: {
+                                sensor.getParams().setNegativeMode(true);
+                                break;
+                            }
+                            default: {
+                                break;
+                            }
                         }
                         sensor.getValues().setFilterDepth(weightDataHolder.getSoftFilterLevel());
 

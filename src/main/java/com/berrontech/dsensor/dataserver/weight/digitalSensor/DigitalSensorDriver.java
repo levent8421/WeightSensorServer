@@ -17,12 +17,15 @@ public class DigitalSensorDriver {
     public int DefaultBaudrate = 115200;
     private BasicConnection connection;
 
+    public int PackVersion = DataPacket.Version21;
+
     public void OpenCom(String portName) {
         OpenCom(portName, DefaultBaudrate);
     }
 
     public void OpenCom(String portName, int baudrate) {
         try {
+            log.info("Open serial[{}:{}]", portName, baudrate);
             setConnection(new SerialConnection().setParam(portName, baudrate));
             connection.open();
         } catch (Exception ex) {
@@ -32,9 +35,21 @@ public class DigitalSensorDriver {
 
     public void OpenNet(String address, int port) {
         try {
+            log.info("Open net[{}:{}] async", address, port);
             TCPConnection conn = new TCPConnection().setParam(address, port);
             setConnection(conn);
-            conn.openWithWatchDog();
+            conn.openWithWatchDog();    // open async
+        } catch (Exception ex) {
+            log.error("Open net[{}:{}] failed", address, port, ex);
+        }
+    }
+
+    public void OpenNetForScan(String address, int port) {
+        try {
+            log.info("Open net[{}:{}] at once", address, port);
+            TCPConnection conn = new TCPConnection().setParam(address, port);
+            setConnection(conn);
+            conn.open();    // open at once
         } catch (Exception ex) {
             log.error("Open net[{}:{}] failed", address, port, ex);
         }
@@ -60,7 +75,8 @@ public class DigitalSensorDriver {
                 DataPacket packet = null;
                 if (data != null) {
                     packet = DataPacket.ParseData(data);
-                    if (!isValid(packet)) {
+                    if (!packet.isChecksumOK()) {
+                        log.debug("Checksum error, ver=[{}] recv=[{}], calc=[{}]", packet.getVersion(), packet.getChecksum(), packet.CalcChecksum());
                         return null;
                     }
                 }
@@ -68,15 +84,6 @@ public class DigitalSensorDriver {
             }
         } while (System.currentTimeMillis() <= endTime);
         throw new TimeoutException("Wait packet timeout");
-    }
-
-    private boolean isValid(DataPacket packet) {
-        final int checkSum = packet.CalcChecksum();
-        final boolean valid = packet.getChecksum() == checkSum;
-        if (!valid) {
-            log.debug("Checksum error, recv=[{}], calc=[{}]", packet.getChecksum(), checkSum);
-        }
-        return valid;
     }
 
     public DataPacket Read(int address, int cmd, int timeout) throws TimeoutException {
@@ -121,6 +128,19 @@ public class DigitalSensorDriver {
         } while (sendCount <= retries);
         throw new TimeoutException("Wait packet out of " + retries + " retries");
     }
+
+    public DataPacket SpawnNewPacket() {
+        switch (PackVersion) {
+            default:
+            case DataPacket.Version21: {
+                return new DataPacket21();
+            }
+            case DataPacket.Version22: {
+                return new DataPacket22();
+            }
+        }
+    }
+
 
     @Override
     public String toString() {

@@ -3,6 +3,8 @@ package com.berrontech.dsensor.dataserver.weight.utils.helper;
 
 import lombok.NonNull;
 
+import java.util.Arrays;
+
 public class ByteHelper {
 
     public static int bytesToInt(byte[] src) {
@@ -114,5 +116,10 @@ public class ByteHelper {
             sum += b & 0xFF;
         }
         return sum;
+    }
+
+    public static byte[] subArray(byte[] data, int start, int length)
+    {
+        return Arrays.copyOfRange(data, start, start + length);
     }
 }

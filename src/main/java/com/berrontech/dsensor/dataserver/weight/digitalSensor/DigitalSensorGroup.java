@@ -174,25 +174,47 @@ public class DigitalSensorGroup {
         }
     }
 
+    public void OpenForScan() {
+        switch (CommMode) {
+            default: {
+                break;
+            }
+            case Com: {
+                OpenCom(CommSerial);
+                break;
+            }
+            case Net: {
+                OpenNetForScan(CommAddress, CommPort);
+                break;
+            }
+        }
+    }
+
     public void OpenCom(String port) {
         OpenCom(port, 115200);
     }
 
     public void OpenCom(String port, int baud) {
         Close();
-        Opened = true;
         Driver.OpenCom(port, baud);
+        Opened = true;
     }
 
     public void OpenNet(String address, int port) {
         Close();
-        Opened = true;
         Driver.OpenNet(address, port);
+        Opened = true;
+    }
+
+    public void OpenNetForScan(String address, int port) {
+        Close();
+        Driver.OpenNetForScan(address, port);
+        Opened = true;
     }
 
     public void Close() {
-        Driver.close();
         Opened = false;
+        Driver.close();
     }
 
     public List<String> getSubGroupNames() {
@@ -672,6 +694,9 @@ public class DigitalSensorGroup {
         createThreadPool().execute(() ->
         {
             try {
+                if (isNotOpened()) {
+                    throw new Exception(Driver + " NOT opened!");
+                }
                 DigitalSensorItem sensor = DigitalSensorItem.NewDefaultSensor(Driver, this);
                 synchronized (Driver.getLock()) {
                     for (int addr = startAddress; addr <= endAddress; addr++) {
@@ -780,7 +805,7 @@ public class DigitalSensorGroup {
 
     public void SetAddressByDeviceSn(int address, String sn) throws Exception {
         log.info("#{} SetAddressByDeviceSn: address={}, sn={}", DataPacket.AddressConditionalBroadcast, address, sn);
-        DataPacket packet = DataPacket.BuildSetAddressByDeviceSn(address, sn);
+        DataPacket packet = Driver.SpawnNewPacket().BuildSetAddressByDeviceSn(address, sn);
         synchronized (Driver.getLock()) {
             Driver.WriteRead(packet, getReadTimeout() + 1000);
         }

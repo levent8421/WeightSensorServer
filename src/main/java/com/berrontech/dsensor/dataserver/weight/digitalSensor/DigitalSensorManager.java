@@ -82,6 +82,22 @@ public class DigitalSensorManager {
         Opened = true;
     }
 
+    public void openForScan() {
+        if (Opened) {
+            return;
+        }
+        if (Groups.size() > 0) {
+            for (DigitalSensorGroup g : Groups) {
+                try {
+                    g.OpenForScan();
+                } catch (Exception ex) {
+                    log.warn("Open", ex);
+                }
+            }
+        }
+        Opened = true;
+    }
+
     public void close() {
         if (!Opened) {
             return;
