@@ -210,7 +210,7 @@ public class SlotServiceImpl extends AbstractServiceImpl<Slot> implements SlotSe
             throw new BadRequestException("非合并货道不能锁定！");
         }
         final List<Integer> slotIds = slots.stream()
-                .map(Slot::getId)
+                .map(Slot::getAddress)
                 .collect(Collectors.toList());
         final int rows = slotMapper.updateSlotIndivisible(slotIds, indivisible);
         if (rows <= 0) {

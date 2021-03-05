@@ -98,7 +98,8 @@ public interface SlotMapper extends AbstractMapper<Slot> {
     /**
      * Update slot indivisible
      *
-     * @param address address
+     * @param addresses   address List
+     * @param indivisible indivisible
      * @return slot
      */
     int updateSlotIndivisible(@Param("addresses") List<Integer> addresses,

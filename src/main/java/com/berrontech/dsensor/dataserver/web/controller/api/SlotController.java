@@ -199,10 +199,12 @@ public class SlotController extends AbstractEntityController<Slot> {
         notNull(param, BadRequestException.class, "No available Params!");
         notEmpty(param.getSkuNo(), BadRequestException.class, "No sku param!");
         final String skuNo = normalizeSkuNo(param.getSkuNo());
+        checkSkuNo(skuNo);
 
         final List<Slot> slots = slotService.findBySku(skuNo);
         if (slots.isEmpty()) {
-            return GeneralResult.badRequest("Can not find sku[" + skuNo + "]");
+            final String error = String.format("目前没有库位绑定该SKU(%s)", skuNo);
+            return GeneralResult.badRequest(error);
         }
         final Set<String> slotNoSet = slots.stream()
                 .map(Slot::getSlotNo)
@@ -222,6 +224,12 @@ public class SlotController extends AbstractEntityController<Slot> {
             return skuNo.substring(1, MAX_SKU_NO_LENGTH + 1);
         }
         return skuNo;
+    }
+
+    private void checkSkuNo(String skuNo) {
+        if (skuNo.length() != MAX_SKU_NO_LENGTH) {
+            throw new BadRequestException("该二维码不规范，请重新扫描");
+        }
     }
 
     /**
@@ -458,11 +466,12 @@ public class SlotController extends AbstractEntityController<Slot> {
     public GeneralResult<Integer> lock(@PathVariable("id") Integer id,
                                        @RequestBody SlotLockParam param) {
         ParamChecker.notNull(param, BadRequestException.class, "no available param!");
-        ParamChecker.notEmpty(param.getPassword(), BadRequestException.class, "Password is required!");
         ParamChecker.notNull(param.getIndivisible(), BadRequestException.class, "Indivisible is required!");
-
-        if (!Objects.equals(ApplicationConstants.Context.APPLICATION_PASSWORD, param.getPassword())) {
-            throw new PermissionDeniedException("密码不正确");
+        if (!param.getIndivisible()) {
+            ParamChecker.notEmpty(param.getPassword(), BadRequestException.class, "Password is required!");
+            if (!Objects.equals(ApplicationConstants.Context.APPLICATION_PASSWORD, param.getPassword())) {
+                throw new PermissionDeniedException("密码不正确");
+            }
         }
         final int rows = slotService.updateSlotsIndivisible(id, param.getIndivisible());
         return GeneralResult.ok(rows);

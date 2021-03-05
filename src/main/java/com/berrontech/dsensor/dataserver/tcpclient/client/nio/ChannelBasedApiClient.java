@@ -94,7 +94,7 @@ public class ChannelBasedApiClient implements ApiClient {
         if (context == null) {
             log.warn("Ignore message [{}/{}/{}]", message.getType(), message.getAction(), message.getSeqNo());
             final MessageInfo messageInfo = new MessageInfo(this, message, listener, timeout, MessageMetadata.MAX_RETRY);
-            listener.onError(messageInfo, new IllegalStateException("Connection not connected!"));
+            listener.onError(messageInfo, new IllegalStateException("Connection not ready!"));
             return;
         }
         context.writeAndFlush(message);

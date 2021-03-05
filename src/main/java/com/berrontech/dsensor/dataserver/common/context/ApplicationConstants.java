@@ -87,7 +87,7 @@ public class ApplicationConstants {
         /**
          * Application Password
          */
-        public static final String APPLICATION_PASSWORD = "monolithiot";
+        public static final String APPLICATION_PASSWORD = "sf123456";
     }
 
     /**
