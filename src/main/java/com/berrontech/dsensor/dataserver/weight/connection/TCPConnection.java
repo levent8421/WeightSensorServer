@@ -60,7 +60,7 @@ public class TCPConnection extends BasicConnection {
                         Thread.sleep(30);
                     } catch (Exception e) {
                         cleanup();
-                        log.error("Error on create TCP connection, [{}:{}], [{}:{}]", IP, Port, e.getClass().getSimpleName(), e.getMessage());
+                        log.error("Error in TCPConnection recvThread, [{}:{}], [{}:{}]", IP, Port, e.getClass().getSimpleName(), e.getMessage());
                     }
                 }
             });
