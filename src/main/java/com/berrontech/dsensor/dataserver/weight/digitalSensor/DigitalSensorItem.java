@@ -527,10 +527,10 @@ public class DigitalSensorItem {
 //            log.debug("#{} UpdateHighResolution2 done, usedMs={}", Params.getAddress(), ticks);
             SetCommResult(true);
 
-            if (HighResCounter == 0)
-            {
-                UpdateParams();
-            }
+//            if (HighResCounter == 0)
+//            {
+//                UpdateParams();
+//            }
 
             byte counter = packet.Content[0];
             boolean needLoadCap = false;
