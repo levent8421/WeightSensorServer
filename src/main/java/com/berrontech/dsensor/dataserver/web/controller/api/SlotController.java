@@ -227,7 +227,7 @@ public class SlotController extends AbstractEntityController<Slot> {
     }
 
     private void checkSkuNo(String skuNo) {
-        if (skuNo.length() != MAX_SKU_NO_LENGTH) {
+        if (skuNo.length() != MAX_SKU_NO_LENGTH || !StringUtils.isNumeric(skuNo)) {
             throw new BadRequestException("该二维码不规范，请重新扫描");
         }
     }
@@ -275,6 +275,7 @@ public class SlotController extends AbstractEntityController<Slot> {
             throw new BadRequestException("Require 2 or more slots!");
         }
         final List<Slot> paramSlots = slotService.findByIds(param.getSlotIds());
+        checkMergeIndivisible(paramSlots);
         final List<Slot> slots = new ArrayList<>();
         final boolean changed = normalizeMergeSlot(paramSlots, slots);
         if (!changed) {
@@ -286,6 +287,14 @@ public class SlotController extends AbstractEntityController<Slot> {
         final int sensorNum = slotService.mergeSlots(slots, weightSensorService);
         weightNotifier.notifySlotMerged(slots);
         return GeneralResult.ok(sensorNum);
+    }
+
+    private void checkMergeIndivisible(List<Slot> slots) {
+        for (Slot slot : slots) {
+            if (slot.getIndivisible()) {
+                throw new BadRequestException(String.format("货道[%s]已被锁定", slot.getSlotNo()));
+            }
+        }
     }
 
     private void normalizeMergeParamsLog(List<Slot> params, List<Slot> slots) {
